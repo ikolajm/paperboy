@@ -1,0 +1,34 @@
+import { type ReactNode } from 'react';
+import { Label } from '../atoms/Label';
+import { Input, type InputProps } from '../atoms/Input';
+import { HelperText, type HelperTextProps } from '../atoms/HelperText';
+
+export interface FormFieldProps {
+  label: string;
+  helperText?: string;
+  error?: boolean;
+  size?: 'sm' | 'md' | 'lg';
+  inputProps?: Omit<InputProps, 'size' | 'state'>;
+  className?: string;
+}
+
+export function FormField({
+  label,
+  helperText,
+  error = false,
+  size = 'md',
+  inputProps = {},
+  className,
+}: FormFieldProps) {
+  return (
+    <div className={`flex flex-col gap-1 ${className ?? ''}`}>
+      <Label size={size}>{label}</Label>
+      <Input size={size} state={error ? 'error' : 'default'} {...inputProps} />
+      {helperText && (
+        <HelperText size={size} state={error ? 'error' : 'default'}>
+          {helperText}
+        </HelperText>
+      )}
+    </div>
+  );
+}

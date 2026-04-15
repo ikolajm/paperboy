@@ -1,3 +1,7 @@
+# BACKEND
+/config/credentials.json
 /digests/2026*
 
-/config/credentials.json
+# FRONTEND
+.DS_STORE
+/generated/*
