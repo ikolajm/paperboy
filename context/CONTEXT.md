@@ -1,27 +1,28 @@
 # Context Index
 
-The prompt chain that powers the daily digest.
-Read stages in order during a daily run.
+## Daily Digest
 
-## Daily Run Chain
+The daily digest is now a script-driven pipeline:
 
-| File | What it does |
-|------|-------------|
-| `BOOTSTRAP.md` | Date, mode detection, config load, registry init |
-| `FETCH-NEWS.md` | Tier 1 web search for all news topics |
-| `FILTER.md` | Dedup, staleness, quality floor |
-| `POPULAR.md` | Popular Now + In the Noise (RSS-first) |
-| `FETCH-ENTERTAINMENT.md` | Entertainment sweep + Sports Last Night scores |
-| `FETCH-PODCASTS.md` | RSS episode fetch for followed shows |
-| `WRITE.md` | Render digest.md + digest-index.md |
+```
+npx tsx scripts/run-digest.ts [--date YYYY-MM-DD]
+```
 
-## On-Demand Stages
+Fetches all data sources in parallel (RSS, ESPN scores, TMDB), applies filtering and dedup, and writes `digests/YYYY-MM-DD/digest.json`. Runs in ~2 seconds.
+
+See `scripts/` for implementation and `config/CONFIG-REFERENCE.md` for configuration.
+
+## On-Demand Stages (Agent-Driven)
+
+These features are invoked conversationally and remain agent-driven:
 
 | File | Trigger |
 |------|---------|
 | `DEEP-DIVE-NEWS.md` | "Go deeper on [NEWS-ID]" |
 | `DEEP-DIVE-PODCAST.md` | "Transcript for [POD-ID]" |
-| `FLASH-CHECK.md` | "Quick check my feeds", "Live [sport] scores", "Quick look at [topic]" |
+| `FLASH-CHECK.md` | "Quick check my feeds", "Live [sport] scores" |
 
-_For architectural decisions and rationale, see `context/DECISIONS.md`._
+## Legacy Chain
 
+The original agent-driven daily digest chain files are archived in `docs/legacy-chain/` for reference:
+BOOTSTRAP, FETCH-NEWS, FILTER, POPULAR, FETCH-ENTERTAINMENT, FETCH-PODCASTS, WRITE.

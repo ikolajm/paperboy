@@ -15,8 +15,8 @@
 - [x] `scripts/normalize-url.ts` — URL normalization (Node `URL` class)
 - [x] `scripts/fetch-rss.ts` — RSS batch fetch (`fast-xml-parser`, `Promise.all`)
 - [x] `scripts/fetch-tmdb.ts` — TMDB API fetch (native `fetch`, `Promise.all`)
-- [ ] `scripts/fetch-scores.ts` — ESPN scores + upcoming + odds (next up)
-- [ ] `scripts/check-endpoints.ts` — health check (native `fetch`, `Promise.all`)
+- [x] `scripts/fetch-scores.ts` — per-sport modules (NBA, NHL, MLB, NFL, College Basketball, College Football)
+- [ ] `scripts/check-endpoints.ts` — health check (deferred — diagnostic tool, not blocking v1)
 - [x] Validated fetch-rss against ESPN, Google News subsections, podcasts, opinions
 - [x] Validated fetch-tmdb against all 5 TMDB endpoints with dedup
 - [x] Removed ported Python scripts (normalize_url.py, fetch_rss.py, fetch_tmdb.py)
@@ -34,15 +34,18 @@
 - [x] Renamed MMA → Combat Sports, split College Sports into Basketball/Football
 - [x] Config reference doc updated to match
 
-### Phase 2: Digest Orchestrator
-- [ ] `scripts/run-digest.ts` — single command replaces agent chain
-- [ ] Bootstrap: config load, date, existing digest detection
-- [ ] Batch RSS fetch (all feeds in one parallel call)
-- [ ] Scores + TMDB fetch (parallel)
-- [ ] Filter pipeline: URL dedup, title similarity, staleness, quality floor
-- [ ] ID assignment from config categories
-- [ ] Podcast schedule filtering + freshness window
-- [ ] Assemble typed `Digest` object → write `digest.json`
+### Phase 2: Digest Orchestrator — DONE
+- [x] `scripts/run-digest.ts` — entry point (config load, file write)
+- [x] `scripts/digest/pipeline.ts` — orchestrates fetch → filter → assemble
+- [x] `scripts/digest/feeds.ts` — builds RSS batch config from config.json
+- [x] `scripts/digest/filter.ts` — URL dedup (with shared DedupPool), staleness, quality floor
+- [x] `scripts/digest/ids.ts` — sequential ID assignment per category
+- [x] `scripts/digest/assemble-popular.ts` — popular_today + local sections
+- [x] `scripts/digest/assemble-topics.ts` — for_you + on_your_radar with cross-topic dedup
+- [x] `scripts/digest/assemble-podcasts.ts` — schedule filtering + freshness windows
+- [x] `scripts/digest/assemble-opinions.ts` — opinion entry building
+- [x] `scripts/digest/assemble-entertainment.ts` — TMDB → movies + streaming
+- [x] Validated: 78 stories, 1.4s, correct cross-section dedup behavior
 
 ---
 

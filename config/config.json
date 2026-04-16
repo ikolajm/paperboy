@@ -143,28 +143,28 @@
       "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
       "recaps": true,
       "schedule": true,
-      "odds": true
+      "odds": false
     },
 
     "NHL": {
       "url": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard",
       "recaps": true,
       "schedule": true,
-      "odds": true
+      "odds": false
     },
 
     "MLB": {
       "url": "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
       "recaps": true,
       "schedule": true,
-      "odds": true
+      "odds": false
     },
 
     "NFL": {
       "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard",
       "recaps": true,
       "schedule": true,
-      "odds": true
+      "odds": false
     },
 
     "UFC": {

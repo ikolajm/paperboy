@@ -1,6 +1,5 @@
 /**
  * Canonical types for the Paperboy digest pipeline.
- * These match the digest.json schema defined in context/WRITE.md.
  * Used by both scripts/ and frontend/.
  */
 
@@ -13,11 +12,9 @@ export interface Story {
   snippet: string;
   source: string;
   date: string;
-  trending: boolean;
   deep_dive_eligible: boolean;
-  url_resolved?: boolean;
+  google_news_redirect?: boolean;
   stale?: boolean;
-  low_yield?: boolean;
 }
 
 export interface CalendarEvent {
@@ -32,7 +29,7 @@ export interface CrossRef {
   published: string;
 }
 
-// --- Section types ---
+// --- Topic sections ---
 
 export interface TopicSection {
   topic: string;
@@ -44,59 +41,153 @@ export interface TopicSection {
   quiet?: boolean;
 }
 
-export interface GameScore {
-  home_team: string;
-  away_team: string;
-  home_score: number;
-  away_score: number;
-  notable: string | null;
-  followed?: boolean;
+// --- Scores (from per-sport modules) ---
+
+export interface TeamInfo {
+  displayName: string;
+  abbreviation: string;
+  logo: string;
+  records: Record<string, string>;
 }
 
-export interface SportScores {
+export interface GameLeader {
+  category: string;
+  shortName: string;
+  athlete: string;
+  displayValue: string;
+}
+
+export interface CompletedGame {
+  id: string;
+  home: TeamInfo;
+  away: TeamInfo;
+  homeScore: number;
+  awayScore: number;
+  status: string;
+  headline: string;
+  notes: string[];
+  venue: string;
+  leaders: GameLeader[];
+  linescores: { home: number[]; away: number[] };
+}
+
+export interface ScheduledGame {
+  id: string;
+  home: TeamInfo;
+  away: TeamInfo;
+  startTime: string;
+  startTimeUTC: string;
+  broadcasts: string[];
+  notes: string[];
+  venue: string;
+}
+
+export interface SportRecaps {
+  sport: string;
+  date: string;
+  status: "games_played" | "no_games" | "playoffs" | "fetch_error";
+  seasonType: number;
+  games: CompletedGame[];
+  error?: string;
+}
+
+export interface SportSchedule {
+  sport: string;
+  date: string;
+  games: ScheduledGame[];
+  error?: string;
+}
+
+// --- UFC/MMA ---
+
+export interface FighterInfo {
   name: string;
-  status: "games_played" | "no_games" | "out_of_season" | "playoffs";
-  games: GameScore[];
+  record: string;
+  winner: boolean;
 }
 
-export interface ScoresSection {
+export interface FightResult {
+  id: string;
+  fighter1: FighterInfo;
+  fighter2: FighterInfo;
+  weightClass: string;
+  rounds: number;
+  method: string;
+  headline: string;
+}
+
+export interface FightCard {
+  id: string;
+  eventName: string;
+  venue: string;
+  broadcasts: string[];
+  startTime: string;
+  startTimeUTC: string;
+  fights: FightResult[];
+}
+
+export interface UfcRecaps {
+  sport: "UFC";
   date: string;
-  sports: SportScores[];
+  status: "events_completed" | "no_events" | "fetch_error";
+  cards: FightCard[];
+  error?: string;
 }
 
-export interface GameOdds {
-  spread: string;
-  over_under: number | string;
-  home_ml?: number;
-  away_ml?: number;
+export interface UfcSchedule {
+  sport: "UFC";
+  date: string;
+  cards: FightCard[];
+  error?: string;
 }
 
-export interface UpcomingGame {
-  home_team?: string;
-  away_team?: string;
-  event_name?: string;
-  is_mma?: boolean;
-  start_time: string;
-  broadcast: string[];
-  odds: GameOdds | null;
-  watch_priority: boolean;
-}
+// --- F1/Racing ---
 
-export interface SportUpcoming {
+export interface DriverResult {
+  position: number;
   name: string;
-  date: string;
-  games: UpcomingGame[];
+  team: string;
+  flag: string;
+  winner: boolean;
 }
 
-export interface UpcomingSection {
-  date: string;
-  sports: SportUpcoming[];
+export interface SessionResult {
+  type: string;
+  status: string;
+  drivers: DriverResult[];
+  headline: string;
 }
+
+export interface RaceWeekend {
+  id: string;
+  eventName: string;
+  circuit: string;
+  city: string;
+  date: string;
+  sessions: SessionResult[];
+}
+
+export interface F1Recaps {
+  sport: "F1";
+  date: string;
+  status: "race_completed" | "no_race" | "canceled" | "fetch_error";
+  weekends: RaceWeekend[];
+  error?: string;
+}
+
+export interface F1Schedule {
+  sport: "F1";
+  date: string;
+  weekends: RaceWeekend[];
+  error?: string;
+}
+
+// --- Entertainment ---
 
 export interface MovieEntry {
   id: string;
   title: string;
-  snippet: string;
+  overview: string;
   release_date: string;
   vote_average: number;
   deep_dive_eligible: boolean;
@@ -105,8 +196,9 @@ export interface MovieEntry {
 export interface StreamingEntry {
   id: string;
   title: string;
-  snippet: string;
+  overview: string;
   vote_average: number;
+  first_air_date?: string;
   deep_dive_eligible: boolean;
 }
 
@@ -114,6 +206,8 @@ export interface EntertainmentSection {
   movies: MovieEntry[];
   streaming: StreamingEntry[];
 }
+
+// --- Podcasts ---
 
 export interface PodcastEntry {
   id: string;
@@ -123,9 +217,10 @@ export interface PodcastEntry {
   date: string;
   snippet: string;
   episode_url: string | null;
-  youtube_url: string | null;
   deep_dive_eligible: boolean;
 }
+
+// --- Popular Today ---
 
 export interface PopularStory {
   id: string;
@@ -134,7 +229,16 @@ export interface PopularStory {
   snippet: string;
   source: string;
   deep_dive_eligible: boolean;
+  google_news_redirect?: boolean;
 }
+
+export interface PopularTodaySection {
+  top_stories: PopularStory[];
+  world: PopularStory[];
+  nation: PopularStory[];
+}
+
+// --- Local ---
 
 export interface LocalStory {
   id: string;
@@ -142,6 +246,7 @@ export interface LocalStory {
   url: string | null;
   snippet: string;
   source: string;
+  google_news_redirect?: boolean;
 }
 
 export interface LocalLocation {
@@ -153,6 +258,8 @@ export interface LocalSection {
   locations: LocalLocation[];
 }
 
+// --- Opinions ---
+
 export interface OpinionEntry {
   id: string;
   title: string;
@@ -161,11 +268,7 @@ export interface OpinionEntry {
   source: string;
 }
 
-export interface PopularTodaySection {
-  top_stories: PopularStory[];
-  world: PopularStory[];
-  nation: PopularStory[];
-}
+// --- Deep Dives ---
 
 export interface DeepDiveRef {
   id: string;
@@ -179,20 +282,37 @@ export interface DigestMeta {
   date: string;
   day_of_week: string;
   story_count: number;
-  run_mode: "initial" | "refresh" | "full_rerun";
+  run_mode: "initial";
   last_run: string;
 }
 
+export interface ScoresSection {
+  /** Team sports (NBA, NHL, MLB, NFL, College) */
+  team_sports: {
+    recaps: SportRecaps[];
+    schedule: SportSchedule[];
+  };
+  /** UFC/MMA fight cards */
+  ufc: {
+    recaps: UfcRecaps;
+    schedule: UfcSchedule;
+  };
+  /** F1 race weekends */
+  f1: {
+    recaps: F1Recaps;
+    schedule: F1Schedule;
+  };
+}
+
 export interface DigestSections {
+  popular_today: PopularTodaySection;
+  local: LocalSection;
   for_you: TopicSection[];
   on_your_radar: TopicSection[];
-  scores: ScoresSection | null;
-  upcoming: UpcomingSection | null;
+  scores: ScoresSection;
   entertainment: EntertainmentSection;
   podcasts: PodcastEntry[];
   opinions: OpinionEntry[];
-  popular_today: PopularTodaySection;
-  local: LocalSection;
 }
 
 export interface Digest {
