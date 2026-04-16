@@ -11,15 +11,17 @@
 - [x] `shared/types/config.ts` — typed PaperboyConfig interface (v3)
 - [ ] Frontend tsconfig path alias for `@shared/*` (deferred until frontend work begins)
 
-### Phase 1: Port Python Scripts to TypeScript
+### Phase 1: Port Python Scripts to TypeScript — DONE
 - [x] `scripts/normalize-url.ts` — URL normalization (Node `URL` class)
 - [x] `scripts/fetch-rss.ts` — RSS batch fetch (`fast-xml-parser`, `Promise.all`)
 - [x] `scripts/fetch-tmdb.ts` — TMDB API fetch (native `fetch`, `Promise.all`)
-- [x] `scripts/fetch-scores.ts` — per-sport modules (NBA, NHL, MLB, NFL, College Basketball, College Football)
+- [x] `scripts/fetch-scores.ts` — orchestrator with per-sport modules
+- [x] `scripts/scores/nba.ts`, `nhl.ts`, `mlb.ts`, `nfl.ts`, `college-basketball.ts`, `college-football.ts`
+- [x] `scripts/scores/ufc.ts` — fight cards with proper UFC types (FightCard, FightResult)
+- [x] `scripts/scores/f1.ts` — race weekends with proper F1 types (RaceWeekend, SessionResult, DriverResult)
+- [x] Validated all scripts against live APIs
+- [x] Removed ported Python scripts (normalize_url.py, fetch_rss.py, fetch_tmdb.py, fetch_scores.py)
 - [ ] `scripts/check-endpoints.ts` — health check (deferred — diagnostic tool, not blocking v1)
-- [x] Validated fetch-rss against ESPN, Google News subsections, podcasts, opinions
-- [x] Validated fetch-tmdb against all 5 TMDB endpoints with dedup
-- [x] Removed ported Python scripts (normalize_url.py, fetch_rss.py, fetch_tmdb.py)
 
 ### Config Simplification — DONE (v3)
 - [x] Separated scores from topics (own section with per-sport toggles)
@@ -58,11 +60,11 @@
 
 ---
 
-## Context File Retirement (After Phase 2 validated)
+## Context File Retirement — DONE
 
-- [ ] Move daily-chain files to `docs/legacy-chain/`
-- [ ] Keep on-demand stages active: DEEP-DIVE-NEWS, DEEP-DIVE-PODCAST, FLASH-CHECK
-- [ ] Update CONTEXT.md and CLAUDE.md to reflect new architecture
+- [x] Moved daily-chain files to `docs/legacy-chain/` (BOOTSTRAP, FETCH-NEWS, FILTER, POPULAR, FETCH-ENTERTAINMENT, FETCH-PODCASTS, WRITE)
+- [x] On-demand stages remain active: DEEP-DIVE-NEWS, DEEP-DIVE-PODCAST, FLASH-CHECK
+- [x] Updated CONTEXT.md and CLAUDE.md to reflect new architecture
 
 ---
 
