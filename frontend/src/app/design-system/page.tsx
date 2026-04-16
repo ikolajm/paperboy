@@ -62,7 +62,7 @@ export default function DesignSystemPage() {
         {activeView === 'colors' && <ColorPalette />}
         {activeView === 'typography' && <TypographyScale />}
         {!specialPages.has(activeView) && (
-          <ComponentPlayground story={stories[activeView as StoryKey]} />
+          <ComponentPlayground key={activeView} story={stories[activeView as StoryKey]} />
         )}
       </main>
     </div>

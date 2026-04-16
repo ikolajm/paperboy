@@ -1,7 +1,36 @@
-# BACKEND
-/config/credentials.json
-/digests/2026*
+# Dependencies
+node_modules/
 
-# FRONTEND
-.DS_STORE
-/generated/*
+# Build output
+dist/
+.next/
+out/
+
+# Credentials & secrets
+config/credentials.json
+.env*
+
+# Digest output (generated daily, not source)
+digests/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+*.pem
+
+# TypeScript build info
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel
+
+# Generated output (design system builds, etc.)
+generated/
+
+# Deep dives (generated on demand)
+deep-dives/

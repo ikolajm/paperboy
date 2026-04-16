@@ -1,96 +1,170 @@
-# config/config.json — Field Reference
+# config/config.json — Field Reference (v3)
 
 Complete documentation for every key in `config/config.json`.
-Read this when adding topics, adjusting settings, or understanding what
-each field does. Claude also reads this to resolve ambiguities at runtime.
 
 ---
 
 ## Top-Level Sections
 
+Ordered as they appear in config (and as the digest pipeline processes them):
+
 | Key | Purpose |
 |-----|---------|
-| `topics` | Your news topics — what to follow and how |
-| `podcasts` | Shows you follow + discovery and deep-dive settings |
-| `popular_now` | Popular Now section settings and RSS sources |
-| `in_the_noise` | In the Noise section settings |
-| `entertainment` | Movies + streaming source lists |
-| `social` | Bluesky settings |
-| `google_news_sections` | Google News RSS feeds by section (top stories, category feeds, category mapping) |
-| `google_trends_rss` | Google Trends RSS feed URL for In the Noise sourcing |
+| `version` | Config schema version. Current: `3` |
+| `popular_today` | Top stories, world, and nation — the big picture first |
+| `local_news` | Location-specific Google News feeds |
+| `topics` | Your tracked interests — RSS feeds for story collection |
+| `scores` | Sports scoreboard endpoints + display toggles |
+| `podcasts` | Shows you follow with RSS feeds and release schedules |
+| `opinions` | Opinion/editorial RSS feeds (NYT, Guardian, etc.) |
+| `entertainment` | TMDB configuration for movies + streaming |
+
+---
+
+## `popular_today`
+
+Three Google News feeds, each rendered as a distinct subsection. Fetched first — these are the headlines everyone is seeing.
+
+| Key | Description |
+|-----|-------------|
+| `top_stories` | Google News editorial top stories |
+| `world` | Google News WORLD section headlines |
+| `nation` | Google News US/NATION section headlines |
+
+Each subsection has:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `rss` | string | Google News RSS feed URL |
+| `max` | integer | Maximum stories to include |
+
+---
+
+## `local_news`
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `max_stories_per_location` | integer | Cap per location |
+| `locations[].label` | string | Display name (e.g., "Stevensville, MI") |
+| `locations[].rss` | string | Google News location RSS URL |
+
+To find a location feed URL: navigate to Google News, go to the local section for your city, and extract the RSS URL from the page.
 
 ---
 
 ## `topics`
 
-Each key is the topic name exactly as it will appear in the digest.
+Each key is the topic name as it appears in the digest. Topics are purely about **news feeds** — scores and schedules are configured separately in the `scores` section.
 
 ### Per-topic fields
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `category` | string | **yes** | ID prefix code. See Category Bank below. |
+| `category` | string | **yes** | ID prefix code (see Category Bank). Topics sharing a category share one ID sequence. |
 | `mode` | string | **yes** | `"active"` or `"passive"` |
-| `points_of_interest` | string[] | recommended | Plain-language fetch guidance. For passive topics, Claude prioritises stories matching these patterns. For active topics, used as calendar-lookup hints when temporal language is present ("within X days", "next race"). Does not gate story inclusion — all clearly relevant stories are added. |
-| `search_terms` | string[] | recommended | Keywords used for RSS/web search and Bluesky `searchPosts` fallback. More specific = better results. |
-| `rss` | string[] | optional | RSS/Atom feed URLs. Fetched before web search. |
-| `news_url` | string | sports only | ESPN real-time news JSON endpoint. Returns `headlines[]` array. Fetched before RSS in FETCH-NEWS. |
-| `scores` | boolean | sports only | `true` = fetch last night's scores from `scores_url`. |
-| `followed_teams` | string[] | sports only | Team names. Alerts fire specifically for these teams; all games still shown. Leave empty for league-wide coverage only. |
-| `scores_url` | string | sports only | ESPN JSON API endpoint for last night's scores. See ESPN API note below. |
-| `odds_url` | string | sports only | Reference pointer to the ESPN scoreboard endpoint that also embeds betting lines. **Odds are already in the `scores_url` response** — no separate API call is needed. Extract `competitions[].odds[]` (spread, moneyline, O/U, provider) for games with status `scheduled`. Do not display odds for live or final games. |
-| `standings_url` | string | sports only | ESPN standings endpoint for the league. Pattern: `https://site.api.espn.com/apis/v2/sports/[sport]/[league]/standings`. Not used in daily digest runs — available for on-demand flash checks. |
-| `schedule_url` | string | optional | ESPN JSON API endpoint for upcoming event schedule. Triggers calendar lookup in FETCH-NEWS when `points_of_interest` contains temporal language ("within X days", "upcoming", "next race"). See ESPN schedule URL patterns below. |
+| `rss` | string[] | **yes** | RSS feed URLs. Google News for non-sports; ESPN RSS for sports. |
 
 ### `mode` values
 
-| Value | Behaviour |
-|-------|-----------|
-| `"active"` | Always fetches. Aims for 3–5 fresh stories. Shown in **For You**. |
-| `"passive"` | Fetches 2–3 relevant stories. Shown in **On Your Radar**. Uses `points_of_interest` to prioritise what to look for, but surfaces all clearly relevant results. |
+| Value | Behavior |
+|-------|----------|
+| `"active"` | Aims for 3–5 stories. Shown in **For You**. |
+| `"passive"` | Capped at 3 stories. Shown in **On Your Radar**. |
 
 ### Category Bank
 
-Declare the category for any topic using one of these codes. Multiple topics
-share one code — they draw from a shared ID sequence (SPRT-01, SPRT-02, ...).
+| Code | Category | Used by |
+|------|----------|---------|
+| `SPRT` | Sports | Combat Sports, F1, NBA, NHL, MLB, NFL, College Basketball, College Football |
+| `TECH` | Technology | AI, Cybersecurity |
+| `POL` | Politics | US Politics |
+| `SCI` | Science | Science |
+| `HLTH` | Health | Health |
+| `ENT` | Entertainment | _(reserved — assigned by entertainment pipeline)_ |
+| `POP` | Popular Today | _(reserved — assigned by popular_today pipeline)_ |
+| `POD` | Podcasts | _(reserved — assigned by podcast pipeline)_ |
+| `OPN` | Opinions | _(reserved — assigned by opinions pipeline)_ |
 
-| Code | Category | Example topics |
-|------|----------|----------------|
-| `SPRT` | Sports (any sport) | MMA, F1, NBA, NHL, MLB, NFL, Tennis |
-| `TECH` | Technology & Security | AI Research, Anthropic/Claude, Dev Tooling, Cybersecurity |
-| `ENT` | Entertainment | _(reserved — used internally by Stage 05)_ |
-| `POP` | Popular Now | _(reserved — used internally by Stage 04)_ |
-| `NOISE` | In the Noise | _(reserved — used internally by Stage 04)_ |
+### Current topics
 
-**Reserved codes** (do not use as `category` values — the system assigns them):
-`ENT`, `POP`, `NOISE`, `SKY`, `POD`
+| Topic | Category | Mode | Feed source |
+|-------|----------|------|-------------|
+| US Politics | POL | active | Google News search (US Politics) |
+| AI | TECH | active | Google News AI subsection |
+| Cybersecurity | TECH | passive | Google News Cybersecurity subsection |
+| Science | SCI | passive | Google News Science subsection |
+| Health | HLTH | passive | Google News Health subsection |
+| Combat Sports | SPRT | passive | ESPN MMA RSS |
+| F1 | SPRT | passive | ESPN F1 RSS |
+| NBA | SPRT | passive | ESPN NBA RSS |
+| NHL | SPRT | passive | ESPN NHL RSS |
+| MLB | SPRT | passive | ESPN MLB RSS |
+| NFL | SPRT | passive | ESPN NFL RSS |
+| College Basketball | SPRT | passive | ESPN College Basketball RSS |
+| College Football | SPRT | passive | ESPN College Football RSS |
 
-> **Note:** Cybersecurity and security topics use the `TECH` prefix. SEC was merged into TECH
-> as security is a technology subfield — the distinction added prefix overhead without payoff.
-
-**To add a new category:** just use a new 2–5 character uppercase code in the
-`category` field. It becomes available immediately. Add it to this table too.
-
-### Adding a new topic — minimal example
+### Adding a new topic
 
 ```json
 "My New Topic": {
   "category": "TECH",
   "mode": "active",
-  "points_of_interest": [
-    "major announcement from a key player",
-    "regulatory action or ban"
-  ],
-  "search_terms": ["my topic keywords", "related term"],
-  "rss": []
+  "rss": [
+    "https://news.google.com/rss/topics/[SUBSECTION_ID]?hl=en-US&gl=US&ceid=US:en"
+  ]
 }
 ```
 
-### ESPN JSON API — scores_url format
+### RSS feed sources
 
-Odds are **embedded** in the scoreboard response for scheduled games.
-`competitions[].odds[]` contains spread, moneyline, O/U, and provider name.
-No separate API call needed — `odds_url` simply documents this same endpoint.
+**Google News subsection feeds** — editorially curated by Google. Best for non-sports topics (AI, Cybersecurity, Science, Health). Navigate to the subsection on news.google.com, grab the encoded topic ID from the URL, insert `/rss/` into the path.
+
+**Google News search feeds** — for topics without a curated subsection. Format: `https://news.google.com/rss/search?q=[QUERY]&hl=en-US&gl=US&ceid=US:en`
+
+**ESPN RSS feeds** — the primary source for sports news. Structured, direct article URLs, consistent formatting.
+
+| Sport | ESPN RSS |
+|-------|----------|
+| MMA | `https://www.espn.com/espn/rss/mma/news` |
+| F1 | `https://www.espn.com/espn/rss/f1/news` |
+| NBA | `https://www.espn.com/espn/rss/nba/news` |
+| NHL | `https://www.espn.com/espn/rss/nhl/news` |
+| MLB | `https://www.espn.com/espn/rss/mlb/news` |
+| NFL | `https://www.espn.com/espn/rss/nfl/news` |
+| College Basketball | `https://www.espn.com/espn/rss/ncb/news` |
+| College Football | `https://www.espn.com/espn/rss/ncf/news` |
+
+---
+
+## `scores`
+
+Each key is a sport name. Scores are fetched from ESPN scoreboard APIs and split into two user pathways: **recaps** (yesterday's results) and **schedule + odds** (today's upcoming games).
+
+### Per-sport fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `url` | string | **yes** | ESPN scoreboard API endpoint |
+| `recaps` | boolean | **yes** | Show yesterday's final scores |
+| `schedule` | boolean | **yes** | Show today's upcoming games |
+| `odds` | boolean | **yes** | Show betting odds (spread, O/U, moneyline). Only applies when `schedule` is `true`. |
+
+### Current sports
+
+| Sport | Recaps | Schedule | Odds |
+|-------|--------|----------|------|
+| NBA | yes | yes | yes |
+| NHL | yes | yes | yes |
+| MLB | yes | yes | yes |
+| NFL | yes | yes | yes |
+| UFC | yes | yes | no |
+| F1 | yes | yes | no |
+| College Basketball | yes | no | no |
+| College Football | yes | no | no |
+
+### ESPN scoreboard URL patterns
+
+Append `?dates=YYYYMMDD` for a specific date. No date param = today's scoreboard. Odds are embedded in the response for scheduled games (`competitions[].odds[]`).
 
 | Sport | URL |
 |-------|-----|
@@ -98,161 +172,105 @@ No separate API call needed — `odds_url` simply documents this same endpoint.
 | NHL | `https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard` |
 | MLB | `https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard` |
 | NFL | `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard` |
-| NCAAF | `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard` |
-| NCAAB | `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard` |
-| NCAA Baseball | `https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard` |
-| MLS | `https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard` |
-
-Append `?dates=YYYYMMDD` for a specific date. Returns structured JSON — no JS rendering.
-
-### ESPN JSON API — standings_url format
-
-| Sport | URL |
-|-------|-----|
-| NBA | `https://site.api.espn.com/apis/v2/sports/basketball/nba/standings` |
-| NHL | `https://site.api.espn.com/apis/v2/sports/hockey/nhl/standings` |
-| MLB | `https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings` |
-| NCAAF | `https://site.api.espn.com/apis/v2/sports/football/college-football/standings` |
-| NCAAB | `https://site.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/standings` |
-| NCAA Baseball | `https://site.api.espn.com/apis/v2/sports/baseball/college-baseball/standings` |
-
-Not used in daily digest runs. Available for on-demand flash checks if standings context is requested.
-
-### ESPN JSON API — schedule_url format
-
-For topics with temporal `points_of_interest` entries (e.g. "race weekend within 5 days").
-With no date filter, the ESPN scoreboard endpoint returns the current or next scheduled
-event — making it suitable as a `schedule_url` for calendar lookup.
-
-| Sport | URL |
-|-------|-----|
+| UFC | `https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard` |
 | F1 | `https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard` |
-| NASCAR | `https://site.api.espn.com/apis/site/v2/sports/racing/nascar-premier/scoreboard` |
-| NFL | _(same as scores_url — preseason/offseason shows next game)_ |
-| NBA | _(same as scores_url — offseason shows no games)_ |
+| College Basketball | `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard` |
+| College Football | `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard` |
 
-For sports without an ESPN schedule endpoint (e.g. UFC), Stage 01 falls back to
-web search. No `schedule_url` needed — omit the field.
-
-**Fallback chain if `schedule_url` is absent or returns no upcoming event:**
-1. Web search: `[topic] next [race/event] date [month] [year]`
-
----
-
-## `podcasts`
-
-### `podcasts.settings`
-
-#### `podcasts.settings.discovery`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `bluesky_mentions` | boolean | Surface episodes explicitly recommended in SKY-* posts. Topic relevance is always required — Bluesky buzz alone does not qualify. |
-
-#### `podcasts.settings.deep_dive`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `transcript_sources` | string[] | Order to try when fetching a transcript. Values: `"native"` (show's own transcript page, from `transcript_page` in config), `"youtube_captions"` (auto-captions from YouTube upload), `"show_notes"` (RSS description — not a real transcript, labeled as such in output). Processing stops at first successful source. Reorder to change priority. |
-| `include_timestamps` | boolean | Extract and display jump-to timestamps |
-| `speaker_labels` | boolean | Label speakers as [Host] / [Guest] / [Name] |
-
-### `podcasts.shows`
-
-Each key is the exact show name.
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `rss` | string | RSS/Atom feed URL. Fetched directly — no search needed. |
-| `youtube_channel` | string \| null | YouTube channel URL. Used for transcript fallback (Stage 10) and episode link lookup (Stage 07). |
-| `transcript_page` | string \| null | Show's own transcript page. Stored as `transcript_hint` on registry entries. Fetched directly in Stage 10. |
-
-**To add a new show:** add an entry to `podcasts.shows` with the RSS feed URL.
-If you don't know the RSS URL, just add the show name without details — Claude
-will find the feed on the first run and you can fill it in after.
+### Adding a new sport
 
 ```json
-"My New Show": {
-  "rss": "https://feeds.example.com/myshow",
-  "youtube_channel": null,
-  "transcript_page": null
+"Tennis": {
+  "url": "https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard",
+  "recaps": true,
+  "schedule": true,
+  "odds": false
 }
 ```
 
 ---
 
-## `popular_now`
+## `podcasts`
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `max_stories` | integer | Cap on Popular Now stories in the digest |
-| `trusted_sources_only` | boolean | Only include stories from recognised outlets |
-| `rss_feeds` | string[] | RSS feeds to pool before falling back to web search |
+### `podcasts.shows`
+
+Each key is the show name as it appears in the digest.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `rss` | string | **yes** | RSS feed URL |
+| `release_schedule` | string | optional | When the show releases. Script skips fetch on non-release days. Omit to check every day. |
+| `youtube_channel` | string | optional | _Agent-only: used for video link resolution in deep dives._ |
+| `transcript_page` | string | optional | _Agent-only: used for transcript fetching in deep dives._ |
+
+### `release_schedule` values
+
+| Value | Fetch on |
+|-------|----------|
+| `"daily"` | Every day |
+| `"weekdays"` | Monday–Friday |
+| `"weekly_monday"` | Monday only |
+| `"mon_wed_fri"` | Monday, Wednesday, Friday |
+| `"mon_thu"` | Monday, Thursday |
+| _(omitted)_ | Every day |
+
+### Adding a new show
+
+```json
+"My Show": {
+  "rss": "https://feeds.example.com/myshow",
+  "release_schedule": "weekdays"
+}
+```
 
 ---
 
-## `in_the_noise`
+## `opinions`
+
+Opinion and editorial RSS feeds. Sporadic schedules — all feeds are fetched on every run with no schedule filtering.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `max_stories` | integer | Cap on In the Noise entries |
-| `label` | string | Section subtitle shown in the digest |
-| `never_deep_dive` | boolean | Always `true` — NOISE entries are never deep-dived |
+| `feeds` | string[] | RSS feed URLs for opinion/editorial content |
+| `max_stories` | integer | Cap on opinion entries per run |
+
+### Current feeds
+
+| Outlet | RSS |
+|--------|-----|
+| New York Times Opinion | `https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/opinion/rss.xml` |
+| The Guardian Comment | `https://www.theguardian.com/uk/commentisfree/rss` |
 
 ---
 
 ## `entertainment`
 
-### `entertainment.movies`
+### `entertainment.tmdb`
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `max_results` | integer | Cap on movie entries per run |
+| `base_url` | string | TMDB API base URL |
+| `endpoints` | object | TMDB API paths keyed by data type |
+| `max_movies` | integer | Cap on movie entries |
+| `max_streaming` | integer | Cap on streaming/TV entries |
 
-### `entertainment.streaming`
+TMDB API requires credentials stored in `config/credentials.json` (gitignored):
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `max_results` | integer | Cap on streaming entries per run |
+```json
+{
+  "tmdb": {
+    "api_key": "your_key_here",
+    "read_access_token": "your_token_here"
+  }
+}
+```
 
-### `entertainment.exclude_patterns`
+### TMDB endpoints
 
-String array. Any entertainment entry whose title or source
-matches a pattern here is discarded. Useful for filtering creator content,
-gaming clips, etc.
-
----
-
-## `social`
-
-### `social.bluesky`
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `enabled` | boolean | Enable/disable Bluesky fetching entirely |
-| `max_posts` | integer | Cap on SKY-* entries in The Conversation section |
-| `general_feeds` | object[] | Feeds for ambient trending posts. Each: `{ "name": "...", "uri": "at://..." }`. |
-| `timeline.enabled` | boolean | Fetch personal timeline (requires auth in credentials.json) |
-| `timeline.max_posts` | integer | Cap on timeline posts to consider |
-| `lists` | string[] | AT URIs of Bluesky lists to fetch (requires auth). e.g. `"at://did:plc:.../app.bsky.graph.list/..."` |
-
-**Authentication note:** `general_feeds` and `searchPosts` work without auth.
-`timeline` and `lists` require `config/credentials.json` to be populated.
-
----
-
-## Bluesky Feed URIs — finding them
-
-Feed generator AT URIs take the form:
-`at://did:plc:[creator-did]/app.bsky.feed.generator/[feed-slug]`
-
-To find a feed's URI:
-1. Visit the feed on bsky.app
-2. The URL path contains the feed identifier
-3. Use `app.bsky.feed.getFeedGenerator?feed=[uri]` to validate it
-
-List AT URIs take the form:
-`at://did:plc:[creator-did]/app.bsky.graph.list/[list-id]`
-
-Run "validate bluesky feeds" to check reachability of all URIs currently in config.json.
-If a URI is consistently unreachable, remove it from config.json.
+| Key | Returns |
+|-----|---------|
+| `now_playing` | Movies currently in theatres |
+| `upcoming` | Movies releasing soon |
+| `trending_movies` | Trending movies this week |
+| `trending_tv` | Trending TV shows this week |
+| `on_the_air` | TV shows currently airing new episodes |

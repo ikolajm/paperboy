@@ -26,6 +26,12 @@ const sizeStyles: Record<AlertSize, string> = {
   'lg': 'px-6 py-4 gap-3 text-base rounded-component',
 };
 
+const iconSizeStyles: Record<AlertSize, string> = {
+  'sm': 'size-icon-0',
+  'md': 'size-icon-1',
+  'lg': 'size-icon-2',
+};
+
 export function Alert({
   variant = 'default',
   size = 'md',
@@ -46,9 +52,9 @@ export function Alert({
       `}
       {...props}
     >
-      {leadingIcon && <span className="leading-icon shrink-0">{leadingIcon}</span>}
+      {leadingIcon && <span className={`shrink-0 ${iconSizeStyles[size]}`}>{leadingIcon}</span>}
       {children}
-      {trailingIcon && <span className="trailing-icon shrink-0">{trailingIcon}</span>}
+      {trailingIcon && <span className={`shrink-0 ${iconSizeStyles[size]}`}>{trailingIcon}</span>}
     </div>
   );
 }

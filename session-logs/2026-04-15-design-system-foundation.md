@@ -25,40 +25,49 @@ First pipeline test — taking jmi-hub generated output (tokens.css, component s
 - Created `ColorPalette` component — palette primitive grids (7 families, 50-900) + semantic role cards
 - Created `TypographyScale` component — all 9 `.text-*` presets with specs + font specimens
 
+### Component Fixes (from OBSERVATIONS.md)
+- **Hydration mismatch on story swap:** Resolved by using `key={activeView}` on `ComponentPlayground` to force full unmount/remount — eliminated the useEffect approach entirely
+- **Last control border:** All control types now conditionally drop bottom border on last item via `isLast` prop
+- **Icon toggles:** `showLeadingIcon`/`showTrailingIcon` booleans now resolve to lucide `CircleSlash2` icons at the correct token-based size per component variant
+- **FormField:** Left-aligned with `items-start`, helper text toggleable via `showHelperText`, display name spaced as "Form Field"
+- **Select chevron:** Replaced native browser chevron with custom SVG using `appearance-none` + background-image, sized per variant using icon/spacing tokens
+- **Select width:** Removed `w-full` to match intrinsic sizing pattern of other atoms
+- **Icon sizing in components:** Button, Toast, Alert icon wrappers now use `size-icon-0`/`size-icon-1`/`size-icon-2` token classes scaling with sm/md/lg
+
+### Dependencies Added
+- `lucide-react` — icon library, standardized as the project default
+
 ## Bugs Found & Fixed
 
 ### 1. Void Element Error (Input/Textarea)
 **Symptom:** "input is a void element tag and must neither have children"
-**Root Cause:** ComponentPlayground spread all props including `children` onto every component. Void HTML elements (`<input>`) can't receive children.
-**Fix:** Playground now separates `children` from `restProps` and only passes children to components that use them.
+**Root Cause:** ComponentPlayground spread all props including `children` onto every component.
+**Fix:** Playground separates `children` from `restProps` and only passes children to components that use them.
 
 ### 2. State Bleed Between Stories
-**Symptom:** Switching Button → Chip showed null background. Switching back and toggling variant fixed it.
-**Root Cause:** `useState(story.defaultProps)` doesn't reset when the `story` prop changes — React reuses the instance. Button's `variant: 'default'` carried over to Chip, which expects `variant: 'unselected'`.
-**Fix:** Added `useEffect` to reset props when story changes.
+**Symptom:** Switching Button → Chip showed null background.
+**Root Cause:** `useState(story.defaultProps)` doesn't reset on prop change — React reuses the instance.
+**Fix:** Used `key={activeView}` on the playground to force full remount. Cleaner than useEffect and eliminates the one-frame stale render.
 
 ### 3. Select Story Missing Options
-**Symptom:** Select rendered as empty dropdown in playground.
-**Root Cause:** Generated story had no `<option>` children.
-**Fix:** Created a `SelectDemo` wrapper that provides sample options.
+**Symptom:** Select rendered as empty dropdown.
+**Fix:** Created a `SelectDemo` wrapper that provides sample `<option>` elements.
+
+## Known Limitations
+
+### Native Select Dropdown Position
+The native `<select>` options menu opens at a position determined by the browser/OS — CSS cannot control this. A proper fix requires building a custom `Dropdown`/`Combobox` molecule using a positioned popover. Deferred to a future sprint.
 
 ## Observations
 
 ### Component Height Shift
-Placeholder tokens had approximated values (ch-3: 28px, ch-5: 36px, ch-7: 44px). Real tokens from jmi-hub are ch-3: 32px, ch-5: 40px, ch-7: 48px. The real values are correct — components were designed alongside these tokens.
+Placeholder tokens had approximated values (ch-3: 28px, ch-5: 36px, ch-7: 44px). Real tokens from jmi-hub are ch-3: 32px, ch-5: 40px, ch-7: 48px. The real values are correct.
 
 ### Token Coverage
-The generated `@theme inline` block is significantly more complete than the placeholder:
-- Full spacing scale (0-24) with semantic spacing categories
-- All border radius primitives (br-0 through br-999) + semantic aliases
-- Icon sizes, border widths, component heights (ch-0 through ch-9)
-- Transitions, focus ring, z-index scale (1000-1400)
+The generated `@theme inline` block is significantly more complete than the placeholder — full spacing scale, all radius primitives, icon sizes, transitions, focus ring, z-index scale.
 
-### What's Not Yet Done
-- DESIGN-HANDOFF documentation folder
-- Visual polish / tweaks (pending observation list from Jacob)
-- Additional molecules and organisms
-- Actual Paperboy dashboard views
+### Text Style Catalog (from OBSERVATIONS.md)
+Opportunity to lean harder on the `.text-*` preset classes within components/screens. A wider catalog (e.g., body-sm/md/lg, label-sm/md/lg) could reduce individual overrides and let changes cascade from the variable. Candidate for upstream pipeline discussion.
 
 ---
 

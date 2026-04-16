@@ -1,6 +1,19 @@
 'use client';
 
-import { useState, useEffect, type ReactNode, type ComponentType } from 'react';
+import { useState, createElement, type ReactNode, type ComponentType } from 'react';
+import { CircleSlash2 } from 'lucide-react';
+
+// Icon size in px per component size — matches icon token scale
+const iconPixels: Record<string, number> = {
+  sm: 12,
+  md: 16,
+  lg: 20,
+};
+
+function PlaceholderIcon({ size = 'md' }: { size?: string }) {
+  const px = iconPixels[size] ?? 16;
+  return createElement(CircleSlash2, { size: px, strokeWidth: 1.5 });
+}
 
 // --- Control types ---
 export type ControlDef =
@@ -20,13 +33,15 @@ function SelectControl({
   control,
   value,
   onChange,
+  isLast,
 }: {
   control: Extract<ControlDef, { type: 'select' }>;
   value: string;
   onChange: (val: string) => void;
+  isLast: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-outline-subtle">
+    <div className={`flex items-center justify-between py-2 ${isLast ? '' : 'border-b border-outline-subtle'}`}>
       <label className="text-sm text-on-surface-variant">{control.label}</label>
       <select
         value={value}
@@ -47,13 +62,15 @@ function BooleanControl({
   control,
   value,
   onChange,
+  isLast,
 }: {
   control: Extract<ControlDef, { type: 'boolean' }>;
   value: boolean;
   onChange: (val: boolean) => void;
+  isLast: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-outline-subtle">
+    <div className={`flex items-center justify-between py-2 ${isLast ? '' : 'border-b border-outline-subtle'}`}>
       <label className="text-sm text-on-surface-variant">{control.label}</label>
       <input
         type="checkbox"
@@ -69,13 +86,15 @@ function TextControl({
   control,
   value,
   onChange,
+  isLast,
 }: {
   control: Extract<ControlDef, { type: 'text' }>;
   value: string;
   onChange: (val: string) => void;
+  isLast: boolean;
 }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-outline-subtle">
+    <div className={`flex items-center justify-between py-2 ${isLast ? '' : 'border-b border-outline-subtle'}`}>
       <label className="text-sm text-on-surface-variant">{control.label}</label>
       <input
         type="text"
@@ -87,14 +106,29 @@ function TextControl({
   );
 }
 
+// --- Icon prop mapping ---
+// Stories use showLeadingIcon/showTrailingIcon booleans;
+// components expect leadingIcon/trailingIcon as ReactNode.
+function resolveIconProps(props: Record<string, any>): Record<string, any> {
+  const resolved = { ...props };
+  const size = resolved.size ?? 'md';
+
+  if (resolved.showLeadingIcon) {
+    resolved.leadingIcon = createElement(PlaceholderIcon, { size });
+  }
+  delete resolved.showLeadingIcon;
+
+  if (resolved.showTrailingIcon) {
+    resolved.trailingIcon = createElement(PlaceholderIcon, { size });
+  }
+  delete resolved.showTrailingIcon;
+
+  return resolved;
+}
+
 // --- Playground ---
 export function ComponentPlayground({ story }: { story: StoryDef }) {
   const [props, setProps] = useState<Record<string, any>>(story.defaultProps);
-
-  // Reset props when switching between stories
-  useEffect(() => {
-    setProps(story.defaultProps);
-  }, [story]);
 
   const updateProp = (prop: string, value: any) => {
     setProps((prev) => ({ ...prev, [prop]: value }));
@@ -102,8 +136,9 @@ export function ComponentPlayground({ story }: { story: StoryDef }) {
 
   const Component = story.component;
 
-  // Separate children from other props — void elements (input, select) can't receive children
-  const { children, ...restProps } = props;
+  // Resolve icon booleans → ReactNode and separate children for void elements
+  const resolved = resolveIconProps(props);
+  const { children, ...restProps } = resolved;
 
   return (
     <div className="flex flex-col gap-8">
@@ -120,8 +155,9 @@ export function ComponentPlayground({ story }: { story: StoryDef }) {
       <div className="bg-surface-1 rounded-card border border-outline-subtle p-4">
         <h3 className="text-sm font-semibold text-on-surface mb-3">Controls</h3>
         <div className="flex flex-col">
-          {story.controls.map((control) => {
+          {story.controls.map((control, index) => {
             const value = props[control.prop] ?? story.defaultProps[control.prop];
+            const isLast = index === story.controls.length - 1;
 
             switch (control.type) {
               case 'select':
@@ -131,6 +167,7 @@ export function ComponentPlayground({ story }: { story: StoryDef }) {
                     control={control}
                     value={value}
                     onChange={(val) => updateProp(control.prop, val)}
+                    isLast={isLast}
                   />
                 );
               case 'boolean':
@@ -140,6 +177,7 @@ export function ComponentPlayground({ story }: { story: StoryDef }) {
                     control={control}
                     value={!!value}
                     onChange={(val) => updateProp(control.prop, val)}
+                    isLast={isLast}
                   />
                 );
               case 'text':
@@ -149,6 +187,7 @@ export function ComponentPlayground({ story }: { story: StoryDef }) {
                     control={control}
                     value={value ?? ''}
                     onChange={(val) => updateProp(control.prop, val)}
+                    isLast={isLast}
                   />
                 );
             }

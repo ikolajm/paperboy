@@ -32,3 +32,32 @@ The handoff ships tokens.css, components, stories, and a playground — but no v
 ## Component Height Mismatch (Non-Issue)
 
 Placeholder tokens in globals.css had approximated component heights (ch-3: 28px, ch-5: 36px, ch-7: 44px) that differed from the real generated values (ch-3: 32px, ch-5: 40px, ch-7: 48px). The real values are correct. This is just a note that placeholder stubs should either match or be clearly marked as non-representative.
+
+---
+
+## Icon Handling in Generated Components
+
+### 4. Icon Sizing Not Token-Based
+**Problem:** Generated components (Button, Toast, Alert) used static CSS classes on icon wrappers (`leading-icon shrink-0`) with no size scaling. Icons stayed the same size across sm/md/lg variants.
+**Recommendation:** Generate icon wrapper classes using the icon token scale (`size-icon-0`/`size-icon-1`/`size-icon-2`) mapped per component size variant.
+
+### 5. Story Icon Controls Don't Produce Icons
+**Problem:** Stories define `showLeadingIcon`/`showTrailingIcon` as boolean controls, but components expect `leadingIcon`/`trailingIcon` as ReactNode. The playground had no translation layer — toggling the boolean passed `true` to the component, which rendered nothing or errored.
+**Recommendation:** Either generate a `resolveIconProps` helper in the playground template, or change the story pattern to use a wrapper component that handles the boolean→ReactNode translation.
+
+---
+
+## Text Style Catalog Opportunity
+
+Current `.text-*` presets cover 9 styles (display through caption). Components use inline Tailwind text sizing (`text-xs`, `text-sm`, `text-base`, `text-lg`) rather than the preset classes. A wider preset catalog (e.g., `text-body-sm`/`text-body`/`text-body-lg` mapped to component size variants) would:
+- Reduce per-component Tailwind overrides
+- Let changes cascade from a single token edit
+- Make the relationship between typography and component sizing explicit
+
+**Recommendation:** Consider expanding the text preset catalog and using presets within generated component size maps instead of raw Tailwind text utilities.
+
+---
+
+## Native Select Limitations
+
+The native `<select>` element's dropdown position and styling is entirely browser/OS controlled. For the design system to have consistent dropdown behavior, a custom `Dropdown`/`Combobox` component is needed. This is outside the scope of the generated atom — it would be a molecule or organism built in the consuming project.
