@@ -1,0 +1,11 @@
+{
+  "primary": "#00FF88",
+  "secondary": null,
+  "accent": null,
+  "heading": "Space Grotesk",
+  "body": "IBM Plex Mono",
+  "edges": "sharp",
+  "density": "compact",
+  "shadowDepth": "flat",
+  "typeScale": "compact"
+}
