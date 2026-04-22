@@ -1,0 +1,21 @@
+{
+  "name": "paperboy",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "digest": "tsx scripts/run-digest.ts",
+    "check-endpoints": "tsx scripts/check-endpoints.ts config/config.json",
+    "fetch-rss": "tsx scripts/fetch-rss.ts",
+    "fetch-scores": "tsx scripts/fetch-scores.ts config/config.json",
+    "fetch-tmdb": "tsx scripts/fetch-tmdb.ts config/config.json config/credentials.json"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  }
+}

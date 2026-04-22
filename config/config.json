@@ -1,209 +1,203 @@
 {
-  "_readme": "Single configuration file. Topics, sources, social settings, podcast shows — everything lives here.",
-  "_fetch_priority": "Google News RSS and ESPN JSON API are the primary structured sources. TMDB for entertainment. Web search is last resort only.",
+  "version": 3,
+
+  "popular_today": {
+    "top_stories": {
+      "rss": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
+      "max": 5
+    },
+    "world": {
+      "rss": "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en",
+      "max": 5
+    },
+    "nation": {
+      "rss": "https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en",
+      "max": 5
+    }
+  },
+
+  "local_news": {
+    "max_stories_per_location": 5,
+    "locations": [
+      {
+        "label": "Stevensville, MI",
+        "rss": "https://news.google.com/rss/topics/CAAqHAgKIhZDQklTQ2pvSWJHOWpZV3hmZGpJb0FBUAE/sections/CAQiTkNCSVNORG9JYkc5allXeGZkakpDRUd4dlkyRnNYM1l5WDNObFkzUnBiMjV5Q2hJSUwyMHZNSFl5Y1RONkNnb0lMMjB2TUhZeWNUTW9BQSowCAAqLAgKIiZDQklTRmpvSWJHOWpZV3hmZGpKNkNnb0lMMjB2TUhZeWNUTW9BQVABUAE?hl=en-US&gl=US&ceid=US%3Aen"
+      },
+      {
+        "label": "Grand Rapids, MI",
+        "rss": "https://news.google.com/rss/topics/CAAqHAgKIhZDQklTQ2pvSWJHOWpZV3hmZGpJb0FBUAE/sections/CAQiTkNCSVNORG9JYkc5allXeGZkakpDRUd4dlkyRnNYM1l5WDNObFkzUnBiMjV5Q2hJSUwyMHZNSFk1Y1dkNkNnb0lMMjB2TUhZNWNXY29BQSowCAAqLAgKIiZDQklTRmpvSWJHOWpZV3hmZGpKNkNnb0lMMjB2TUhZNWNXY29BQVABUAE?hl=en-US&gl=US&ceid=US%3Aen"
+      }
+    ]
+  },
 
   "topics": {
-
-    "MMA": {
-      "category": "SPRT",
+    "US Politics": {
+      "category": "POL",
       "mode": "active",
-      "points_of_interest": [
-        "fighter withdraws or is replaced on a card",
-        "missed weight or weigh-in incident",
-        "title fight announced or cancelled",
-        "post-fight decision changed or overturned",
-        "suspension handed down in any promotion (UFC, ONE, boxing)",
-        "major fight result in any combat sport (UFC, boxing, BJJ superfight)"
-      ],
-      "search_terms": ["UFC", "MMA", "boxing", "BJJ", "ONE Championship"],
       "rss": [
-        "https://news.google.com/rss/search?q=UFC+OR+MMA+OR+boxing+OR+BJJ+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://www.espn.com/espn/rss/mma/news"
-      ],
-      "scores": true,
-      "scores_url": "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard",
-      "news_url": "https://now.core.api.espn.com/v1/sports/news?sport=mma&league=ufc&limit=10"
-    },
-
-    "F1": {
-      "category": "SPRT",
-      "mode": "active",
-      "points_of_interest": [
-        "driver penalty or disqualification",
-        "driver or team transfer / signing",
-        "race weekend within 5 days",
-        "technical directive or rule change",
-        "injury or unexpected absence"
-      ],
-      "search_terms": ["Formula 1", "F1", "Grand Prix", "FIA", "Formula One"],
-      "rss": [
-        "https://news.google.com/rss/search?q=Formula+1+OR+F1+OR+Grand+Prix+when:1d&hl=en-US&gl=US&ceid=US:en"
-      ],
-      "schedule_url": "https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard"
+        "https://news.google.com/rss/search?q=US+Politics&hl=en-US&gl=US&ceid=US%3Aen"
+      ]
     },
 
     "AI": {
       "category": "TECH",
       "mode": "active",
-      "points_of_interest": [
-        "new frontier model released or announced (GPT, Claude, Gemini, Llama, etc.)",
-        "major benchmark record or capability demonstration",
-        "agent framework release or significant capability milestone",
-        "new release or major update to Claude Code, Cursor, Copilot, or Codex",
-        "new MCP server or integration gaining traction",
-        "agentic coding workflow breakthrough or benchmark",
-        "Anthropic pricing, API change, or major capability update",
-        "new image or video generation model released (Kling, Runway, Midjourney, Flux, etc.)",
-        "major quality leap or new capability in generative media",
-        "tool shutdown or major pivot (e.g., Sora shutdown)",
-        "significant pricing or access change for a coding or AI tool"
-      ],
-      "search_terms": [
-        "AI model release", "AI agent", "LLM benchmark", "frontier model",
-        "Anthropic", "Claude AI", "Claude Code",
-        "Cursor AI", "GitHub Copilot", "OpenAI Codex", "MCP server",
-        "AI image generation", "AI video generation", "Midjourney", "Stable Diffusion"
-      ],
       "rss": [
-        "https://news.google.com/rss/search?q=%22AI+model%22+OR+%22AI+agent%22+OR+%22LLM%22+OR+%22frontier+model%22+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://news.google.com/rss/search?q=Anthropic+OR+%22Claude+AI%22+OR+%22Claude+Code%22+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://news.google.com/rss/search?q=%22Claude+Code%22+OR+%22Cursor+AI%22+OR+%22GitHub+Copilot%22+OR+%22OpenAI+Codex%22+OR+%22AI+coding%22+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://news.google.com/rss/search?q=%22AI+image+generation%22+OR+%22AI+video+generation%22+OR+Midjourney+OR+%22Stable+Diffusion%22+OR+%22Runway+ML%22+OR+%22Kling+AI%22+when:1d&hl=en-US&gl=US&ceid=US:en"
+        "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGRqTVhZU0FtVnVHZ0pWVXlnQVAB/sections/CAQiQ0NCQVNMQW9JTDIwdk1EZGpNWFlTQW1WdUdnSlZVeUlOQ0FRYUNRb0hMMjB2TUcxcmVpb0pFZ2N2YlM4d2JXdDZLQUEqKggAKiYICiIgQ0JBU0Vnb0lMMjB2TURkak1YWVNBbVZ1R2dKVlV5Z0FQAVAB?hl=en-US&gl=US&ceid=US%3Aen"
       ]
     },
 
-    "US Politics": {
-      "category": "POL",
-      "mode": "active",
-      "points_of_interest": [
-        "major legislation passed or failed in Congress",
-        "executive order signed or challenged",
-        "Supreme Court ruling or major case accepted",
-        "Senate confirmation vote",
-        "presidential action or White House announcement",
-        "major party or electoral development"
-      ],
-      "search_terms": ["Congress", "Senate vote", "House vote", "White House", "legislation", "executive order", "Supreme Court"],
+    "Cybersecurity": {
+      "category": "TECH",
+      "mode": "passive",
       "rss": [
-        "https://news.google.com/rss/search?q=Congress+OR+Senate+OR+%22White+House%22+when:1d&hl=en-US&gl=US&ceid=US:en"
+        "https://news.google.com/rss/topics/CAAqIggKIhxDQkFTRHdvSkwyMHZNRE5xWm01NEVnSmxiaWdBUAE?hl=en-US&gl=US&ceid=US%3Aen"
+      ]
+    },
+
+    "Science": {
+      "category": "SCI",
+      "mode": "passive",
+      "rss": [
+        "https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRFp0Y1RjU0FtVnVHZ0pWVXlnQVAB?hl=en-US&gl=US&ceid=US%3Aen"
+      ]
+    },
+
+    "Health": {
+      "category": "HLTH",
+      "mode": "passive",
+      "rss": [
+        "https://news.google.com/rss/topics/CAAqIQgKIhtDQkFTRGdvSUwyMHZNR3QwTlRFU0FtVnVLQUFQAQ?hl=en-US&gl=US&ceid=US%3Aen"
+      ]
+    },
+
+    "Combat Sports": {
+      "category": "SPRT",
+      "mode": "passive",
+      "rss": [
+        "https://www.espn.com/espn/rss/mma/news"
+      ]
+    },
+
+    "F1": {
+      "category": "SPRT",
+      "mode": "passive",
+      "rss": [
+        "https://www.espn.com/espn/rss/f1/news"
       ]
     },
 
     "NBA": {
       "category": "SPRT",
       "mode": "passive",
-      "points_of_interest": [
-        "trade or signing involving a followed team",
-        "playoff clinch or elimination for a followed team",
-        "suspension or injury to a key player on a followed team",
-        "record-breaking individual performance (50+ points, triple-double streak, etc.)"
-      ],
-      "search_terms": ["NBA", "basketball", "NBA trade", "NBA playoffs"],
       "rss": [
-        "https://news.google.com/rss/search?q=NBA+OR+basketball+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://www.espn.com/espn/rss/nba/news"
-      ],
-      "scores": true,
-      "followed_teams": [],
-      "scores_url": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
-      "standings_url": "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings"
+      ]
     },
 
     "NHL": {
       "category": "SPRT",
       "mode": "passive",
-      "points_of_interest": [
-        "trade deadline move affecting a followed team",
-        "playoff seeding change for a followed team",
-        "notable injury or suspension"
-      ],
-      "search_terms": ["NHL", "hockey", "NHL trade", "NHL playoffs"],
       "rss": [
-        "https://news.google.com/rss/search?q=NHL+OR+hockey+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://www.espn.com/espn/rss/nhl/news",
-        "https://www.sportsnet.ca/hockey/nhl/feed"
-      ],
-      "scores": true,
-      "followed_teams": [],
-      "scores_url": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard",
-      "standings_url": "https://site.api.espn.com/apis/v2/sports/hockey/nhl/standings",
-      "news_url": "https://now.core.api.espn.com/v1/sports/news?sport=hockey&league=nhl&limit=10"
+        "https://www.espn.com/espn/rss/nhl/news"
+      ]
     },
 
     "MLB": {
       "category": "SPRT",
       "mode": "passive",
-      "points_of_interest": [
-        "trade or signing",
-        "pennant race development",
-        "no-hitter, perfect game, or historic individual performance"
-      ],
-      "search_terms": ["MLB", "baseball", "MLB trade", "MLB playoffs"],
       "rss": [
-        "https://news.google.com/rss/search?q=MLB+OR+baseball+when:1d&hl=en-US&gl=US&ceid=US:en",
         "https://www.espn.com/espn/rss/mlb/news"
-      ],
-      "scores": true,
-      "followed_teams": [],
-      "scores_url": "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
-      "standings_url": "https://site.api.espn.com/apis/v2/sports/baseball/mlb/standings"
+      ]
     },
 
-    "College Sports": {
+    "NFL": {
       "category": "SPRT",
-      "mode": "active",
-      "_note": "Merged NCAAB, NCAAF, and college baseball. In-season sport naturally dominates the combined feed.",
-      "points_of_interest": [
-        "tournament upset or bracket-breaking result",
-        "conference tournament result",
-        "CFP rankings release or major movement",
-        "bowl game announcement or result",
-        "transfer portal signing involving a top program",
-        "head coach hire or firing",
-        "recruiting commitment from a top-ranked prospect",
-        "College World Series result or upset",
-        "player suspension or eligibility ruling"
-      ],
-      "search_terms": [
-        "NCAA basketball", "March Madness", "NCAA tournament", "NCAAB",
-        "college football", "CFP", "NCAAF", "College Football Playoff",
-        "college baseball", "NCAA baseball", "College World Series"
-      ],
+      "mode": "passive",
       "rss": [
-        "https://news.google.com/rss/search?q=%22March+Madness%22+OR+%22NCAA+tournament%22+OR+%22college+basketball%22+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://www.espn.com/espn/rss/ncb/news",
-        "https://news.google.com/rss/search?q=%22college+football%22+OR+CFP+OR+NCAAF+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://www.espn.com/espn/rss/ncf/news",
-        "https://news.google.com/rss/search?q=%22college+baseball%22+OR+%22NCAA+baseball%22+OR+%22College+World+Series%22+when:1d&hl=en-US&gl=US&ceid=US:en",
-        "https://www.espn.com/espn/rss/ncaa/news"
-      ],
-      "scores": true,
-      "followed_teams": [],
-      "scores_urls": {
-        "mens-college-basketball": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard",
-        "college-football": "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard",
-        "college-baseball": "https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard"
-      },
-      "standings_urls": {
-        "mens-college-basketball": "https://site.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/standings",
-        "college-football": "https://site.api.espn.com/apis/v2/sports/football/college-football/standings",
-        "college-baseball": "https://site.api.espn.com/apis/v2/sports/baseball/college-baseball/standings"
-      }
+        "https://www.espn.com/espn/rss/nfl/news"
+      ]
+    },
+
+    "College Basketball": {
+      "category": "SPRT",
+      "mode": "passive",
+      "rss": [
+        "https://www.espn.com/espn/rss/ncb/news"
+      ]
+    },
+
+    "College Football": {
+      "category": "SPRT",
+      "mode": "passive",
+      "rss": [
+        "https://www.espn.com/espn/rss/ncf/news"
+      ]
+    }
+
+  },
+
+  "scores": {
+
+    "NBA": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
+      "recaps": true,
+      "schedule": true,
+      "odds": false
+    },
+
+    "NHL": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard",
+      "recaps": true,
+      "schedule": true,
+      "odds": false
+    },
+
+    "MLB": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard",
+      "recaps": true,
+      "schedule": true,
+      "odds": false
+    },
+
+    "NFL": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard",
+      "recaps": true,
+      "schedule": true,
+      "odds": false
+    },
+
+    "UFC": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard",
+      "recaps": true,
+      "schedule": true,
+      "odds": false
+    },
+
+    "F1": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard",
+      "recaps": true,
+      "schedule": true,
+      "odds": false
+    },
+
+    "College Basketball": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard",
+      "recaps": true,
+      "schedule": false,
+      "odds": false
+    },
+
+    "College Football": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard",
+      "recaps": true,
+      "schedule": false,
+      "odds": false
     }
 
   },
 
   "podcasts": {
-    "settings": {
-      "discovery": {
-        "bluesky_mentions": true
-      },
-      "deep_dive": {
-        "transcript_sources": ["native", "youtube_captions", "show_notes"],
-        "include_timestamps": true,
-        "speaker_labels": true
-      }
-    },
     "shows": {
       "The Daily": {
         "rss": "https://feeds.simplecast.com/Sl5CSM3S",
@@ -248,64 +242,17 @@
     }
   },
 
-  "google_news_sections": {
-    "_comment": "All 8 Google News topic sections. Used by Popular Now (WORLD, NATION) and Category Trending (all 8). Fetched in one parallel batch.",
-    "top_stories": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
-    "feeds": {
-      "WORLD": "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en",
-      "NATION": "https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en",
-      "BUSINESS": "https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en",
-      "TECHNOLOGY": "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en",
-      "ENTERTAINMENT": "https://news.google.com/rss/headlines/section/topic/ENTERTAINMENT?hl=en-US&gl=US&ceid=US:en",
-      "SCIENCE": "https://news.google.com/rss/headlines/section/topic/SCIENCE?hl=en-US&gl=US&ceid=US:en",
-      "SPORTS": "https://news.google.com/rss/headlines/section/topic/SPORTS?hl=en-US&gl=US&ceid=US:en",
-      "HEALTH": "https://news.google.com/rss/headlines/section/topic/HEALTH?hl=en-US&gl=US&ceid=US:en"
-    },
-    "category_map": {
-      "WORLD": "POP",
-      "NATION": "POP",
-      "BUSINESS": "TECH",
-      "TECHNOLOGY": "TECH",
-      "ENTERTAINMENT": "ENT",
-      "SCIENCE": "TECH",
-      "SPORTS": "SPRT",
-      "HEALTH": "POP"
-    }
-  },
-
-  "google_trends_rss": "https://trends.google.com/trending/rss?geo=US",
-
-  "local_news": {
-    "_comment": "Google News location feeds. Add/remove locations as needed. URLs use Google News encoded topic/section format specific to each city/region.",
-    "max_stories_per_location": 4,
-    "locations": [
-      {
-        "label": "Stevensville, MI",
-        "rss": "https://news.google.com/rss/topics/CAAqHAgKIhZDQklTQ2pvSWJHOWpZV3hmZGpJb0FBUAE/sections/CAQiTkNCSVNORG9JYkc5allXeGZkakpDRUd4dlkyRnNYM1l5WDNObFkzUnBiMjV5Q2hJSUwyMHZNSFl5Y1RONkNnb0lMMjB2TUhZeWNUTW9BQSowCAAqLAgKIiZDQklTRmpvSWJHOWpZV3hmZGpKNkNnb0lMMjB2TUhZeWNUTW9BQVABUAE?hl=en-US&gl=US&ceid=US%3Aen"
-      },
-      {
-        "label": "Grand Rapids, MI",
-        "rss": "https://news.google.com/rss/topics/CAAqHAgKIhZDQklTQ2pvSWJHOWpZV3hmZGpJb0FBUAE/sections/CAQiTkNCSVNORG9JYkc5allXeGZkakpDRUd4dlkyRnNYM1l5WDNObFkzUnBiMjV5Q2hJSUwyMHZNSFk1Y1dkNkNnb0lMMjB2TUhZNWNXY29BQSowCAAqLAgKIiZDQklTRmpvSWJHOWpZV3hmZGpKNkNnb0lMMjB2TUhZNWNXY29BQVABUAE?hl=en-US&gl=US&ceid=US%3Aen"
-      }
-    ]
-  },
-
-  "popular_now": {
-    "_comment": "Popular Now uses google_news_sections (WORLD, NATION) + top_stories. No per-outlet RSS needed.",
-    "max_stories": 5,
-    "trusted_sources_only": true
-  },
-
-  "in_the_noise": {
-    "_comment": "Primary source: google_trends_rss. Supplemented by web search if fewer than 4 items.",
-    "max_stories": 5,
-    "label": "Trending online — not necessarily important",
-    "never_deep_dive": true
+  "opinions": {
+    "_note": "Opinion/editorial RSS feeds. Sporadic schedule — fetch all on every run, no schedule filtering.",
+    "feeds": [
+      "https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/opinion/rss.xml",
+      "https://www.theguardian.com/uk/commentisfree/rss"
+    ],
+    "max_stories": 5
   },
 
   "entertainment": {
     "tmdb": {
-      "_comment": "Primary entertainment source. Reads credentials.tmdb.api_key or credentials.tmdb.read_access_token from credentials.json.",
       "base_url": "https://api.themoviedb.org/3",
       "endpoints": {
         "now_playing": "/movie/now_playing?language=en-US&region=US",
@@ -313,19 +260,9 @@
         "trending_movies": "/trending/movie/week?language=en-US",
         "trending_tv": "/trending/tv/week?language=en-US",
         "on_the_air": "/tv/on_the_air?language=en-US"
-      }
-    },
-    "movies": {
-      "_comment": "TMDB is primary. Web search is fallback.",
-      "max_results": 4
-    },
-    "streaming": {
-      "_comment": "TMDB trending_tv and on_the_air are primary. Web search is fallback.",
-      "max_results": 4
-    },
-    "exclude_patterns": [
-      "twitch", "kick", "streaming creator", "vtuber", "stream highlights",
-      "youtube drama", "creator beef"
-    ]
+      },
+      "max_movies": 5,
+      "max_streaming": 5
+    }
   }
 }

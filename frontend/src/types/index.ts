@@ -1,4 +1,3 @@
-export * from "./common";
 export * from "./editorial";
 export * from "./podcasts";
 export * from "./entertainment";
