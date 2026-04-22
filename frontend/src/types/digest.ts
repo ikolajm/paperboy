@@ -4,4 +4,4 @@ export type {
   DigestSections,
   ScoresSection,
   DeepDiveRef as DeepDiveEntry,
-} from "../../../shared/types/digest";
+} from "@shared/types/digest";

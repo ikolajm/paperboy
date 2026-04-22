@@ -4,4 +4,4 @@ export type {
   FightCard as UFCCard,
   UfcRecaps as UFCRecaps,
   UfcSchedule as UFCSchedule,
-} from "../../../shared/types/digest";
+} from "@shared/types/digest";

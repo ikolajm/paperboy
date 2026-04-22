@@ -1,11 +1,14 @@
 import { readFile, readdir } from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
 import type { Digest } from "@/types";
 
-const DIGEST_ROOT = path.resolve(
-  process.cwd(),
-  process.env.DIGEST_PATH || "../digests"
-);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(__dirname, "../../..");
+
+const DIGEST_ROOT = process.env.DIGEST_PATH
+  ? path.resolve(process.env.DIGEST_PATH)
+  : path.join(REPO_ROOT, "digests");
 
 /** List all available digest dates, most recent first */
 export async function getDigestDates(): Promise<string[]> {

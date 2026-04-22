@@ -7,10 +7,13 @@ import {
   TabsTrigger,
   TabsContent,
 } from '@/components/atoms/Tabs';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/atoms/Card';
 import { Badge } from '@/components/atoms/Badge';
 import { EmptyState } from '@/components/atoms/EmptyState';
 import { Trophy, Radio, Clock } from 'lucide-react';
+import { GameCard } from './GameCard';
+import { ScheduledGameCard } from './ScheduledGameCard';
+import { UFCRecapCard } from './UFCRecapCard';
+import { F1RecapCard } from './F1RecapCard';
 
 function statusVariant(status: string) {
   switch (status) {
@@ -23,7 +26,6 @@ function statusVariant(status: string) {
     case 'no_games':
     case 'no_events':
     case 'no_race':
-      return 'neutral' as const;
     case 'out_of_season':
       return 'neutral' as const;
     default:
@@ -77,63 +79,7 @@ export function ScoreboardPanel({
       </TabsContent>
 
       <TabsContent value="recaps">
-        <div className="flex flex-col gap-4">
-          {scores.team_sports.recaps.map((recap) => (
-            <Card key={recap.sport} variant="outline" size="sm">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <CardTitle>{recap.sport}</CardTitle>
-                  <Badge variant={statusVariant(recap.status)} size="sm">
-                    {statusLabel(recap.status)}
-                  </Badge>
-                </div>
-                <CardDescription>
-                  {recap.games.length > 0
-                    ? `${recap.games.length} games`
-                    : 'No games'}
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          ))}
-
-          <Card variant="outline" size="sm">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <CardTitle>UFC</CardTitle>
-                <Badge
-                  variant={statusVariant(scores.ufc.recaps.status)}
-                  size="sm"
-                >
-                  {statusLabel(scores.ufc.recaps.status)}
-                </Badge>
-              </div>
-              <CardDescription>
-                {scores.ufc.recaps.cards.length > 0
-                  ? `${scores.ufc.recaps.cards.length} events`
-                  : 'No events'}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card variant="outline" size="sm">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <CardTitle>F1</CardTitle>
-                <Badge
-                  variant={statusVariant(scores.f1.recaps.status)}
-                  size="sm"
-                >
-                  {statusLabel(scores.f1.recaps.status)}
-                </Badge>
-              </div>
-              <CardDescription>
-                {scores.f1.recaps.weekends.length > 0
-                  ? `${scores.f1.recaps.weekends.length} race weekends`
-                  : 'No races'}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+        <RecapsContent scores={scores} />
       </TabsContent>
 
       <TabsContent value="schedule">
@@ -143,13 +89,86 @@ export function ScoreboardPanel({
   );
 }
 
-function ScheduleContent({ scores }: { scores: ScoresSection }) {
-  const teamScheduleCount = scores.team_sports.schedule.length;
-  const ufcScheduleCount = scores.ufc.schedule.cards.length;
-  const f1ScheduleCount = scores.f1.schedule.weekends.length;
-  const total = teamScheduleCount + ufcScheduleCount + f1ScheduleCount;
+function RecapsContent({ scores }: { scores: ScoresSection }) {
+  return (
+    <div className="flex flex-col gap-6">
+      {scores.team_sports.recaps.map((recap) => (
+        <div key={recap.sport} className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <h3 className="text-title-md font-semibold text-on-surface">
+              {recap.sport}
+            </h3>
+            <Badge variant={statusVariant(recap.status)} size="sm">
+              {statusLabel(recap.status)}
+            </Badge>
+          </div>
+          {recap.games.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {recap.games.map((game) => (
+                <GameCard key={game.id} game={game} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-body-sm text-on-surface-variant">
+              No games played.
+            </p>
+          )}
+        </div>
+      ))}
 
-  if (total === 0) {
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-title-md font-semibold text-on-surface">UFC</h3>
+          <Badge
+            variant={statusVariant(scores.ufc.recaps.status)}
+            size="sm"
+          >
+            {statusLabel(scores.ufc.recaps.status)}
+          </Badge>
+        </div>
+        {scores.ufc.recaps.cards.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {scores.ufc.recaps.cards.map((card) => (
+              <UFCRecapCard key={card.id} card={card} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-body-sm text-on-surface-variant">No events.</p>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <h3 className="text-title-md font-semibold text-on-surface">F1</h3>
+          <Badge
+            variant={statusVariant(scores.f1.recaps.status)}
+            size="sm"
+          >
+            {statusLabel(scores.f1.recaps.status)}
+          </Badge>
+        </div>
+        {scores.f1.recaps.weekends.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            {scores.f1.recaps.weekends.map((weekend) => (
+              <F1RecapCard key={weekend.id} weekend={weekend} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-body-sm text-on-surface-variant">No races.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ScheduleContent({ scores }: { scores: ScoresSection }) {
+  const hasTeamGames = scores.team_sports.schedule.some(
+    (s) => s.games.length > 0
+  );
+  const hasUfc = scores.ufc.schedule.cards.length > 0;
+  const hasF1 = scores.f1.schedule.weekends.length > 0;
+
+  if (!hasTeamGames && !hasUfc && !hasF1) {
     return (
       <EmptyState
         icon={<Clock />}
@@ -160,26 +179,43 @@ function ScheduleContent({ scores }: { scores: ScoresSection }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {ufcScheduleCount > 0 && (
-        <Card variant="outline" size="sm">
-          <CardHeader>
-            <CardTitle>UFC</CardTitle>
-            <CardDescription>
-              {ufcScheduleCount} upcoming events
-            </CardDescription>
-          </CardHeader>
-        </Card>
+    <div className="flex flex-col gap-6">
+      {scores.team_sports.schedule.map((sport) => {
+        if (sport.games.length === 0) return null;
+        return (
+          <div key={sport.sport} className="flex flex-col gap-2">
+            <h3 className="text-title-md font-semibold text-on-surface">
+              {sport.sport}
+            </h3>
+            <div className="flex flex-col gap-2">
+              {sport.games.map((game) => (
+                <ScheduledGameCard key={game.id} game={game} />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+
+      {hasUfc && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-title-md font-semibold text-on-surface">
+            UFC — Upcoming
+          </h3>
+          {scores.ufc.schedule.cards.map((card) => (
+            <UFCRecapCard key={card.id} card={card} />
+          ))}
+        </div>
       )}
-      {f1ScheduleCount > 0 && (
-        <Card variant="outline" size="sm">
-          <CardHeader>
-            <CardTitle>F1</CardTitle>
-            <CardDescription>
-              {f1ScheduleCount} upcoming race weekends
-            </CardDescription>
-          </CardHeader>
-        </Card>
+
+      {hasF1 && (
+        <div className="flex flex-col gap-2">
+          <h3 className="text-title-md font-semibold text-on-surface">
+            F1 — Upcoming
+          </h3>
+          {scores.f1.schedule.weekends.map((weekend) => (
+            <F1RecapCard key={weekend.id} weekend={weekend} />
+          ))}
+        </div>
       )}
     </div>
   );

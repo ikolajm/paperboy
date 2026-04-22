@@ -4,7 +4,7 @@ import type { DigestMeta } from '@/types';
 import { TopBar } from '@/components/atoms/TopBar';
 import { Badge } from '@/components/atoms/Badge';
 import { cn } from '@/components/atoms/cn';
-import { Newspaper, Trophy } from 'lucide-react';
+import { Newspaper, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type ActiveTab = 'news' | 'scores';
 
@@ -22,14 +22,27 @@ export function DigestTopBar({
   meta,
   activeTab,
   onTabChange,
+  onPrevDate,
+  onNextDate,
 }: {
   meta: DigestMeta | null;
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
+  onPrevDate?: () => void;
+  onNextDate?: () => void;
 }) {
   return (
     <TopBar className="justify-between shrink-0">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onPrevDate}
+          disabled={!onPrevDate}
+          className="p-1 rounded-md text-on-surface-variant hover:text-on-surface disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          title="Previous day"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
         {meta ? (
           <>
             <span className="font-semibold">{formatHeaderDate(meta)}</span>
@@ -40,6 +53,15 @@ export function DigestTopBar({
         ) : (
           <span className="text-on-surface-variant">No digest loaded</span>
         )}
+        <button
+          type="button"
+          onClick={onNextDate}
+          disabled={!onNextDate}
+          className="p-1 rounded-md text-on-surface-variant hover:text-on-surface disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          title="Next day"
+        >
+          <ChevronRight className="size-4" />
+        </button>
       </div>
       <div className="flex items-center rounded-pill border border-outline-subtle p-0.5">
         <TabButton

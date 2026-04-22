@@ -1,211 +1,354 @@
-# Dashboard Build — Procedural TODO
+# Dashboard TODO
 
-Step-by-step list to scaffold a Next.js dashboard that reads `digest.json`
-from the digests folder and renders a local news dashboard.
-
----
-
-## Phase 1: Project Setup
-
-- [ ] **1.1** Initialize Next.js app in `dashboard/` with App Router, TypeScript, Tailwind CSS.
-  ```
-  npx create-next-app@latest dashboard --typescript --tailwind --app --src-dir
-  ```
-- [ ] **1.2** Add a `DIGEST_PATH` env variable in `.env.local` pointing to the digests folder:
-  ```
-  DIGEST_PATH=../digests
-  ```
-- [ ] **1.3** Create TypeScript types for the `digest.json` schema (`src/types/digest.ts`). Every section, story, score, podcast, noise item gets a type. Derive from the schema in `context/WRITE.md`.
-- [ ] **1.4** Write a data-access utility (`src/lib/digest.ts`) that:
-  - Reads `{DIGEST_PATH}/YYYY-MM-DD/digest.json` from the filesystem
-  - Exposes `getLatestDigest()` — finds the most recent date folder
-  - Exposes `getDigest(date: string)` — reads a specific day
-  - Exposes `getDeepDive(date: string, id: string)` — reads a deep-dive markdown file
-  - Handles missing files gracefully (returns null)
+Status as of 2026-04-22. Checked items are done. Unchecked items are next.
 
 ---
 
-## Phase 2: API Routes
+## Done
 
-- [ ] **2.1** `GET /api/digest` — returns the latest `digest.json`. Optional `?date=YYYY-MM-DD` query param for historical days.
-- [ ] **2.2** `GET /api/digest/dates` — returns an array of available digest dates (list subdirectories in digests/).
-- [ ] **2.3** `GET /api/deep-dive/[id]` — reads `deep-dives/[ID].md`, parses frontmatter-style headers into JSON, returns `{ meta, content }`. Optional `?date=` param.
-- [ ] **2.4** `GET /api/scores` — calls `fetch_scores.py --json` directly for live scores (bypasses digest, real-time data).
-
----
-
-## Phase 3: Layout & Shell
-
-- [ ] **3.1** Create the root layout (`src/app/layout.tsx`):
-  - Dark/light mode toggle
-  - Sidebar nav: Daily Digest, Scores, Deep Dives, Settings
-  - Date picker in header (navigate between digest days)
-  - Story count badge from `meta.story_count`
-- [ ] **3.2** Create the main digest page (`src/app/page.tsx`):
-  - Fetch digest data server-side via the data-access utility
-  - Render section components in digest order (see Phase 4)
-  - Show "No digest for today" fallback if no `digest.json` exists
-
----
-
-## Phase 4: Section Components
-
-Build each component to render its `digest.json` section. All components
-receive typed props from the parent page.
-
-- [ ] **4.1** `<DigestHeader />` — date, day of week, story count, run mode badge, last run time. Source: `meta`.
-- [ ] **4.2** `<TopicSection />` — reusable for both For You and On Your Radar. Props: topic name, category, mode, stories array, calendar event, cross-refs, quiet flag. Renders:
-  - Topic name as section header with category badge (SPRT, TECH, POL)
-  - Story cards (4.3) in a list
-  - Calendar event note if present
-  - Cross-ref podcast note if present
-  - "Nothing found today" for quiet passive topics
-- [ ] **4.3** `<StoryCard />` — single story. Props: id, title, url, snippet, source, trending flag, deep_dive_eligible. Renders:
-  - ID badge (e.g., SPRT-01)
-  - Headline as link
-  - Snippet text
-  - Source label
-  - Trending indicator if true
-  - "Go deeper" button if deep_dive_eligible
-- [ ] **4.4** `<ScoresTable />` — sports scores. Props: scores section from digest.json. Renders:
-  - Sport name headers
-  - Game rows: away vs home, score, notable column
-  - Status handling: games_played, no_games, playoffs badge, out_of_season (omit)
-- [ ] **4.5** `<UpcomingGames />` — today's slate. Props: upcoming section. Renders:
-  - Sport name headers
-  - Game rows: matchup, time, broadcast, odds/line, watch priority star
-  - Omit if no upcoming games
-- [ ] **4.6** `<EntertainmentSection />` — movies + streaming. Props: entertainment section. Renders:
-  - "In Theatres" subsection with movie cards (title, score, snippet)
-  - "Streaming Buzz" subsection with show cards
-  - Omit entire section if both empty
-- [ ] **4.7** `<PodcastSection />` — following + discovered. Props: podcasts array. Renders:
-  - Show name, episode title, duration, date
-  - Snippet
-  - Episode URL link + YouTube link if available
-  - "Get transcript" button for deep-dive-eligible episodes
-- [ ] **4.8** `<PopularNow />` — trending credible stories. Props: popular_now array. Renders:
-  - Same layout as StoryCard but in a compact list
-- [ ] **4.9** `<LocalNews />` — location-grouped stories. Props: local section. Renders:
-  - Location label headers (Stevensville, MI / Grand Rapids, MI)
-  - Story list per location
-  - Omit if no locations or all empty
-- [ ] **4.10** `<NoiseSection />` — trending online. Props: noise array. Renders:
-  - Keyword (bold) + one-sentence context
-  - No links, no deep-dive buttons
-- [ ] **4.11** `<DeepDiveList />` — existing deep dives. Props: deep_dives array. Renders:
-  - List of completed deep-dive links (ID + title)
-  - Links to `/deep-dive/[id]` page
+- [x] Next.js app in `frontend/` with App Router, TypeScript, Tailwind v4
+- [x] Root convenience scripts (`npm run dev`, `npm run build` delegate to frontend)
+- [x] `turbopack.root` set in `next.config.ts` (resolves dual-lockfile issue)
+- [x] Digest path resolves from repo root via `__dirname` (no fragile `../digests`)
+- [x] `@shared/*` tsconfig alias — all type imports use `@shared/types/digest`
+- [x] Data-access layer (`src/lib/digest.ts`): getLatestDigest, getDigest, getDeepDive, getDigestDates
+- [x] Shared types re-exported in `src/types/`
+- [x] Design token system (`tokens.css`): 200+ CSS variables, dark/light themes
+- [x] Theme provider with light/dark/system + localStorage persistence
+- [x] 43 atom components with CVA variants
+- [x] Layout shell: DigestShell, DigestSidebar, DigestTopBar
+- [x] NewsFeed with "All" + additive category filter chips
+- [x] ScoreboardPanel: Recaps/Schedule/Live tabs wired to real data
+- [x] StoryCard, TopicSection, PopularTodaySection, PodcastSection, EntertainmentSection, OpinionsSection, LocalNewsSection
+- [x] GameCard, ScheduledGameCard, UFCRecapCard, F1RecapCard
+- [x] Date navigation: URL-based `/?date=`, prev/next arrows, sidebar selection
+- [x] Deep dive route `/deep-dive/[date]/[id]` with markdown rendering
+- [x] Deep dive links wired into StoryCard, PodcastCard, EntertainmentCard
 
 ---
 
-## Phase 5: Deep Dive Page
+## Phase 6: Data Enrichment (by source)
 
-- [ ] **5.1** Create `/deep-dive/[id]/page.tsx`:
-  - Fetch deep-dive markdown via API route
-  - Parse markdown to HTML (use `react-markdown` or `next-mdx-remote`)
-  - Render: title, metadata header, summary, key points, full story, other coverage, context
-  - Back link to digest
+The pipeline extracts the minimum from each source. This phase adds the fields
+that would make the dashboard feel complete. Each source is independent — they
+can be tackled in any order.
 
----
+### 6.1 — Google News RSS (Popular Today, Local, Opinions)
 
-## Phase 6: Date Navigation & History
+**Current state:** Title, redirect URL, empty snippet, source name.
+**Files:** `scripts/fetch-rss.ts`, `scripts/digest/assemble-popular.ts`,
+`scripts/digest/assemble-opinions.ts`
 
-- [ ] **6.1** Date picker component that lists available digest dates (from `/api/digest/dates`).
-- [ ] **6.2** Previous/next day arrows in the header.
-- [ ] **6.3** URL structure: `/?date=2026-03-29` — default to latest if no date param.
-
----
-
-## Phase 7: Polish & Interactivity
-
-- [ ] **7.1** Collapsible sections — each major section can expand/collapse. Sports scores default collapsed if >8 games.
-- [ ] **7.2** Category filter — toggle which categories (SPRT, TECH, POL, ENT) are visible.
-- [ ] **7.3** Search/filter within the digest — find stories by keyword.
-- [ ] **7.4** Auto-refresh — poll for `digest.json` changes every 5 minutes (or after a digest run).
-- [ ] **7.5** Responsive layout — mobile-friendly cards and tables.
-- [ ] **7.6** Watch priority highlighting — visually distinguish ⭐ games in upcoming slate.
-
----
-
-## Phase 8: Live Scores Widget (Optional)
-
-- [ ] **8.1** Sidebar or top-bar widget that calls `/api/scores` for real-time game data.
-- [ ] **8.2** Auto-refresh every 60 seconds during game hours.
-- [ ] **8.3** Show live game indicators (in-progress vs. final vs. upcoming).
-
----
-
-## Dependency Summary
-
-| Package | Purpose |
-|---------|---------|
-| `next` | Framework |
-| `typescript` | Type safety |
-| `tailwindcss` | Styling |
-| `react-markdown` | Render deep-dive .md files |
-| `date-fns` | Date formatting & navigation |
-| `lucide-react` | Icons (optional) |
-
----
-
-## Data Flow
+**Key discovery:** Google News `<description>` is NOT a snippet — it's an
+`<ol>` of 3–5 related articles from different outlets, each with their own
+headline, Google News redirect URL, and outlet name. No thumbnails or
+article preview text exist in the RSS. The `<source url="">` attribute
+provides the primary outlet's domain.
 
 ```
-digest pipeline (Claude)
-    │
-    ▼
-digests/YYYY-MM-DD/digest.json   ← written by WRITE stage
-    │
-    ▼
-dashboard/src/lib/digest.ts      ← reads from filesystem
-    │
-    ▼
-/api/digest                      ← Next.js API route
-    │
-    ▼
-page.tsx → Section Components    ← renders the dashboard
+Google News RSS <item>
+├── <title>        → headline (with " - Outlet" suffix)
+├── <link>         → Google News redirect URL
+├── <source url="https://theguardian.com">  → outlet domain
+├── <pubDate>      → publish time
+└── <description>  → HTML <ol> of related coverage:
+    ├── <li><a href="redirect">Headline A</a> <font>Outlet A</font></li>
+    ├── <li><a href="redirect">Headline B</a> <font>Outlet B</font></li>
+    └── ... (3–5 items)
 ```
+
+#### Pipeline changes (fetch-rss.ts)
+
+- [ ] **6.1.1 — Parse related articles from `<description>` HTML**
+  Extract each `<li>` into `{ headline, url, outlet }`. Add a new type
+  `RelatedArticle` and store as `related_articles?: RelatedArticle[]`
+  on `RssEntry`. Only applies when `google_news_redirect` is true —
+  non-Google feeds still use `truncateToSentences` for real snippets.
+
+- [ ] **6.1.2 — Capture `<source url="">` attribute as `source_url`**
+  Google News includes the outlet's real domain in `<source url="...">`.
+  Add `source_url?: string` to `RssEntry`. Enables outlet favicons on
+  the dashboard and gives deep dives a starting point for the real article.
+
+#### Type & assembly changes
+
+- [ ] **6.1.3 — Add `RelatedArticle` type to `shared/types/digest.ts`**
+  `{ headline: string; url: string; outlet: string }`.
+  Add `related_articles?: RelatedArticle[]` to `PopularStory`,
+  `LocalStory`, and `OpinionEntry`.
+
+- [ ] **6.1.4 — Add `source_url` to `PopularStory`, `LocalStory`, `OpinionEntry`**
+  Thread `source_url` from `RssEntry` through assembly scripts.
+
+- [ ] **6.1.5 — Add `date` to `PopularStory` and `OpinionEntry`**
+  `RssEntry` has the date but assembly scripts drop it. Add `date?: string`
+  so the dashboard can show relative time ("2h ago").
+
+#### Dashboard changes
+
+- [ ] **6.1.6 — Show "Also covered by" row in StoryCard**
+  When `related_articles` exists, render outlet names below the headline.
+  Optional: outlet favicon via `google.com/s2/favicons?domain=...`.
+  Article count doubles as an importance signal (5 outlets = major story).
+
+- [ ] **6.1.7 — Show relative time on stories that have `date`**
+  Add `formatTimeAgo` utility. Display next to source label.
+
+#### Media bias layer
+
+- [ ] **6.1.8 — Add media bias reference data**
+  Maintain a lookup of outlet domain → political lean (e.g. left, lean-left,
+  center, lean-right, right) based on established charts (AllSides,
+  Ad Fontes Media, MBFC). Store as a static JSON map in `config/` keyed
+  by domain. Could also include a factual reporting rating (high, mixed,
+  low) for credibility signal.
+
+- [ ] **6.1.9 — Surface bias in "Also covered by" row**
+  When rendering related articles, show a subtle bias indicator per outlet
+  (color dot, label, or position on a mini spectrum bar). Helps the reader
+  see if a story is only covered by one side, or if coverage spans the
+  spectrum. Not editorializing — just showing the data.
+
+#### Deep dive payoff
+
+- [ ] **6.1.10 — Use `related_articles` in deep dive pipeline**
+  Update `DEEP-DIVE-NEWS.md` instructions: when related articles exist,
+  skip the Tier 2 search step — fetch all related URLs directly in parallel.
+  Tier 3 cross-referencing becomes automatic since we already have each
+  outlet's headline + URL. This enables fully scripted deep dives without
+  agent-driven web search.
+
+### 6.2 — ESPN RSS Feeds (Sports topics in For You / On Your Radar)
+
+**Current state:** Title, direct ESPN URL, real 1-2 sentence snippet,
+author-as-source, date. Cleanest data we get — no redirect URLs, no HTML
+description junk.
+**Files:** `scripts/fetch-rss.ts`, `scripts/digest/assemble-topics.ts`
+
+Note: Non-sports topics (Politics, AI, Cybersecurity, Science, Health) use
+Google News topic feeds — identical structure to Popular Today. All 6.1
+items (related articles, source_url, bias) apply to those feeds too.
+
+- [ ] **6.2.1 — Separate author from source**
+  ESPN RSS puts the author in `dc:creator` (e.g. "Jamal Collier"). We
+  store it as `source`, but it's really the author — the outlet is always
+  "ESPN". Add `author?: string` to `RssEntry` and `Story`. When
+  `dc:creator` is present AND the feed URL is `espn.com`, set
+  `source = "ESPN"` and `author = dc:creator`.
+
+- [ ] **6.2.2 — ESPN feeds have no images**
+  Confirmed: no `<media:content>` or `<enclosure>` in ESPN RSS. If we
+  want article thumbnails for sports stories, we'd need to fetch the
+  ESPN article page and scrape `<og:image>`. Consider as a low-priority
+  enhancement — the direct URL at least lets us link out cleanly.
+
+- [ ] **6.2.3 — Populate `calendar_event` in TopicSection**
+  The field exists in the type but is always `null`. Add a `calendar`
+  section to topic config (e.g. `"NBA": [{ "label": "NBA Draft",
+  "date": "2026-06-25" }]`). Populate during assembly by checking
+  upcoming events within N days.
+
+- [ ] **6.2.4 — Populate `cross_refs` in TopicSection**
+  Also always empty. During assembly, scan podcast entries for title
+  keywords matching the topic name. If a match is found, add a cross-ref
+  linking the podcast to the topic section.
+
+### 6.3 — Podcasts
+
+**Current state:** Show name, episode title, duration, 2-sentence snippet,
+episode page URL. Richest raw source — RSS has full HTML descriptions,
+artwork at both show and episode level, audio URLs, curated summaries.
+**Files:** `scripts/fetch-rss.ts`, `scripts/digest/assemble-podcasts.ts`
+**Source schema:** `shared/types/sources/podcast-rss.ts`
+
+Config already has per-show `youtube_channel` and `transcript_page` for
+some shows. YouTube links do NOT appear in RSS episode descriptions —
+they'd need to be constructed from `youtube_channel` or omitted.
+
+#### Pipeline changes (fetch-rss.ts + assemble-podcasts.ts)
+
+- [ ] **6.3.1 — Extract episode artwork**
+  RSS provides `<itunes:image href="...">` per episode (high-res) and
+  `<media:thumbnail url="...">` (smaller, ~1280x720). Fallback to
+  channel-level `<itunes:image>` (show art) if episode art is missing.
+  Add `image_url?: string` to `RssEntry`. Store on `PodcastEntry`.
+
+- [ ] **6.3.2 — Use `itunes:summary` instead of truncated description**
+  We currently truncate the full HTML `<description>` to 2 sentences.
+  But `<itunes:summary>` already provides a curated short summary
+  (typically < 200 chars). Use it when available — better quality than
+  mechanical truncation. Fallback to `<itunes:subtitle>` → truncated
+  `<description>`.
+
+- [ ] **6.3.3 — Thread `transcript_page` from config to PodcastEntry**
+  Config has `transcript_page` per show (e.g. nytimes.com/column/the-daily).
+  Pass through to `PodcastEntry` as `transcript_url?: string` so the
+  dashboard can show a direct "Read transcript" link. This is the show's
+  transcript page, not per-episode — but still useful.
+
+- [ ] **6.3.4 — Thread `youtube_channel` from config to PodcastEntry**
+  Config has `youtube_channel` per show. Pass through as
+  `youtube_url?: string`. This links to the show's YouTube channel,
+  not a specific episode. Per-episode YouTube URLs aren't available
+  in RSS and would require YouTube API search to resolve.
+
+- [ ] **6.3.5 — Extract audio URL from `<enclosure>`**
+  RSS provides `<enclosure url="..." type="audio/mpeg">` — the direct
+  MP3 link. Store as `audio_url?: string` on `PodcastEntry`. Enables
+  an inline audio player on the dashboard in the future.
+
+#### Type changes
+
+- [ ] **6.3.6 — Extend `PodcastEntry` in `shared/types/digest.ts`**
+  Add: `image_url?: string`, `transcript_url?: string`,
+  `youtube_url?: string`, `audio_url?: string`.
+
+#### Dashboard changes
+
+- [ ] **6.3.7 — PodcastCard: show artwork, YouTube link, transcript link**
+  Display episode/show artwork. Add YouTube and transcript action buttons
+  when URLs are present. Better snippet from itunes:summary.
+
+### 6.4 — Entertainment (TMDB)
+
+**Current state:** Title, 200-char overview, vote_average, release/air date.
+No images, no genres, no runtime.
+**Files:** `scripts/fetch-tmdb.ts`, `scripts/digest/assemble-entertainment.ts`
+**Source schema:** `shared/types/sources/tmdb.ts`
+
+TMDB list endpoints already return `poster_path`, `backdrop_path`, and
+`genre_ids[]` — we just don't extract them. Genre ID → name mapping is
+in the source schema file. Poster URLs are trivial: prepend
+`https://image.tmdb.org/t/p/w342`. Runtime requires a per-item detail
+API call (not in list responses).
+
+#### Pipeline changes (fetch-tmdb.ts + assemble-entertainment.ts)
+
+- [ ] **6.4.1 — Extract poster image**
+  `poster_path` is already in the list response. Prepend the TMDB image
+  base URL (`https://image.tmdb.org/t/p/w342`) and store as `poster_url`
+  on `MovieEntry` / `StreamingEntry`. No additional API call needed.
+
+- [ ] **6.4.2 — Extract genres**
+  `genre_ids[]` is already in the list response. Map through the static
+  `TMDB_GENRES` lookup in `shared/types/sources/tmdb.ts`. Store as
+  `genres?: string[]` on `MovieEntry` / `StreamingEntry`. No additional
+  API call needed.
+
+- [ ] **6.4.3 — Extract vote_count alongside vote_average**
+  `vote_count` is already in the list response. A 7.0 with 10,000 votes
+  means more than a 7.0 with 50 votes. Store as `vote_count?: number`.
+  No additional API call needed.
+
+- [ ] **6.4.4 — Extend overview truncation**
+  Currently hard-capped at 200 chars in assembly. Raise to 350 or remove
+  the cap entirely — the dashboard's `line-clamp-2` handles display
+  truncation. Let the data carry the full overview.
+
+- [ ] **6.4.5 — Extract runtime (low priority)**
+  Not available in list endpoints. Would require one `/movie/{id}` or
+  `/tv/{id}` detail call per item (~10 items = 10 API calls). Consider
+  batching or caching. Store as `runtime?: string` ("2h 15m" / "8 eps").
+  **Skip unless we find the extra calls worth it.**
+
+#### Type changes
+
+- [ ] **6.4.6 — Extend `MovieEntry` and `StreamingEntry` in digest.ts**
+  Add: `poster_url?: string`, `genres?: string[]`, `vote_count?: number`.
+
+#### Dashboard changes
+
+- [ ] **6.4.7 — MediaCard: show poster, genre badges, vote count**
+  Display poster image to the left of the text content. Render genres as
+  small badges below the title. Show vote_count as a credibility indicator
+  next to the score badge.
+
+### 6.5 — Local News
+
+**Current state:** Same Google News RSS pipeline — empty snippets, redirect
+URLs, no images. Inherits all limitations from 6.1.
+**Files:** `scripts/digest/assemble-local.ts`
+**Source schema:** `shared/types/sources/google-news.ts` (same source)
+
+Local feeds are Google News search feeds (`/rss/search?q=...`), which
+give a SINGLE `<a>` in `<description>` (no related articles `<ol>`).
+So `related_articles` extraction (6.1.1) won't help here — but
+`source_url` (6.1.2) and `date` (6.1.5) will.
+
+- [ ] **6.5.1 — Thread `source_url` and `date` to `LocalStory`**
+  Once 6.1.2 and 6.1.5 land on `RssEntry`, ensure `assemble-local.ts`
+  passes them through. Add `source_url?: string` and `date?: string`
+  to `LocalStory` type.
+
+- [ ] **6.5.2 — Add `deep_dive_eligible` to `LocalStory`**
+  Currently missing from the type. Set to `true` when the story has a
+  URL. Enables deep dive links on local stories.
 
 ---
 
-## File Structure
+## Phase 7: Story Presentation Refresh
+
+After data enrichment lands, update the dashboard components to use the new
+fields. This phase depends on Phase 6 delivering richer data.
+
+- [ ] **7.1** StoryCard: show thumbnail image (left or top), relative time, author
+- [ ] **7.2** PodcastCard: show artwork, guest names, YouTube link, transcript link
+- [ ] **7.3** MediaCard (entertainment): show poster image, genres badge row, runtime
+- [ ] **7.4** Revisit card density and layout — with images and more metadata,
+      cards may need a horizontal layout or grid view instead of stacked list
+- [ ] **7.5** Add relative time display utility (`formatTimeAgo`) for all dated items
+
+---
+
+## Phase 8: Remaining Polish & Features
+
+- [ ] **8.1** Responsive layout — mobile sidebar drawer, stacked cards
+- [ ] **8.2** Auto-refresh — poll for digest changes (useful after running a digest)
+- [ ] **8.3** Search/filter within digest by keyword
+- [ ] **8.4** Live scores tab — call ESPN endpoints directly for in-progress games
+
+---
+
+## Data Shape Reference
 
 ```
-dashboard/
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx           ← shell, nav, date picker
-│   │   ├── page.tsx             ← main digest view
-│   │   ├── deep-dive/
-│   │   │   └── [id]/
-│   │   │       └── page.tsx     ← deep dive reader
-│   │   └── api/
-│   │       ├── digest/
-│   │       │   └── route.ts     ← GET digest.json
-│   │       ├── deep-dive/
-│   │       │   └── [id]/
-│   │       │       └── route.ts ← GET deep-dive markdown
-│   │       └── scores/
-│   │           └── route.ts     ← GET live scores
-│   ├── components/
-│   │   ├── DigestHeader.tsx
-│   │   ├── TopicSection.tsx
-│   │   ├── StoryCard.tsx
-│   │   ├── ScoresTable.tsx
-│   │   ├── UpcomingGames.tsx
-│   │   ├── EntertainmentSection.tsx
-│   │   ├── PodcastSection.tsx
-│   │   ├── PopularNow.tsx
-│   │   ├── LocalNews.tsx
-│   │   ├── NoiseSection.tsx
-│   │   └── DeepDiveList.tsx
-│   ├── lib/
-│   │   └── digest.ts            ← filesystem data access
-│   └── types/
-│       └── digest.ts            ← TypeScript interfaces
-├── .env.local
-├── package.json
-├── tailwind.config.ts
-└── next.config.ts
+digest.json
+├── meta: { date, day_of_week, story_count, run_mode, last_run }
+└── sections
+    ├── popular_today: { top_stories[], world[], nation[] }
+    ├── for_you: TopicSection[]
+    ├── on_your_radar: TopicSection[]
+    ├── scores
+    │   ├── team_sports: { recaps: SportRecaps[], schedule: SportSchedule[] }
+    │   ├── ufc: { recaps: UfcRecaps, schedule: UfcSchedule }
+    │   └── f1: { recaps: F1Recaps, schedule: F1Schedule }
+    ├── entertainment: { movies[], streaming[] }
+    ├── podcasts: PodcastEntry[]
+    ├── opinions: OpinionEntry[]
+    └── local: { locations: LocalLocation[] }
+```
+
+## Component Tree
+
+```
+DigestShell
+├── DigestSidebar (date tree, theme toggle)
+├── DigestTopBar (date display, story count, News/Scores tabs, prev/next arrows)
+└── main
+    ├── NewsFeed (when News tab active)
+    │   ├── Filter chips (All + per-category, additive selection)
+    │   ├── PopularTodaySection → StoryCard[]
+    │   ├── TopicSection[] (for_you) → StoryCard[]
+    │   ├── TopicSection[] (on_your_radar) → StoryCard[]
+    │   ├── PodcastSection → PodcastCard[]
+    │   ├── EntertainmentSection → MediaCard[]
+    │   ├── OpinionsSection → StoryCard[]
+    │   └── LocalNewsSection → StoryCard[]
+    ├── ScoreboardPanel (when Scores tab active)
+    │   ├── Recaps tab → GameCard[], UFCRecapCard, F1RecapCard
+    │   ├── Schedule tab → ScheduledGameCard[]
+    │   └── Live tab (future)
+    └── DeepDive (/deep-dive/[date]/[id])
+        ├── Sticky header with back link
+        └── Markdown article (react-markdown + remark-gfm)
 ```

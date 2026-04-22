@@ -9,4 +9,4 @@ export type {
   LocalStory,
   PopularStory,
   OpinionEntry as Opinion,
-} from "../../../shared/types/digest";
+} from "@shared/types/digest";
