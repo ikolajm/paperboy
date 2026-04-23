@@ -96,6 +96,12 @@ Google News RSS <item>
 
 #### Media identity & bias (deferred to Phase 9)
 
+Bias badges (lean + factual) on StoryCard and related articles are
+implemented but commented out pending design decisions on density and
+placement. The data pipeline, lookup utilities, and media-bias.json are
+all in place — this is purely a UI/UX question of where bias info adds
+value without creating card bloat. See Phase 9 and 7.5 for the path forward.
+
 #### Deep dive payoff
 
 - [ ] **6.1.10 — Use `related_articles` in deep dive pipeline**
@@ -290,28 +296,39 @@ Update dashboard components to use enriched data. In progress.
 - [x] Headline is the link, removed redundant external link icon
 - [x] `cardSize` / `contentSize` props for density control
 - [ ] Fine-tune alignment, spacing, and visual hierarchy (manual pass)
+- [ ] Revisit bias badge placement (deferred — see Phase 9)
+- [ ] Revisit deep dive button flow (deferred — see 7.2)
+- [ ] Clean pass on card density across all screen sizes
 
-### 7.2 — Deep dive flow (needs design)
+### 7.2 — Deep dive flow (deferred)
 
-The "Generate deep dive" action varies by section type and needs a thought-
-through user flow before implementation.
+Buttons are commented out until the interaction model is decided.
+The deep dive page route (`/deep-dive/[date]/[id]`) still works via URL.
 
-- [ ] **7.2.1 — Define deep dive flows per section**
-  News stories: fetch article + related articles → synthesize → write .md
+- [ ] **7.2.1 — Build slide-over drawer component**
+  Primary deep dive interaction. Opens over the digest without navigating
+  away. Renders markdown content. Has "View full page" link to the existing
+  route. Keeps the user in context.
+
+- [ ] **7.2.2 — "Read deep dive" → opens drawer**
+  When a deep dive file exists, clicking opens the drawer with content.
+  Drawer fetches via `getDeepDive(date, id)` (server action or client fetch).
+
+- [ ] **7.2.3 — "Generate deep dive" → drawer with generation flow**
+  Opens drawer with confirmation + estimated time. Triggers generation.
+  Shows loading state → content appears when done.
+  For stories with `related_articles`: can be fully scripted (6.1.10).
+  For podcasts/entertainment: may still require agent involvement.
+
+- [ ] **7.2.4 — Define per-section deep dive flows**
+  News: fetch article + related articles → synthesize → write .md
   Podcasts: locate transcript → process → write .md
   Entertainment: fetch reviews + details → synthesize → write .md
   Each has different latency and data requirements.
 
-- [ ] **7.2.2 — Generation UX**
-  "Generate deep dive" currently shows as muted text — not actionable.
-  Decide: does clicking it trigger a server action? Show a loading state?
-  Open a confirmation dialog with estimated time? Queue it for the agent?
-  The answer may depend on whether deep dives are fully scripted (Phase 6.1.10)
-  or still agent-driven.
-
-- [ ] **7.2.3 — Generated vs available indicator**
-  Once generated, the button should update without a full page refresh.
-  Consider: optimistic UI, polling, or server-sent events.
+- [ ] **7.2.5 — Post-generation refresh**
+  After generation completes, update the button state without full page
+  refresh. Consider: optimistic UI, polling, or server-sent events.
 
 ### 7.3 — PodcastCard
 

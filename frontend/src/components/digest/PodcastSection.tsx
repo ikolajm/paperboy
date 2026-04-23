@@ -1,81 +1,108 @@
-import Link from 'next/link';
 import type { Podcast } from '@/types';
 import { Badge } from '@/components/atoms/Badge';
 import { Card, CardContent } from '@/components/atoms/Card';
-import { ExternalLink, Clock, Search, BookOpen } from 'lucide-react';
+import { Clock, ExternalLink, Play, Mic } from 'lucide-react';
 
-function PodcastCard({ entry, date, deepDiveExists }: { entry: Podcast; date: string; deepDiveExists: boolean }) {
+function PodcastCard({ entry }: { entry: Podcast }) {
   return (
     <Card variant="outline" size="sm">
       <CardContent className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col gap-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="info" size="sm">
-                {entry.id}
-              </Badge>
-              <span className="text-label-sm font-medium text-on-surface-variant">
-                {entry.show}
-              </span>
+        {/* Artwork or placeholder */}
+        <div className="w-full aspect-square rounded-md overflow-hidden bg-surface-1">
+          {entry.image_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={entry.image_url}
+              alt={entry.show}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-on-surface-variant">
+              <Mic className="size-icon-3" />
             </div>
-            <p className="text-body-md font-medium text-on-surface leading-snug">
-              {entry.title}
-            </p>
-            <div className="flex items-center gap-3 text-label-sm text-on-surface-variant">
-              <span className="flex items-center gap-1">
-                <Clock className="size-icon-0" />
-                {entry.duration}
-              </span>
-            </div>
-            {entry.snippet && (
-              <p className="text-body-sm text-on-surface-variant line-clamp-2">
-                {entry.snippet}
-              </p>
-            )}
-          </div>
-          <div className="flex items-center gap-2 shrink-0 pt-1">
-            {entry.deep_dive_eligible && deepDiveExists && (
-              <Link
-                href={`/deep-dive/${date}/${entry.id}`}
-                className="flex items-center gap-1 text-label-sm text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
-              >
-                <BookOpen className="size-icon-0" />
-                <span>Read transcript</span>
-              </Link>
-            )}
-            {entry.deep_dive_eligible && !deepDiveExists && (
-              <span className="flex items-center gap-1 text-label-sm text-on-surface-variant whitespace-nowrap">
-                <Search className="size-icon-0" />
-                <span>Generate transcript</span>
-              </span>
-            )}
-            {entry.episode_url && (
+          )}
+        </div>
+
+        {/* ID + duration */}
+        <div className="flex items-center gap-2">
+          <Badge variant="info" size="sm">
+            {entry.id}
+          </Badge>
+          <span className="flex items-center gap-1 text-label-sm text-on-surface-variant">
+            <Clock className="size-icon-0" />
+            {entry.duration}
+          </span>
+        </div>
+
+        {/* Show name */}
+        <span className="text-label-md text-on-surface-variant">
+          {entry.show}
+        </span>
+
+        {/* Title — links to episode */}
+        {entry.episode_url ? (
+          <a
+            href={entry.episode_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-body-md font-medium text-on-surface hover:text-primary transition-colors leading-snug"
+          >
+            {entry.title}
+          </a>
+        ) : (
+          <p className="text-body-md font-medium text-on-surface leading-snug">
+            {entry.title}
+          </p>
+        )}
+
+        {/* Snippet */}
+        {entry.snippet && (
+          <p className="text-body-sm text-on-surface-variant line-clamp-3">
+            {entry.snippet}
+          </p>
+        )}
+
+        {/* Action links */}
+        {(entry.youtube_url || entry.transcript_url) && (
+          <div className="flex items-center gap-3">
+            {entry.youtube_url && (
               <a
-                href={entry.episode_url}
+                href={entry.youtube_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-on-surface-variant hover:text-on-surface transition-colors"
-                title="Listen"
+                className="flex items-center gap-1 text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
               >
-                <ExternalLink className="size-icon-1" />
+                <Play className="size-icon-0" />
+                <span>YouTube</span>
+              </a>
+            )}
+            {entry.transcript_url && (
+              <a
+                href={entry.transcript_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                <ExternalLink className="size-icon-0" />
+                <span>Transcript</span>
               </a>
             )}
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
 }
 
-export function PodcastSection({ podcasts, date, availableDeepDives = [] }: { podcasts: Podcast[]; date: string; availableDeepDives?: string[] }) {
+export function PodcastSection({ podcasts }: { podcasts: Podcast[]; date?: string; availableDeepDives?: string[] }) {
   if (podcasts.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-3">
       <h3 className="text-title-md font-semibold text-on-surface">Podcasts</h3>
-      <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {podcasts.map((entry) => (
-          <PodcastCard key={entry.id} entry={entry} date={date} deepDiveExists={availableDeepDives.includes(entry.id)} />
+          <PodcastCard key={entry.id} entry={entry} />
         ))}
       </div>
     </div>

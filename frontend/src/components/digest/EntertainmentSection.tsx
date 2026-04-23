@@ -1,15 +1,14 @@
-import Link from 'next/link';
 import type { EntertainmentSection as EntertainmentType } from '@/types';
 import { Badge } from '@/components/atoms/Badge';
 import { Card, CardContent } from '@/components/atoms/Card';
-import { Search, BookOpen } from 'lucide-react';
+import { Film } from 'lucide-react';
 
-function ScoreBadge({ score }: { score: number }) {
+function ScoreBadge({ score, voteCount }: { score: number; voteCount?: number }) {
   const variant =
     score >= 7 ? 'success' : score >= 5 ? 'warning' : 'destructive';
   return (
     <Badge variant={variant} size="sm">
-      {score.toFixed(1)}
+      {score.toFixed(1)}{voteCount ? ` (${voteCount.toLocaleString()})` : ''}
     </Badge>
   );
 }
@@ -19,71 +18,84 @@ function MediaCard({
   title,
   overview,
   score,
-  deepDiveEligible,
-  deepDiveExists,
-  date,
+  voteCount,
+  posterUrl,
+  genres,
 }: {
   id: string;
   title: string;
   overview: string;
   score: number;
-  deepDiveEligible: boolean;
-  deepDiveExists: boolean;
-  date: string;
+  voteCount?: number;
+  posterUrl?: string;
+  genres?: string[];
 }) {
   return (
     <Card variant="outline" size="sm">
       <CardContent className="flex flex-col gap-2">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col gap-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <Badge variant="neutral" size="sm">
-                {id}
-              </Badge>
-              <ScoreBadge score={score} />
+        {/* Poster or placeholder */}
+        <div className="w-full aspect-[2/3] rounded-md overflow-hidden bg-surface-1">
+          {posterUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={posterUrl}
+              alt={title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-on-surface-variant">
+              <Film className="size-icon-3" />
             </div>
-            <p className="text-body-md font-medium text-on-surface leading-snug">
-              {title}
-            </p>
-            {overview && (
-              <p className="text-body-sm text-on-surface-variant line-clamp-2">
-                {overview}
-              </p>
-            )}
-          </div>
-          {deepDiveEligible && deepDiveExists && (
-            <Link
-              href={`/deep-dive/${date}/${id}`}
-              className="flex items-center gap-1 text-label-sm text-primary hover:text-primary/80 transition-colors whitespace-nowrap shrink-0 pt-1"
-            >
-              <BookOpen className="size-icon-0" />
-              <span>Read deep dive</span>
-            </Link>
-          )}
-          {deepDiveEligible && !deepDiveExists && (
-            <span className="flex items-center gap-1 text-label-sm text-on-surface-variant whitespace-nowrap shrink-0 pt-1">
-              <Search className="size-icon-0" />
-              <span>Generate deep dive</span>
-            </span>
           )}
         </div>
+
+        {/* ID + score */}
+        <div className="flex items-center gap-2">
+          <Badge variant="neutral" size="sm">
+            {id}
+          </Badge>
+          <ScoreBadge score={score} voteCount={voteCount} />
+        </div>
+
+        {/* Title */}
+        <p className="text-body-md font-medium text-on-surface leading-snug">
+          {title}
+        </p>
+
+        {/* Genres */}
+        {genres && genres.length > 0 && (
+          <div className="flex items-center gap-1 flex-wrap">
+            {genres.map((genre) => (
+              <Badge key={genre} variant="neutral" size="sm">
+                {genre}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Overview */}
+        {overview && (
+          <p className="text-body-sm text-on-surface-variant line-clamp-3">
+            {overview}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
 }
 
-export function EntertainmentSection({ data, date, availableDeepDives = [] }: { data: EntertainmentType; date: string; availableDeepDives?: string[] }) {
+export function EntertainmentSection({ data }: { data: EntertainmentType; date?: string; availableDeepDives?: string[] }) {
   const { movies, streaming } = data;
   if (movies.length === 0 && streaming.length === 0) return null;
 
   return (
     <div className="flex flex-col gap-5">
       {movies.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <h3 className="text-title-md font-semibold text-on-surface">
             In Theatres
           </h3>
-          <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {movies.map((m) => (
               <MediaCard
                 key={m.id}
@@ -91,20 +103,20 @@ export function EntertainmentSection({ data, date, availableDeepDives = [] }: { 
                 title={m.title}
                 overview={m.overview}
                 score={m.vote_average}
-                deepDiveEligible={m.deep_dive_eligible}
-                deepDiveExists={availableDeepDives.includes(m.id)}
-                date={date}
+                voteCount={m.vote_count}
+                posterUrl={m.poster_url}
+                genres={m.genres}
               />
             ))}
           </div>
         </div>
       )}
       {streaming.length > 0 && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3">
           <h3 className="text-title-md font-semibold text-on-surface">
             Streaming Buzz
           </h3>
-          <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {streaming.map((s) => (
               <MediaCard
                 key={s.id}
@@ -112,9 +124,9 @@ export function EntertainmentSection({ data, date, availableDeepDives = [] }: { 
                 title={s.title}
                 overview={s.overview}
                 score={s.vote_average}
-                deepDiveEligible={s.deep_dive_eligible}
-                deepDiveExists={availableDeepDives.includes(s.id)}
-                date={date}
+                voteCount={s.vote_count}
+                posterUrl={s.poster_url}
+                genres={s.genres}
               />
             ))}
           </div>

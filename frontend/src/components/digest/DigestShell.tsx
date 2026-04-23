@@ -6,11 +6,10 @@ import type { Digest } from '@/types';
 import { EmptyState } from '@/components/atoms/EmptyState';
 import { Newspaper } from 'lucide-react';
 import { DigestSidebar } from './DigestSidebar';
-import { DigestTopBar } from './DigestTopBar';
+import { DigestTopBar, type ActiveTab } from './DigestTopBar';
 import { NewsFeed } from './NewsFeed';
+import { MediaFeed } from './MediaFeed';
 import { ScoreboardPanel } from './ScoreboardPanel';
-
-type ActiveTab = 'news' | 'scores';
 
 export function DigestShell({
   digest,
@@ -24,7 +23,6 @@ export function DigestShell({
   const [activeTab, setActiveTab] = useState<ActiveTab>('news');
 
   const currentIndex = dates.indexOf(currentDate);
-  // dates are sorted most-recent-first, so "prev" is index+1 and "next" is index-1
   const prevDate = currentIndex < dates.length - 1 ? dates[currentIndex + 1] : null;
   const nextDate = currentIndex > 0 ? dates[currentIndex - 1] : null;
 
@@ -63,13 +61,17 @@ export function DigestShell({
           onNextDate={nextDate ? () => navigateToDate(nextDate) : undefined}
         />
         <main className="flex-1 overflow-y-auto p-6">
-          {activeTab === 'news' ? (
+          {activeTab === 'news' && (
             <NewsFeed
               sections={digest?.sections ?? null}
               date={currentDate}
               availableDeepDives={digest?.deep_dives.map(d => d.id) ?? []}
             />
-          ) : (
+          )}
+          {activeTab === 'media' && (
+            <MediaFeed sections={digest?.sections ?? null} />
+          )}
+          {activeTab === 'scores' && (
             <ScoreboardPanel scores={digest?.sections.scores ?? null} />
           )}
         </main>

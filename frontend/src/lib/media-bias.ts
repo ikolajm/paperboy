@@ -14,6 +14,12 @@ type BiasEntry = { name: string; lean: string; factual: string };
 const { _meta, ...bias } = biasData as Record<string, unknown>;
 const biasMap = bias as Record<string, BiasEntry>;
 
+// Reverse lookup: outlet name (lowercase) → bias entry
+const biasByName = new Map<string, BiasEntry>();
+for (const entry of Object.values(biasMap)) {
+  biasByName.set(entry.name.toLowerCase(), entry);
+}
+
 /** Extract bare domain from a URL: "https://www.nytimes.com" → "nytimes.com" */
 function extractDomain(url: string): string {
   try {
@@ -41,6 +47,12 @@ export function getMediaBias(sourceUrl?: string): MediaBias | null {
 export function getMediaBiasByDomain(domain: string): MediaBias | null {
   const clean = domain.replace(/^www\./, '');
   const entry = biasMap[clean];
+  return entry ? (entry as MediaBias) : null;
+}
+
+/** Look up media bias by outlet display name (e.g. "Fox News"). */
+export function getMediaBiasByName(outletName: string): MediaBias | null {
+  const entry = biasByName.get(outletName.toLowerCase());
   return entry ? (entry as MediaBias) : null;
 }
 

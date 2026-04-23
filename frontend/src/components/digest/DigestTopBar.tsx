@@ -4,9 +4,9 @@ import type { DigestMeta } from '@/types';
 import { TopBar } from '@/components/atoms/TopBar';
 import { Badge } from '@/components/atoms/Badge';
 import { cn } from '@/components/atoms/cn';
-import { Newspaper, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Newspaper, Clapperboard, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
 
-type ActiveTab = 'news' | 'scores';
+export type ActiveTab = 'news' | 'media' | 'scores';
 
 function formatHeaderDate(meta: DigestMeta): string {
   const d = new Date(meta.date + 'T12:00:00');
@@ -69,6 +69,12 @@ export function DigestTopBar({
           onClick={() => onTabChange('news')}
           icon={<Newspaper className="size-4" />}
           label="News"
+        />
+        <TabButton
+          active={activeTab === 'media'}
+          onClick={() => onTabChange('media')}
+          icon={<Clapperboard className="size-4" />}
+          label="Media"
         />
         <TabButton
           active={activeTab === 'scores'}

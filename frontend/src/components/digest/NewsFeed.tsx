@@ -7,8 +7,6 @@ import { EmptyState } from '@/components/atoms/EmptyState';
 import { Newspaper } from 'lucide-react';
 import { PopularTodaySection } from './PopularTodaySection';
 import { TopicSection } from './TopicSection';
-import { PodcastSection } from './PodcastSection';
-import { EntertainmentSection } from './EntertainmentSection';
 import { OpinionsSection } from './OpinionsSection';
 import { LocalNewsSection } from './LocalNewsSection';
 
@@ -16,8 +14,6 @@ type NewsCategory =
   | 'top_stories'
   | 'for_you'
   | 'radar'
-  | 'podcasts'
-  | 'entertainment'
   | 'opinions'
   | 'local';
 
@@ -25,8 +21,6 @@ const NEWS_CATEGORIES: { key: NewsCategory; label: string }[] = [
   { key: 'top_stories', label: 'Top Stories' },
   { key: 'for_you', label: 'For You' },
   { key: 'radar', label: 'On Your Radar' },
-  { key: 'podcasts', label: 'Podcasts' },
-  { key: 'entertainment', label: 'Entertainment' },
   { key: 'opinions', label: 'Opinions' },
   { key: 'local', label: 'Local' },
 ];
@@ -42,12 +36,6 @@ function getSectionCount(sections: DigestSections, key: NewsCategory): string {
       return `${sections.for_you.length}`;
     case 'radar':
       return `${sections.on_your_radar.length}`;
-    case 'podcasts':
-      return `${sections.podcasts.length}`;
-    case 'entertainment': {
-      const e = sections.entertainment;
-      return `${e.movies.length + e.streaming.length}`;
-    }
     case 'opinions':
       return `${sections.opinions.length}`;
     case 'local':
@@ -75,10 +63,6 @@ function renderSection(sections: DigestSections, key: NewsCategory, date: string
           ))}
         </div>
       );
-    case 'podcasts':
-      return <PodcastSection podcasts={sections.podcasts} date={date} availableDeepDives={availableDeepDives} />;
-    case 'entertainment':
-      return <EntertainmentSection data={sections.entertainment} date={date} availableDeepDives={availableDeepDives} />;
     case 'opinions':
       return <OpinionsSection opinions={sections.opinions} />;
     case 'local':
