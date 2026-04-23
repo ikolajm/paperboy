@@ -2,9 +2,9 @@
 
 import type { DigestMeta } from '@/types';
 import { TopBar } from '@/components/atoms/TopBar';
-import { Badge } from '@/components/atoms/Badge';
-import { cn } from '@/components/atoms/cn';
-import { Newspaper, Clapperboard, Trophy, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/atoms/Button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/atoms/ToggleGroup';
+import { Newspaper, Clapperboard, Trophy, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 
 export type ActiveTab = 'news' | 'media' | 'scores';
 
@@ -14,7 +14,14 @@ function formatHeaderDate(meta: DigestMeta): string {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
-    year: 'numeric',
+  });
+}
+
+function formatShortDate(meta: DigestMeta): string {
+  const d = new Date(meta.date + 'T12:00:00');
+  return d.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
   });
 }
 
@@ -24,93 +31,81 @@ export function DigestTopBar({
   onTabChange,
   onPrevDate,
   onNextDate,
+  onMenuOpen,
 }: {
   meta: DigestMeta | null;
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
   onPrevDate?: () => void;
   onNextDate?: () => void;
+  onMenuOpen?: () => void;
 }) {
   return (
     <TopBar className="justify-between shrink-0">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
+      <div className="flex items-center gap-component">
+        {/* Mobile hamburger */}
+        <Button
+          variant="ghost"
+          size="sm"
+          iconOnly
+          onClick={onMenuOpen}
+          className="md:hidden"
+          title="Open menu"
+        >
+          <Menu />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          iconOnly
           onClick={onPrevDate}
           disabled={!onPrevDate}
-          className="p-1 rounded-md text-on-surface-variant hover:text-on-surface disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title="Previous day"
         >
-          <ChevronLeft className="size-4" />
-        </button>
+          <ChevronLeft />
+        </Button>
         {meta ? (
           <>
-            <span className="font-semibold">{formatHeaderDate(meta)}</span>
-            <Badge variant="neutral" size="sm">
-              {meta.story_count} stories
-            </Badge>
+            <span className="text-title-sm hidden md:inline">{formatHeaderDate(meta)}</span>
+            <span className="text-title-sm md:hidden">{formatShortDate(meta)}</span>
           </>
         ) : (
-          <span className="text-on-surface-variant">No digest loaded</span>
+          <span className="text-body-sm text-on-surface-variant">No digest loaded</span>
         )}
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="sm"
+          iconOnly
           onClick={onNextDate}
           disabled={!onNextDate}
-          className="p-1 rounded-md text-on-surface-variant hover:text-on-surface disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title="Next day"
         >
-          <ChevronRight className="size-4" />
-        </button>
+          <ChevronRight />
+        </Button>
       </div>
-      <div className="flex items-center rounded-pill border border-outline-subtle p-0.5">
-        <TabButton
-          active={activeTab === 'news'}
-          onClick={() => onTabChange('news')}
-          icon={<Newspaper className="size-4" />}
-          label="News"
-        />
-        <TabButton
-          active={activeTab === 'media'}
-          onClick={() => onTabChange('media')}
-          icon={<Clapperboard className="size-4" />}
-          label="Media"
-        />
-        <TabButton
-          active={activeTab === 'scores'}
-          onClick={() => onTabChange('scores')}
-          icon={<Trophy className="size-4" />}
-          label="Scores"
-        />
-      </div>
-    </TopBar>
-  );
-}
 
-function TabButton({
-  active,
-  onClick,
-  icon,
-  label,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex items-center gap-1.5 rounded-pill px-3 py-1 text-label-md font-medium cursor-pointer transition-colors',
-        active
-          ? 'bg-primary-container text-on-primary-container'
-          : 'text-on-surface-variant hover:text-on-surface'
-      )}
-    >
-      {icon}
-      {label}
-    </button>
+      {/* Desktop tab switcher — hidden on mobile (BottomNav used instead) */}
+      <ToggleGroup
+        type="single"
+        value={activeTab}
+        onValueChange={(v) => { if (v) onTabChange(v as ActiveTab); }}
+        size="sm"
+        className="hidden md:inline-flex"
+      >
+        <ToggleGroupItem value="news" size="sm" className="gap-component">
+          <Newspaper className="size-icon-1" />
+          News
+        </ToggleGroupItem>
+        <ToggleGroupItem value="media" size="sm" className="gap-component">
+          <Clapperboard className="size-icon-1" />
+          Media
+        </ToggleGroupItem>
+        <ToggleGroupItem value="scores" size="sm" className="gap-component">
+          <Trophy className="size-icon-1" />
+          Scores
+        </ToggleGroupItem>
+      </ToggleGroup>
+    </TopBar>
   );
 }

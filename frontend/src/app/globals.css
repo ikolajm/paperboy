@@ -12,6 +12,18 @@ body {
   color: var(--on-primary-container);
 }
 
+/* Global focus ring — guarantees every focusable element uses primary,
+   no browser-default blue ever leaks through. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+/* Components that use Tailwind ring utilities already handle their own
+   focus styles, so suppress the duplicate outline on those. */
+[class*="focus-visible:ring"]:focus-visible {
+  outline: none;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

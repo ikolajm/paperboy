@@ -9,16 +9,15 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/atoms/Select';
-import { TreeView, type TreeNodeData } from '@/components/atoms/TreeView';
+import { SidebarItem } from '@/components/atoms/Sidebar';
 import { Separator } from '@/components/atoms/Separator';
 import { ThemeToggle } from '@/components/providers/ThemeToggle';
-import { Calendar } from 'lucide-react';
+import { Logo } from '@/components/atoms/Logo';
 
 function formatDateLabel(dateStr: string): string {
   const d = new Date(dateStr + 'T12:00:00');
   return d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
+    weekday: 'long',
     day: 'numeric',
   });
 }
@@ -28,7 +27,8 @@ function formatMonthLabel(monthStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
-export function DigestSidebar({
+/** Shared inner content used by both the desktop Sidebar and the mobile Sheet */
+export function DigestSidebarContent({
   dates,
   selectedDate,
   onSelectDate,
@@ -50,20 +50,10 @@ export function DigestSidebar({
 
   const filteredDates = dates.filter((d) => d.startsWith(selectedMonth));
 
-  const treeData: TreeNodeData[] = filteredDates.map((d) => ({
-    id: d,
-    label: formatDateLabel(d),
-    icon: <Calendar className="size-full" />,
-  }));
-
   return (
-    <Sidebar size="sm" className="h-full justify-between py-4">
-      <div className="flex flex-col gap-3">
-        <span className="px-3 text-title-sm font-semibold tracking-tight">
-          Paperboy
-        </span>
-        <Separator />
-        <div className="px-2">
+    <div className="flex flex-1 flex-col justify-between overflow-hidden">
+      <div className="flex flex-col gap-group overflow-hidden">
+        <div className="px-group-compact">
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
             <SelectTrigger size="sm">
               <SelectValue />
@@ -77,19 +67,54 @@ export function DigestSidebar({
             </SelectContent>
           </Select>
         </div>
-        <TreeView
-          data={treeData}
-          size="sm"
-          selectedId={selectedDate}
-          {...{ onSelect: onSelectDate } as any}
-        />
+        <div className="flex flex-col overflow-y-auto">
+          {filteredDates.map((d) => (
+            <SidebarItem
+              key={d}
+              size="sm"
+              active={d === selectedDate}
+              onClick={() => onSelectDate(d)}
+            >
+              {formatDateLabel(d)}
+            </SidebarItem>
+          ))}
+        </div>
       </div>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-group">
         <Separator />
-        <div className="px-2">
+        <div className="px-group-compact">
           <ThemeToggle />
         </div>
       </div>
+    </div>
+  );
+}
+
+export function DigestSidebar({
+  dates,
+  selectedDate,
+  onSelectDate,
+}: {
+  dates: string[];
+  selectedDate: string;
+  onSelectDate: (date: string) => void;
+}) {
+  return (
+    <Sidebar size="sm" className="flex flex-col gap-group h-full py-section">
+      <div className="flex flex-col gap-group">
+        <div className="flex items-center gap-group px-group">
+          <Logo size={28} />
+          <span className="text-title-sm font-semibold tracking-tight">
+            Paperboy
+          </span>
+        </div>
+        <Separator />
+      </div>
+      <DigestSidebarContent
+        dates={dates}
+        selectedDate={selectedDate}
+        onSelectDate={onSelectDate}
+      />
     </Sidebar>
   );
 }
