@@ -95,13 +95,11 @@ function main() {
     };
 
     // Walk all story-bearing sections
-    const popular = sections.popular_today as Record<string, Array<Record<string, unknown>>> | undefined;
+    const popular = sections.popular_today as Array<Record<string, unknown>> | undefined;
     if (popular) {
-      for (const key of ["top_stories", "world", "nation"]) {
-        for (const story of popular[key] ?? []) {
-          collectSourceUrl(story);
-          collectRelated(story);
-        }
+      for (const story of popular) {
+        collectSourceUrl(story);
+        collectRelated(story);
       }
     }
 

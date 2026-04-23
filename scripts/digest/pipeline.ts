@@ -21,9 +21,7 @@ import { assembleEntertainment } from "./assemble-entertainment.js";
 
 function countStories(sections: DigestSections): number {
   let count = 0;
-  count += sections.popular_today.top_stories.length;
-  count += sections.popular_today.world.length;
-  count += sections.popular_today.nation.length;
+  count += sections.popular_today.length;
   for (const loc of sections.local.locations) count += loc.stories.length;
   for (const t of sections.for_you) count += t.stories.length;
   for (const t of sections.on_your_radar) count += t.stories.length;

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { RelatedArticle } from '@/types';
 import { Badge } from '@/components/atoms/Badge';
+import { Button } from '@/components/atoms/Button';
 import { Card, CardContent } from '@/components/atoms/Card';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { getFaviconUrl } from '@/lib/media-bias';
@@ -40,7 +41,7 @@ function formatTimeAgo(dateStr: string): string {
 
 function RelatedPreview({ articles }: { articles: RelatedArticle[] }) {
   return (
-    <div className="flex items-center gap-1.5 flex-wrap text-label-md text-on-surface-variant">
+    <div className="flex items-center gap-component flex-wrap text-label-md text-on-surface-variant">
       <span>Also:</span>
       {articles.map((ra) => (
         <span key={ra.url} className="inline-flex items-center gap-1">
@@ -54,10 +55,10 @@ function RelatedPreview({ articles }: { articles: RelatedArticle[] }) {
 
 function RelatedExpanded({ articles }: { articles: RelatedArticle[] }) {
   return (
-    <div className="flex flex-col gap-1 pl-2 border-l-2 border-outline-subtle">
+    <div className="flex flex-col gap-component-compact pl-2 border-l-2 border-outline-subtle">
       {articles.map((ra) => (
-        <div key={ra.url} className="flex items-center gap-2 py-1">
-          <div className="flex items-center gap-1.5 min-w-0">
+        <div key={ra.url} className="flex items-center gap-component py-component-compact">
+          <div className="flex items-center gap-component min-w-0">
             <span className="text-label-md text-on-surface-variant shrink-0">
               {ra.outlet}
             </span>
@@ -94,10 +95,10 @@ export function StoryCard({
 
   return (
     <Card variant="outline" size="sm">
-      <CardContent className="flex flex-col gap-2">
-        <div className="flex flex-col gap-1.5 min-w-0">
+      <CardContent className="flex flex-col gap-component">
+        <div className="flex flex-col gap-component min-w-0">
           {/* Top row: ID + outlet + time */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-component">
             <Badge variant="neutral" size="sm">
               {id}
             </Badge>
@@ -107,7 +108,7 @@ export function StoryCard({
               <img
                 src={getFaviconUrl(sourceUrl)}
                 alt=""
-                className="size-5 shrink-0"
+                className="size-icon-2 shrink-0"
               />
             )}
             {source && (
@@ -155,18 +156,16 @@ export function StoryCard({
 
           {/* Related articles: preview + expandable */}
           {hasRelated && (
-            <div className="flex flex-col gap-1.5">
-              <button
-                type="button"
+            <div className="flex flex-col gap-component">
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setExpanded(!expanded)}
-                className="flex items-center gap-1 text-label-sm text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer self-start"
+                trailingIcon={expanded ? <ChevronUp /> : <ChevronDown />}
+                className="self-start text-on-surface-variant"
               >
                 <RelatedPreview articles={relatedArticles} />
-                {expanded
-                  ? <ChevronUp className="size-3.5 shrink-0" />
-                  : <ChevronDown className="size-3.5 shrink-0" />
-                }
-              </button>
+              </Button>
               {expanded && (
                 <RelatedExpanded articles={relatedArticles} />
               )}

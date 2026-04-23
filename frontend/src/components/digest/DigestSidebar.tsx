@@ -104,7 +104,7 @@ export function DigestSidebar({
       <div className="flex flex-col gap-group">
         <div className="flex items-center gap-group px-group">
           <Logo size={28} />
-          <span className="text-title-sm font-semibold tracking-tight">
+          <span className="text-title-sm">
             Paperboy
           </span>
         </div>

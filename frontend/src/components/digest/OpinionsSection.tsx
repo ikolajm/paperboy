@@ -1,13 +1,17 @@
 import type { Opinion } from '@/types';
 import { StoryCard } from './StoryCard';
+import { MessageSquareQuote } from 'lucide-react';
 
 export function OpinionsSection({ opinions }: { opinions: Opinion[] }) {
   if (opinions.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-3">
-      <h3 className="text-title-md font-semibold text-on-surface">Opinions</h3>
-      <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-group">
+      <h3 className="flex items-center gap-group text-title-md text-on-surface">
+        <MessageSquareQuote className="size-icon-2 text-on-surface-variant shrink-0" />
+        Opinions
+      </h3>
+      <div className="flex flex-col gap-component">
         {opinions.map((entry) => (
           <StoryCard
             key={entry.id}

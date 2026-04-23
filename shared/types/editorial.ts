@@ -66,11 +66,8 @@ export interface PopularStory {
   related_articles?: RelatedArticle[];
 }
 
-export interface PopularTodaySection {
-  top_stories: PopularStory[];
-  world: PopularStory[];
-  nation: PopularStory[];
-}
+/** Consolidated, deduped list of top stories from all Google News editorial feeds. */
+export type PopularTodaySection = PopularStory[];
 
 // --- Local ---
 

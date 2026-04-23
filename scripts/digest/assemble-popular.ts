@@ -7,7 +7,7 @@ import type {
   RssEntry, PopularStory, PopularTodaySection,
   LocalStory, LocalLocation, LocalSection,
 } from "../../shared/types/digest.js";
-import { isLowQualityUrl } from "./filter.js";
+import { DedupPool, isLowQualityUrl } from "./filter.js";
 import { IdCounter } from "./ids.js";
 
 function rssToPopularStory(entry: RssEntry, id: string): PopularStory {
@@ -42,18 +42,19 @@ export function assemblePopularToday(
   results: Record<string, RssEntry[]>,
   ids: IdCounter,
 ): PopularTodaySection {
-  const convert = (key: string) => {
-    const entries = results[key] ?? [];
-    return entries
-      .filter(e => !isLowQualityUrl(e.url))
-      .map(e => rssToPopularStory(e, ids.next("POP")));
-  };
+  const pool = new DedupPool();
 
-  return {
-    top_stories: convert("POP_top"),
-    world: convert("POP_world"),
-    nation: convert("POP_nation"),
-  };
+  // Merge all three feeds in priority order: top stories first, then world, then nation.
+  const allEntries = [
+    ...(results["POP_top"] ?? []),
+    ...(results["POP_world"] ?? []),
+    ...(results["POP_nation"] ?? []),
+  ];
+
+  return allEntries
+    .filter(e => !isLowQualityUrl(e.url))
+    .filter(e => pool.claim(e.url))
+    .map(e => rssToPopularStory(e, ids.next("POP")));
 }
 
 export function assembleLocal(

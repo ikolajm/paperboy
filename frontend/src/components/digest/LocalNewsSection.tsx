@@ -7,14 +7,14 @@ export function LocalNewsSection({ data }: { data: LocalSection }) {
   if (locations.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-section-compact">
       {locations.map((location) => (
-        <div key={location.label} className="flex flex-col gap-2">
-          <h3 className="flex items-center gap-2 text-title-md font-semibold text-on-surface">
-            <MapPin className="size-icon-1 text-on-surface-variant shrink-0" />
+        <div key={location.label} className="flex flex-col gap-group">
+          <h3 className="flex items-center gap-group text-title-md text-on-surface">
+            <MapPin className="size-icon-2 text-on-surface-variant shrink-0" />
             {location.label}
           </h3>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-component">
             {location.stories.map((story) => (
               <StoryCard
                 key={story.id}
