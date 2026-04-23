@@ -35,7 +35,7 @@ interface SubFilter {
 
 const HEADLINE_SUBS: SubFilter[] = [
   { key: 'top_stories', label: 'Top Stories', icon: <Flame /> },
-  { key: 'local', label: 'Local', icon: <MapPin /> },
+  { key: 'local', label: 'Local Stories', icon: <MapPin /> },
 ];
 
 const TOPIC_SUBS: Record<string, { label: string; icon: React.ReactNode }> = {

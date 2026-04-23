@@ -16,7 +16,6 @@ function rssToOpinion(entry: RssEntry, id: string): OpinionEntry {
     source: entry.source,
     source_url: entry.source_url,
     date: entry.date || undefined,
-    related_articles: entry.related_articles,
   };
 }
 

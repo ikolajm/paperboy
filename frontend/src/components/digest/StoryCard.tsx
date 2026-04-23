@@ -5,14 +5,14 @@ import type { RelatedArticle } from '@/types';
 import { Badge } from '@/components/atoms/Badge';
 import { Button } from '@/components/atoms/Button';
 import { Card, CardContent } from '@/components/atoms/Card';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Newspaper, UserRound } from 'lucide-react';
 import { getFaviconUrl } from '@/lib/media-bias';
 
 interface StoryCardProps {
   id: string;
   title: string;
   url: string | null;
-  snippet: string;
+  snippet?: string;
   source: string;
   sourceUrl?: string;
   author?: string;
@@ -39,39 +39,22 @@ function formatTimeAgo(dateStr: string): string {
   return '';
 }
 
-function RelatedPreview({ articles }: { articles: RelatedArticle[] }) {
+function RelatedList({ articles }: { articles: RelatedArticle[] }) {
   return (
-    <div className="flex items-center gap-component flex-wrap text-label-md text-on-surface-variant">
-      <span>Also:</span>
+    <div className="flex flex-col gap-component-compact">
       {articles.map((ra) => (
-        <span key={ra.url} className="inline-flex items-center gap-1">
-          {ra.outlet}
-          {ra !== articles[articles.length - 1] && <span>·</span>}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function RelatedExpanded({ articles }: { articles: RelatedArticle[] }) {
-  return (
-    <div className="flex flex-col gap-component-compact pl-2 border-l-2 border-outline-subtle">
-      {articles.map((ra) => (
-        <div key={ra.url} className="flex items-center gap-component py-component-compact">
-          <div className="flex items-center gap-component min-w-0">
-            <span className="text-label-md text-on-surface-variant shrink-0">
-              {ra.outlet}
-            </span>
-            <span className="text-label-md text-outline-subtle">|</span>
-            <a
-              href={ra.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-body-sm text-on-surface hover:text-primary transition-colors truncate"
-            >
-              {ra.headline}
-            </a>
-          </div>
+        <div key={ra.url} className="flex flex-col gap-component-compact rounded-component bg-surface-1 px-group py-component">
+          <a
+            href={ra.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-body-sm text-on-surface hover:text-primary transition-colors"
+          >
+            {ra.headline}
+          </a>
+          <span className="text-label-sm text-on-surface-variant">
+            {ra.outlet}
+          </span>
         </div>
       ))}
     </div>
@@ -93,28 +76,58 @@ export function StoryCard({
   const hasRelated = relatedArticles && relatedArticles.length > 0;
   const timeAgo = storyDate ? formatTimeAgo(storyDate) : '';
 
+  // Attribution logic: prefer a real author over source.
+  // author === source (e.g. "ESPN") or staff bylines are not real authors.
+  const trimmedAuthor = author?.trim() || '';
+  const trimmedSource = source?.trim() || '';
+  const isRealAuthor = trimmedAuthor !== ''
+    && trimmedAuthor.toLowerCase() !== trimmedSource.toLowerCase()
+    && !trimmedAuthor.toLowerCase().includes('staff');
+  const hasSourceUrl = !!sourceUrl;
+
+  // What to display and which icon to use
+  let attribution: string;
+  let attributionIcon: 'author' | 'favicon' | 'outlet';
+
+  if (isRealAuthor) {
+    attribution = trimmedAuthor;
+    attributionIcon = 'author';
+  } else if (trimmedSource) {
+    attribution = trimmedSource;
+    attributionIcon = hasSourceUrl ? 'favicon' : 'outlet';
+  } else {
+    attribution = '';
+    attributionIcon = 'outlet';
+  }
+
   return (
     <Card variant="outline" size="sm">
       <CardContent className="flex flex-col gap-component">
         <div className="flex flex-col gap-component min-w-0">
-          {/* Top row: ID + outlet + time */}
+          {/* Top row: ID + attribution + time */}
           <div className="flex items-center gap-component">
             <Badge variant="neutral" size="sm">
               {id}
             </Badge>
-            <span className="text-label-md text-outline-subtle">|</span>
-            {sourceUrl && (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={getFaviconUrl(sourceUrl)}
-                alt=""
-                className="size-icon-2 shrink-0"
-              />
-            )}
-            {source && (
-              <span className="text-label-md text-on-surface-variant">
-                {source}
-              </span>
+            {attribution && (
+              <>
+                <span className="text-label-md text-outline-subtle">|</span>
+                {attributionIcon === 'author' ? (
+                  <UserRound className="size-icon-1 shrink-0 text-on-surface-variant" />
+                ) : attributionIcon === 'favicon' ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={getFaviconUrl(sourceUrl!)}
+                    alt=""
+                    className="size-icon-2 shrink-0"
+                  />
+                ) : (
+                  <Newspaper className="size-icon-1 shrink-0 text-on-surface-variant" />
+                )}
+                <span className="text-label-md text-on-surface-variant">
+                  {attribution}
+                </span>
+              </>
             )}
             {timeAgo && (
               <>
@@ -124,7 +137,7 @@ export function StoryCard({
             )}
           </div>
 
-          {/* Headline — is the link */}
+          {/* Headline — linked when url present, muted when absent */}
           {url ? (
             <a
               href={url}
@@ -135,26 +148,19 @@ export function StoryCard({
               {title}
             </a>
           ) : (
-            <p className="text-body-md font-medium text-on-surface leading-snug">
+            <p className="text-body-md font-medium text-on-surface-variant leading-snug">
               {title}
             </p>
           )}
 
-          {/* Author */}
-          {author && (
-            <span className="text-label-sm text-on-surface-variant">
-              By {author}
-            </span>
-          )}
-
-          {/* Snippet */}
-          {snippet && (
+          {/* Snippet — only when present */}
+          {snippet?.trim() && (
             <p className="text-body-sm text-on-surface-variant line-clamp-2">
               {snippet}
             </p>
           )}
 
-          {/* Related articles: preview + expandable */}
+          {/* Related articles: toggle + expandable list */}
           {hasRelated && (
             <div className="flex flex-col gap-component">
               <Button
@@ -164,10 +170,10 @@ export function StoryCard({
                 trailingIcon={expanded ? <ChevronUp /> : <ChevronDown />}
                 className="self-start text-on-surface-variant"
               >
-                <RelatedPreview articles={relatedArticles} />
+                Related articles
               </Button>
               {expanded && (
-                <RelatedExpanded articles={relatedArticles} />
+                <RelatedList articles={relatedArticles} />
               )}
             </div>
           )}

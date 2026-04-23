@@ -24,7 +24,6 @@ export interface Story {
   deep_dive_eligible: boolean;
   google_news_redirect?: boolean;
   related_articles?: RelatedArticle[];
-  stale?: boolean;
 }
 
 export interface CalendarEvent {
@@ -101,5 +100,4 @@ export interface OpinionEntry {
   source: string;
   source_url?: string;
   date?: string;
-  related_articles?: RelatedArticle[];
 }

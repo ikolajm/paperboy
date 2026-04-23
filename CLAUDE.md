@@ -87,9 +87,26 @@ share one ID sequence per day.
 | `SCI` | Science |
 | `HLTH` | Health |
 | `ENT` | Entertainment (movies, streaming — from TMDB) |
-| `POP` | Popular Today + Local News |
+| `POP` | Headlines (Top Stories + Local News) |
 | `POD` | Podcasts |
 | `OPN` | Opinions |
+
+---
+
+## Dashboard Sections (News tab)
+
+The News tab uses a two-tier filter system:
+
+| Tier 1 | Tier 2 sub-filters | Data source |
+|--------|-------------------|-------------|
+| **Headlines** | Top Stories, Local Stories | Google News editorial RSS + local RSS |
+| **Topics** | US Politics, AI, Cybersecurity, Science, Health | Google News topic RSS |
+| **Sports** | NBA, NHL, MLB, NFL, F1, Combat Sports, College | ESPN RSS |
+| **Opinions** | *(none)* | NYT Opinion, Guardian Comment RSS |
+
+Tier 1 is single-select (plus "All"). Tier 2 appears contextually, all active by
+default — toggle to narrow. Popular Today (top_stories/world/nation) feeds are
+consolidated into a single deduped flat list under Headlines.
 
 ---
 
@@ -103,6 +120,10 @@ share one ID sequence per day.
 - **Scores are separate from stories.** Scores come from ESPN scoreboard API with rich
   per-sport data (linescores, leaders, headlines). Stories come from RSS feeds.
 - **Cross-topic dedup, cross-section independence.** The same story won't appear in both
-  AI and Cybersecurity, but can appear in both Popular Today and a topic section.
+  AI and Cybersecurity. Popular Today feeds are deduped across top/world/nation.
+  Headlines and topic sections maintain independent pools.
 - **ESPN RSS for sports, Google News subsections for non-sports.** Each feed type is
   editorially curated — no keyword search noise.
+- **Design system dogfooding.** Use atoms and tokens from `frontend/src/components/atoms/`
+  and `frontend/src/tokens.css`. No hardcoded spacing, typography, or raw elements
+  when a design system component exists.
