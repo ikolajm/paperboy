@@ -17,8 +17,11 @@ function rssToPopularStory(entry: RssEntry, id: string): PopularStory {
     url: entry.url || null,
     snippet: entry.snippet,
     source: entry.source,
+    source_url: entry.source_url,
+    date: entry.date || undefined,
     deep_dive_eligible: true,
     google_news_redirect: entry.google_news_redirect,
+    related_articles: entry.related_articles,
   };
 }
 
@@ -29,6 +32,8 @@ function rssToLocalStory(entry: RssEntry, id: string): LocalStory {
     url: entry.url || null,
     snippet: entry.snippet,
     source: entry.source,
+    source_url: entry.source_url,
+    date: entry.date || undefined,
     google_news_redirect: entry.google_news_redirect,
   };
 }

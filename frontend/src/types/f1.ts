@@ -4,4 +4,4 @@ export type {
   RaceWeekend as F1Weekend,
   F1Recaps,
   F1Schedule,
-} from "@shared/types/digest";
+} from "@shared/types/f1";

@@ -94,20 +94,7 @@ Google News RSS <item>
 - [ ] **6.1.7 — Show relative time on stories that have `date`**
   Add `formatTimeAgo` utility. Display next to source label.
 
-#### Media bias layer
-
-- [ ] **6.1.8 — Add media bias reference data**
-  Maintain a lookup of outlet domain → political lean (e.g. left, lean-left,
-  center, lean-right, right) based on established charts (AllSides,
-  Ad Fontes Media, MBFC). Store as a static JSON map in `config/` keyed
-  by domain. Could also include a factual reporting rating (high, mixed,
-  low) for credibility signal.
-
-- [ ] **6.1.9 — Surface bias in "Also covered by" row**
-  When rendering related articles, show a subtle bias indicator per outlet
-  (color dot, label, or position on a mini spectrum bar). Helps the reader
-  see if a story is only covered by one side, or if coverage spans the
-  spectrum. Not editorializing — just showing the data.
+#### Media identity & bias (deferred to Phase 9)
 
 #### Deep dive payoff
 
@@ -288,15 +275,87 @@ So `related_articles` extraction (6.1.1) won't help here — but
 
 ## Phase 7: Story Presentation Refresh
 
-After data enrichment lands, update the dashboard components to use the new
-fields. This phase depends on Phase 6 delivering richer data.
+Update dashboard components to use enriched data. In progress.
 
-- [ ] **7.1** StoryCard: show thumbnail image (left or top), relative time, author
-- [ ] **7.2** PodcastCard: show artwork, guest names, YouTube link, transcript link
-- [ ] **7.3** MediaCard (entertainment): show poster image, genres badge row, runtime
-- [ ] **7.4** Revisit card density and layout — with images and more metadata,
-      cards may need a horizontal layout or grid view instead of stacked list
-- [ ] **7.5** Add relative time display utility (`formatTimeAgo`) for all dated items
+### 7.1 — StoryCard (in progress)
+
+- [x] Favicon from `source_url` via Google Favicons API (20px)
+- [x] Political lean badge (colored pill: blue → purple → red)
+- [x] Factual reporting badge (success/warning/error)
+- [x] Relative time display (`formatTimeAgo`)
+- [x] Author byline (ESPN stories)
+- [x] Top row: ID badge + favicon + outlet + time ago
+- [x] Related articles: preview row + expandable child rows with bias badges
+- [x] Deep dive: "Read deep dive" vs "Generate deep dive" states
+- [x] Headline is the link, removed redundant external link icon
+- [x] `cardSize` / `contentSize` props for density control
+- [ ] Fine-tune alignment, spacing, and visual hierarchy (manual pass)
+
+### 7.2 — Deep dive flow (needs design)
+
+The "Generate deep dive" action varies by section type and needs a thought-
+through user flow before implementation.
+
+- [ ] **7.2.1 — Define deep dive flows per section**
+  News stories: fetch article + related articles → synthesize → write .md
+  Podcasts: locate transcript → process → write .md
+  Entertainment: fetch reviews + details → synthesize → write .md
+  Each has different latency and data requirements.
+
+- [ ] **7.2.2 — Generation UX**
+  "Generate deep dive" currently shows as muted text — not actionable.
+  Decide: does clicking it trigger a server action? Show a loading state?
+  Open a confirmation dialog with estimated time? Queue it for the agent?
+  The answer may depend on whether deep dives are fully scripted (Phase 6.1.10)
+  or still agent-driven.
+
+- [ ] **7.2.3 — Generated vs available indicator**
+  Once generated, the button should update without a full page refresh.
+  Consider: optimistic UI, polling, or server-sent events.
+
+### 7.3 — PodcastCard
+
+- [ ] Show episode artwork (`image_url`) — left-aligned thumbnail
+- [ ] YouTube channel link when `youtube_url` present
+- [ ] Transcript page link when `transcript_url` present
+- [ ] Deep dive available/generate states (done in component, needs flow)
+
+### 7.4 — MediaCard (entertainment)
+
+- [ ] Show poster image (`poster_url`) — left-aligned thumbnail
+- [ ] Genre badges row
+- [ ] Vote count alongside score badge
+- [ ] Deep dive available/generate states (done in component, needs flow)
+
+### 7.5 — Layout & information hierarchy
+
+- [ ] **7.5.1 — Section-appropriate layouts**
+  Not every section should be a vertical card list. Consider:
+  Entertainment → horizontal cards with poster images (grid or row)
+  Opinions → compact list (less metadata, denser)
+  Podcasts → horizontal cards with artwork
+  Popular Today → current vertical list works well with related articles
+
+- [ ] **7.5.2 — Card density presets**
+  The `cardSize`/`contentSize` pattern works for now. If we need more
+  granular control later, consolidate into a single `density` prop:
+  `compact` | `default` | `relaxed` — each maps to coordinated sizes
+  for card padding, badge size, text size, and icon size.
+
+- [ ] **7.5.3 — Visual rhythm and section separation**
+  With richer cards, sections need clearer visual breaks. Consider:
+  section header styling, dividers, alternating card backgrounds,
+  or grouped containers per section.
+
+---
+
+## Housekeeping
+
+- [ ] **media-bias.json duplication** — `config/media-bias.json` is the source
+  of truth but `frontend/src/lib/media-bias.json` is a copy because Turbopack
+  can't resolve imports outside its root (`frontend/`). Investigate: symlink,
+  build-time copy script, or Turbopack `resolveAlias` config to point at the
+  real file. Keep one source of truth.
 
 ---
 
@@ -306,6 +365,76 @@ fields. This phase depends on Phase 6 delivering richer data.
 - [ ] **8.2** Auto-refresh — poll for digest changes (useful after running a digest)
 - [ ] **8.3** Search/filter within digest by keyword
 - [ ] **8.4** Live scores tab — call ESPN endpoints directly for in-progress games
+
+---
+
+## Phase 9: Visual Identity & Media Metadata
+
+Static reference data and iconography to break up text-heavy layouts.
+Stored in `config/` as JSON lookups, consumed by the dashboard.
+
+### 9.1 — News outlet identity
+
+- [x] **9.1.1 — Outlet icon/favicon lookup**
+  Done. Using Google Favicons API at runtime — no static map needed.
+  `getFaviconUrl(sourceUrl)` in `frontend/src/lib/media-bias.ts`.
+  Works for any domain including tiny local outlets. Zero maintenance.
+
+- [x] **9.1.2 — Media political bias chart**
+  Done. `config/media-bias.json` — ~40 outlets mapped.
+  `frontend/src/lib/media-bias.ts` — lookup utilities, lean color spectrum.
+  Coverage: ~72% of primary stories, ~78% of related articles.
+  National outlets are fully covered; gaps are local/regional stations.
+
+- [ ] **9.1.3 — Bias map maintenance script**
+  Create `scripts/audit-media-bias.ts` that:
+  1. Scans all digest.json files for `source_url` domains and
+     `related_articles[].outlet` names
+  2. Checks each against `config/media-bias.json`
+  3. Reports unmapped outlets sorted by frequency (most seen first)
+  4. Optionally outputs a stub JSON block to copy-paste into the config
+  Run periodically (weekly or after adding new feeds) to grow coverage.
+  Local TV stations (W/K call letter prefixes) can be flagged separately
+  since they generally don't carry a national political lean.
+
+- [ ] **9.1.4 — Surface bias + icons in "Also covered by" row**
+  Render outlet favicon + name + subtle bias indicator per related article.
+  Visual signal: coverage spectrum (all left-leaning? spans the spectrum?).
+  Graceful fallback: outlets without a bias mapping show favicon + name
+  only — no color dot. No guessing.
+
+### 9.2 — Podcast identity
+
+- [ ] **9.2.1 — Show artwork in config**
+  Config already has per-show `rss`, `youtube_channel`, `transcript_page`.
+  Add `icon?: string` per show — either a URL to the show's artwork
+  (from `itunes:image` at channel level) or a local path. Fetched once
+  and cached, not on every digest run.
+
+- [ ] **9.2.2 — Podcast network/platform icons**
+  Apple Podcasts, Spotify, YouTube icons for linking out to the episode
+  on different platforms. Static SVGs in `public/icons/`.
+
+### 9.3 — Entertainment identity
+
+- [ ] **9.3.1 — TMDB poster images (covered by 6.4.1)**
+  Already planned — `poster_url` from TMDB API. This is the primary
+  visual for entertainment cards.
+
+- [ ] **9.3.2 — Streaming platform icons**
+  Netflix, Hulu, Disney+, Prime Video, etc. Static SVGs in `public/icons/`.
+  Useful if we can determine which platform a show is on (TMDB has
+  `watch/providers` endpoint, or infer from the `on_the_air` endpoint).
+
+### 9.4 — Sports identity
+
+- [ ] **9.4.1 — Team logos (already in data)**
+  ESPN CDN URLs are already in `TeamInfo.logo`. No work needed — just
+  ensure the dashboard renders them well (already done in GameCard).
+
+- [ ] **9.4.2 — League/sport icons**
+  NBA, NHL, MLB, NFL, UFC, F1 logos as static SVGs in `public/icons/`.
+  Use as section headers in the scoreboard.
 
 ---
 

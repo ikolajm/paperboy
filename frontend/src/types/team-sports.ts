@@ -5,4 +5,4 @@ export type {
   SportRecaps as TeamSportRecap,
   ScheduledGame,
   SportSchedule,
-} from "@shared/types/digest";
+} from "@shared/types/scores";

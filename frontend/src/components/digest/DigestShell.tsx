@@ -64,7 +64,11 @@ export function DigestShell({
         />
         <main className="flex-1 overflow-y-auto p-6">
           {activeTab === 'news' ? (
-            <NewsFeed sections={digest?.sections ?? null} date={currentDate} />
+            <NewsFeed
+              sections={digest?.sections ?? null}
+              date={currentDate}
+              availableDeepDives={digest?.deep_dives.map(d => d.id) ?? []}
+            />
           ) : (
             <ScoreboardPanel scores={digest?.sections.scores ?? null} />
           )}

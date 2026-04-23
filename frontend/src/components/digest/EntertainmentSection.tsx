@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { EntertainmentSection as EntertainmentType } from '@/types';
 import { Badge } from '@/components/atoms/Badge';
 import { Card, CardContent } from '@/components/atoms/Card';
-import { Search } from 'lucide-react';
+import { Search, BookOpen } from 'lucide-react';
 
 function ScoreBadge({ score }: { score: number }) {
   const variant =
@@ -20,6 +20,7 @@ function MediaCard({
   overview,
   score,
   deepDiveEligible,
+  deepDiveExists,
   date,
 }: {
   id: string;
@@ -27,6 +28,7 @@ function MediaCard({
   overview: string;
   score: number;
   deepDiveEligible: boolean;
+  deepDiveExists: boolean;
   date: string;
 }) {
   return (
@@ -49,14 +51,20 @@ function MediaCard({
               </p>
             )}
           </div>
-          {deepDiveEligible && (
+          {deepDiveEligible && deepDiveExists && (
             <Link
               href={`/deep-dive/${date}/${id}`}
               className="flex items-center gap-1 text-label-sm text-primary hover:text-primary/80 transition-colors whitespace-nowrap shrink-0 pt-1"
             >
-              <Search className="size-icon-0" />
-              <span>Deep dive</span>
+              <BookOpen className="size-icon-0" />
+              <span>Read deep dive</span>
             </Link>
+          )}
+          {deepDiveEligible && !deepDiveExists && (
+            <span className="flex items-center gap-1 text-label-sm text-on-surface-variant whitespace-nowrap shrink-0 pt-1">
+              <Search className="size-icon-0" />
+              <span>Generate deep dive</span>
+            </span>
           )}
         </div>
       </CardContent>
@@ -64,7 +72,7 @@ function MediaCard({
   );
 }
 
-export function EntertainmentSection({ data, date }: { data: EntertainmentType; date: string }) {
+export function EntertainmentSection({ data, date, availableDeepDives = [] }: { data: EntertainmentType; date: string; availableDeepDives?: string[] }) {
   const { movies, streaming } = data;
   if (movies.length === 0 && streaming.length === 0) return null;
 
@@ -84,6 +92,7 @@ export function EntertainmentSection({ data, date }: { data: EntertainmentType; 
                 overview={m.overview}
                 score={m.vote_average}
                 deepDiveEligible={m.deep_dive_eligible}
+                deepDiveExists={availableDeepDives.includes(m.id)}
                 date={date}
               />
             ))}
@@ -104,6 +113,7 @@ export function EntertainmentSection({ data, date }: { data: EntertainmentType; 
                 overview={s.overview}
                 score={s.vote_average}
                 deepDiveEligible={s.deep_dive_eligible}
+                deepDiveExists={availableDeepDives.includes(s.id)}
                 date={date}
               />
             ))}

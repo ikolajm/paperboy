@@ -1,272 +1,20 @@
 /**
  * Canonical types for the Paperboy digest pipeline.
  * Used by both scripts/ and frontend/.
+ *
+ * Domain types live in their own modules. This file re-exports everything
+ * and defines the top-level Digest assembly types.
  */
 
-// --- Core story types ---
+// --- Domain re-exports ---
 
-export interface Story {
-  id: string;
-  title: string;
-  url: string | null;
-  snippet: string;
-  source: string;
-  date: string;
-  deep_dive_eligible: boolean;
-  google_news_redirect?: boolean;
-  stale?: boolean;
-}
-
-export interface CalendarEvent {
-  label: string;
-  date: string;
-  days_away: number;
-}
-
-export interface CrossRef {
-  show: string;
-  episode_title: string;
-  published: string;
-}
-
-// --- Topic sections ---
-
-export interface TopicSection {
-  topic: string;
-  category: string;
-  mode: "active" | "passive";
-  stories: Story[];
-  calendar_event: CalendarEvent | null;
-  cross_refs: CrossRef[];
-  quiet?: boolean;
-}
-
-// --- Scores (from per-sport modules) ---
-
-export interface TeamInfo {
-  displayName: string;
-  abbreviation: string;
-  logo: string;
-  records: Record<string, string>;
-}
-
-export interface GameLeader {
-  category: string;
-  shortName: string;
-  athlete: string;
-  displayValue: string;
-}
-
-export interface CompletedGame {
-  id: string;
-  home: TeamInfo;
-  away: TeamInfo;
-  homeScore: number;
-  awayScore: number;
-  status: string;
-  headline: string;
-  notes: string[];
-  venue: string;
-  leaders: GameLeader[];
-  linescores: { home: number[]; away: number[] };
-}
-
-export interface ScheduledGame {
-  id: string;
-  home: TeamInfo;
-  away: TeamInfo;
-  startTime: string;
-  startTimeUTC: string;
-  broadcasts: string[];
-  notes: string[];
-  venue: string;
-}
-
-export interface SportRecaps {
-  sport: string;
-  date: string;
-  status: "games_played" | "no_games" | "playoffs" | "fetch_error";
-  seasonType: number;
-  games: CompletedGame[];
-  error?: string;
-}
-
-export interface SportSchedule {
-  sport: string;
-  date: string;
-  games: ScheduledGame[];
-  error?: string;
-}
-
-// --- UFC/MMA ---
-
-export interface FighterInfo {
-  name: string;
-  record: string;
-  winner: boolean;
-}
-
-export interface FightResult {
-  id: string;
-  fighter1: FighterInfo;
-  fighter2: FighterInfo;
-  weightClass: string;
-  rounds: number;
-  method: string;
-  headline: string;
-}
-
-export interface FightCard {
-  id: string;
-  eventName: string;
-  venue: string;
-  broadcasts: string[];
-  startTime: string;
-  startTimeUTC: string;
-  fights: FightResult[];
-}
-
-export interface UfcRecaps {
-  sport: "UFC";
-  date: string;
-  status: "events_completed" | "no_events" | "fetch_error";
-  cards: FightCard[];
-  error?: string;
-}
-
-export interface UfcSchedule {
-  sport: "UFC";
-  date: string;
-  cards: FightCard[];
-  error?: string;
-}
-
-// --- F1/Racing ---
-
-export interface DriverResult {
-  position: number;
-  name: string;
-  team: string;
-  flag: string;
-  winner: boolean;
-}
-
-export interface SessionResult {
-  type: string;
-  status: string;
-  drivers: DriverResult[];
-  headline: string;
-}
-
-export interface RaceWeekend {
-  id: string;
-  eventName: string;
-  circuit: string;
-  city: string;
-  date: string;
-  sessions: SessionResult[];
-}
-
-export interface F1Recaps {
-  sport: "F1";
-  date: string;
-  status: "race_completed" | "no_race" | "canceled" | "fetch_error";
-  weekends: RaceWeekend[];
-  error?: string;
-}
-
-export interface F1Schedule {
-  sport: "F1";
-  date: string;
-  weekends: RaceWeekend[];
-  error?: string;
-}
-
-// --- Entertainment ---
-
-export interface MovieEntry {
-  id: string;
-  title: string;
-  overview: string;
-  release_date: string;
-  vote_average: number;
-  deep_dive_eligible: boolean;
-}
-
-export interface StreamingEntry {
-  id: string;
-  title: string;
-  overview: string;
-  vote_average: number;
-  first_air_date?: string;
-  deep_dive_eligible: boolean;
-}
-
-export interface EntertainmentSection {
-  movies: MovieEntry[];
-  streaming: StreamingEntry[];
-}
-
-// --- Podcasts ---
-
-export interface PodcastEntry {
-  id: string;
-  show: string;
-  title: string;
-  duration: string;
-  date: string;
-  snippet: string;
-  episode_url: string | null;
-  deep_dive_eligible: boolean;
-}
-
-// --- Popular Today ---
-
-export interface PopularStory {
-  id: string;
-  title: string;
-  url: string | null;
-  snippet: string;
-  source: string;
-  deep_dive_eligible: boolean;
-  google_news_redirect?: boolean;
-}
-
-export interface PopularTodaySection {
-  top_stories: PopularStory[];
-  world: PopularStory[];
-  nation: PopularStory[];
-}
-
-// --- Local ---
-
-export interface LocalStory {
-  id: string;
-  title: string;
-  url: string | null;
-  snippet: string;
-  source: string;
-  google_news_redirect?: boolean;
-}
-
-export interface LocalLocation {
-  label: string;
-  stories: LocalStory[];
-}
-
-export interface LocalSection {
-  locations: LocalLocation[];
-}
-
-// --- Opinions ---
-
-export interface OpinionEntry {
-  id: string;
-  title: string;
-  url: string | null;
-  snippet: string;
-  source: string;
-}
+export * from "./editorial.js";
+export * from "./scores.js";
+export * from "./ufc.js";
+export * from "./f1.js";
+export * from "./entertainment.js";
+export * from "./podcasts.js";
+export * from "./rss.js";
 
 // --- Deep Dives ---
 
@@ -277,6 +25,14 @@ export interface DeepDiveRef {
 }
 
 // --- Top-level digest ---
+
+import type { SportRecaps, SportSchedule } from "./scores.js";
+import type { UfcRecaps, UfcSchedule } from "./ufc.js";
+import type { F1Recaps, F1Schedule } from "./f1.js";
+import type { PopularTodaySection, LocalSection, TopicSection } from "./editorial.js";
+import type { EntertainmentSection } from "./entertainment.js";
+import type { PodcastEntry } from "./podcasts.js";
+import type { OpinionEntry } from "./editorial.js";
 
 export interface DigestMeta {
   date: string;
@@ -320,23 +76,3 @@ export interface Digest {
   sections: DigestSections;
   deep_dives: DeepDiveRef[];
 }
-
-// --- Script-internal types ---
-
-export interface RssEntry {
-  title: string;
-  url: string;
-  source: string;
-  date: string;
-  snippet: string;
-  duration?: string;
-  google_news_redirect?: boolean;
-}
-
-export interface RssBatchItem {
-  label: string;
-  url: string;
-  max: number;
-}
-
-export type RssBatchResult = Record<string, RssEntry[] | { status: "fetch_error"; error: string }>;

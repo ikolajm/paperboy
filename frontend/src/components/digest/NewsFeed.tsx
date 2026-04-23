@@ -55,15 +55,15 @@ function getSectionCount(sections: DigestSections, key: NewsCategory): string {
   }
 }
 
-function renderSection(sections: DigestSections, key: NewsCategory, date: string) {
+function renderSection(sections: DigestSections, key: NewsCategory, date: string, availableDeepDives: string[]) {
   switch (key) {
     case 'top_stories':
-      return <PopularTodaySection data={sections.popular_today} date={date} />;
+      return <PopularTodaySection data={sections.popular_today} date={date} availableDeepDives={availableDeepDives} />;
     case 'for_you':
       return (
         <div className="flex flex-col gap-6">
           {sections.for_you.map((section) => (
-            <TopicSection key={section.topic} section={section} date={date} />
+            <TopicSection key={section.topic} section={section} date={date} availableDeepDives={availableDeepDives} />
           ))}
         </div>
       );
@@ -71,14 +71,14 @@ function renderSection(sections: DigestSections, key: NewsCategory, date: string
       return (
         <div className="flex flex-col gap-6">
           {sections.on_your_radar.map((section) => (
-            <TopicSection key={section.topic} section={section} date={date} />
+            <TopicSection key={section.topic} section={section} date={date} availableDeepDives={availableDeepDives} />
           ))}
         </div>
       );
     case 'podcasts':
-      return <PodcastSection podcasts={sections.podcasts} date={date} />;
+      return <PodcastSection podcasts={sections.podcasts} date={date} availableDeepDives={availableDeepDives} />;
     case 'entertainment':
-      return <EntertainmentSection data={sections.entertainment} date={date} />;
+      return <EntertainmentSection data={sections.entertainment} date={date} availableDeepDives={availableDeepDives} />;
     case 'opinions':
       return <OpinionsSection opinions={sections.opinions} />;
     case 'local':
@@ -89,9 +89,11 @@ function renderSection(sections: DigestSections, key: NewsCategory, date: string
 export function NewsFeed({
   sections,
   date,
+  availableDeepDives = [],
 }: {
   sections: DigestSections | null;
   date: string;
+  availableDeepDives?: string[];
 }) {
   const [showAll, setShowAll] = useState(true);
   const [activeFilters, setActiveFilters] = useState<Set<NewsCategory>>(
@@ -161,7 +163,7 @@ export function NewsFeed({
       <div className="flex flex-col gap-8">
         {visibleCategories.map((cat) => (
           <section key={cat.key}>
-            {renderSection(sections, cat.key, date)}
+            {renderSection(sections, cat.key, date, availableDeepDives)}
           </section>
         ))}
       </div>

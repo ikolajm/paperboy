@@ -6,7 +6,14 @@
 import type { PaperboyConfig } from "../../shared/types/config.js";
 import type { MovieEntry, StreamingEntry, EntertainmentSection } from "../../shared/types/digest.js";
 import type { TmdbEntry, TmdbResult } from "../fetch-tmdb.js";
+import { TMDB_GENRES } from "../../shared/types/sources/tmdb.js";
 import { IdCounter } from "./ids.js";
+
+function mapGenres(genreIds?: number[]): string[] | undefined {
+  if (!genreIds || genreIds.length === 0) return undefined;
+  const names = genreIds.map(id => TMDB_GENRES[id]).filter(Boolean);
+  return names.length > 0 ? names : undefined;
+}
 
 export function assembleEntertainment(
   tmdbResult: TmdbResult,
@@ -27,14 +34,19 @@ export function assembleEntertainment(
     if (!Array.isArray(entries)) continue;
     for (const e of entries as TmdbEntry[]) {
       if (movies.length >= maxMovies) break;
-      movies.push({
+      const movie: MovieEntry = {
         id: ids.next("ENT"),
         title: e.title,
         overview: e.overview,
         release_date: e.release_date || "",
         vote_average: e.vote_average,
         deep_dive_eligible: true,
-      });
+      };
+      if (e.vote_count) movie.vote_count = e.vote_count;
+      if (e.poster_url) movie.poster_url = e.poster_url;
+      const genres = mapGenres(e.genre_ids);
+      if (genres) movie.genres = genres;
+      movies.push(movie);
     }
   }
 
@@ -43,14 +55,19 @@ export function assembleEntertainment(
     if (!Array.isArray(entries)) continue;
     for (const e of entries as TmdbEntry[]) {
       if (streaming.length >= maxStreaming) break;
-      streaming.push({
+      const show: StreamingEntry = {
         id: ids.next("ENT"),
         title: e.title,
         overview: e.overview,
         vote_average: e.vote_average,
         first_air_date: e.first_air_date,
         deep_dive_eligible: true,
-      });
+      };
+      if (e.vote_count) show.vote_count = e.vote_count;
+      if (e.poster_url) show.poster_url = e.poster_url;
+      const genres = mapGenres(e.genre_ids);
+      if (genres) show.genres = genres;
+      streaming.push(show);
     }
   }
 

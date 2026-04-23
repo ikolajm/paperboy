@@ -19,6 +19,7 @@
 import { XMLParser } from "fast-xml-parser";
 import { readFileSync } from "node:fs";
 import type { RssEntry, RssBatchItem, RssBatchResult } from "../shared/types/digest.js";
+import type { RelatedArticle } from "../shared/types/editorial.js";
 
 // --- HTML entity decoding ---
 
@@ -61,6 +62,46 @@ function truncateToSentences(text: string, maxSentences = 2): string {
 
 function isGoogleNewsUrl(url: string): boolean {
   return url.includes("news.google.com/rss/articles/");
+}
+
+// --- Google News related articles parsing ---
+
+/**
+ * Parse the <description> HTML from Google News topic/top-stories feeds.
+ * Returns related articles from outlets 2–5 (skips the first, which
+ * duplicates the primary <title>/<link>).
+ *
+ * Topic feeds: <ol><li><a href="...">Headline</a>&nbsp;&nbsp;<font>Outlet</font></li>...</ol>
+ * Search feeds: single <a href="...">Headline</a>&nbsp;&nbsp;<font>Outlet</font>
+ */
+function parseGoogleNewsRelated(descriptionRaw: string): RelatedArticle[] {
+  // fast-xml-parser with processEntities:false keeps HTML entity-encoded;
+  // decode so we can parse the actual HTML tags
+  const descriptionHtml = decodeEntities(descriptionRaw);
+  if (!descriptionHtml.includes("<ol>")) return [];
+
+  const articles: RelatedArticle[] = [];
+  // Match each <li> block
+  const liPattern = /<li>.*?<a[^>]+href="([^"]*)"[^>]*>([^<]*)<\/a>.*?<font[^>]*>([^<]*)<\/font>.*?<\/li>/gs;
+  let match: RegExpExecArray | null;
+  let index = 0;
+
+  while ((match = liPattern.exec(descriptionHtml)) !== null) {
+    // Skip the first <li> — it duplicates the primary story
+    if (index > 0) {
+      const [, url, headline, outlet] = match;
+      if (url && headline && outlet) {
+        articles.push({
+          headline: decodeEntities(headline).trim(),
+          url: url.trim(),
+          outlet: decodeEntities(outlet).trim(),
+        });
+      }
+    }
+    index++;
+  }
+
+  return articles;
 }
 
 // --- iTunes duration parsing ---
@@ -135,7 +176,8 @@ function getTextContent(node: unknown): string {
   return "";
 }
 
-export function parseFeed(xml: string, maxItems = 5): RssEntry[] {
+export function parseFeed(xml: string, maxItems = 5, feedUrl?: string): RssEntry[] {
+  const isEspnFeed = feedUrl ? feedUrl.includes("espn.com") : false;
   const parsed = parser.parse(xml);
   const entries: RssEntry[] = [];
 
@@ -182,13 +224,32 @@ export function parseFeed(xml: string, maxItems = 5): RssEntry[] {
     const descRaw = getTextContent(raw.description || raw.summary || raw.content || "");
     let snippet = descRaw && descRaw !== "null" ? truncateToSentences(descRaw) : "";
 
-    // Source name (Google News <source> element, or dc:creator)
+    // Source name, URL, and author
     let source = "";
+    let sourceUrl: string | undefined;
+    let author: string | undefined;
+
     if (raw.source) {
       source = getTextContent(raw.source);
+      // Google News <source url="https://..."> attribute
+      if (typeof raw.source === "object") {
+        const srcObj = raw.source as Record<string, unknown>;
+        if (srcObj["@_url"]) {
+          sourceUrl = String(srcObj["@_url"]);
+        }
+      }
     }
-    if (!source && raw["dc:creator"]) {
-      source = getTextContent(raw["dc:creator"]);
+
+    // dc:creator — author name (ESPN), or fallback source for other feeds
+    if (raw["dc:creator"]) {
+      const creator = getTextContent(raw["dc:creator"]);
+      if (isEspnFeed) {
+        // ESPN: dc:creator is the author, outlet is always "ESPN"
+        author = creator;
+        if (!source) source = "ESPN";
+      } else if (!source) {
+        source = creator;
+      }
     }
 
     // iTunes duration (podcast feeds)
@@ -197,15 +258,35 @@ export function parseFeed(xml: string, maxItems = 5): RssEntry[] {
       duration = parseDuration(getTextContent(raw["itunes:duration"]));
     }
 
+    // Podcast artwork: itunes:image (episode-level), media:thumbnail fallback
+    let imageUrl: string | undefined;
+    if (raw["itunes:image"] && typeof raw["itunes:image"] === "object") {
+      const img = raw["itunes:image"] as Record<string, unknown>;
+      if (img["@_href"]) imageUrl = String(img["@_href"]);
+    }
+    if (!imageUrl && raw["media:thumbnail"] && typeof raw["media:thumbnail"] === "object") {
+      const thumb = raw["media:thumbnail"] as Record<string, unknown>;
+      if (thumb["@_url"]) imageUrl = String(thumb["@_url"]);
+    }
+
+    // Audio URL from <enclosure>
+    let audioUrl: string | undefined;
+    if (raw.enclosure && typeof raw.enclosure === "object") {
+      const enc = raw.enclosure as Record<string, unknown>;
+      if (enc["@_type"]?.toString().startsWith("audio/") && enc["@_url"]) {
+        audioUrl = String(enc["@_url"]);
+      }
+    }
+
     // Google News redirect detection
     const googleNewsRedirect = url ? isGoogleNewsUrl(url) : false;
 
-    // Google News snippets just echo the title + outlet — clear them
-    if (googleNewsRedirect && snippet) {
-      const titleWords = title.toLowerCase().split(/\s+/).slice(0, 5).join(" ");
-      if (snippet.toLowerCase().includes(titleWords)) {
-        snippet = "";
-      }
+    // Google News: parse related articles from <description> HTML, clear snippet
+    let relatedArticles: RelatedArticle[] | undefined;
+    if (googleNewsRedirect) {
+      relatedArticles = parseGoogleNewsRelated(descRaw);
+      // Google News snippets just echo the title + outlet — clear them
+      snippet = "";
     }
 
     const entry: RssEntry = {
@@ -216,8 +297,13 @@ export function parseFeed(xml: string, maxItems = 5): RssEntry[] {
       snippet,
     };
 
+    if (sourceUrl) entry.source_url = sourceUrl;
+    if (author) entry.author = author;
     if (duration) entry.duration = duration;
+    if (imageUrl) entry.image_url = imageUrl;
+    if (audioUrl) entry.audio_url = audioUrl;
     if (googleNewsRedirect) entry.google_news_redirect = true;
+    if (relatedArticles && relatedArticles.length > 0) entry.related_articles = relatedArticles;
 
     entries.push(entry);
   }
@@ -229,7 +315,7 @@ export function parseFeed(xml: string, maxItems = 5): RssEntry[] {
 
 export async function fetchFeedEntries(url: string, maxItems = 5): Promise<RssEntry[]> {
   const xml = await fetchFeedXml(url);
-  return parseFeed(xml, maxItems);
+  return parseFeed(xml, maxItems, url);
 }
 
 export async function fetchOne(

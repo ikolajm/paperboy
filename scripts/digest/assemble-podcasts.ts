@@ -44,7 +44,7 @@ export function assemblePodcasts(
     // Check freshness based on show's release schedule
     if (isStale(latest.date, maxFreshnessHours(show.release_schedule))) continue;
 
-    podcasts.push({
+    const entry: PodcastEntry = {
       id: ids.next("POD"),
       show: name,
       title: latest.title,
@@ -53,7 +53,14 @@ export function assemblePodcasts(
       snippet: latest.snippet,
       episode_url: latest.url || null,
       deep_dive_eligible: true,
-    });
+    };
+
+    if (latest.image_url) entry.image_url = latest.image_url;
+    if (latest.audio_url) entry.audio_url = latest.audio_url;
+    if (show.youtube_channel) entry.youtube_url = show.youtube_channel;
+    if (show.transcript_page) entry.transcript_url = show.transcript_page;
+
+    podcasts.push(entry);
   }
 
   return podcasts;

@@ -2,4 +2,4 @@ export type {
   MovieEntry as Movie,
   StreamingEntry as StreamingShow,
   EntertainmentSection,
-} from "@shared/types/digest";
+} from "@shared/types/entertainment";

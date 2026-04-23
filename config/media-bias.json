@@ -1,0 +1,220 @@
+{
+  "_meta": {
+    "description": "Media political lean and factual reporting ratings",
+    "sources": "AllSides, Ad Fontes Media, Media Bias/Fact Check (MBFC)",
+    "lean_scale": "left, lean-left, center, lean-right, right",
+    "factual_scale": "high, mostly-factual, mixed, low",
+    "last_updated": "2026-04-22"
+  },
+
+  "apnews.com": {
+    "name": "AP News",
+    "lean": "center",
+    "factual": "high"
+  },
+  "reuters.com": {
+    "name": "Reuters",
+    "lean": "center",
+    "factual": "high"
+  },
+  "bbc.com": {
+    "name": "BBC",
+    "lean": "center",
+    "factual": "high"
+  },
+  "nytimes.com": {
+    "name": "The New York Times",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "washingtonpost.com": {
+    "name": "The Washington Post",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "theguardian.com": {
+    "name": "The Guardian",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "npr.org": {
+    "name": "NPR",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "pbs.org": {
+    "name": "PBS",
+    "lean": "center",
+    "factual": "high"
+  },
+  "cbsnews.com": {
+    "name": "CBS News",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "nbcnews.com": {
+    "name": "NBC News",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "cnn.com": {
+    "name": "CNN",
+    "lean": "lean-left",
+    "factual": "mostly-factual"
+  },
+  "abcnews.go.com": {
+    "name": "ABC News",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "foxnews.com": {
+    "name": "Fox News",
+    "lean": "right",
+    "factual": "mixed"
+  },
+  "cnbc.com": {
+    "name": "CNBC",
+    "lean": "center",
+    "factual": "high"
+  },
+  "usatoday.com": {
+    "name": "USA Today",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "wsj.com": {
+    "name": "Wall Street Journal",
+    "lean": "center",
+    "factual": "high"
+  },
+  "axios.com": {
+    "name": "Axios",
+    "lean": "center",
+    "factual": "high"
+  },
+  "politico.com": {
+    "name": "Politico",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "thehill.com": {
+    "name": "The Hill",
+    "lean": "center",
+    "factual": "high"
+  },
+  "bloomberg.com": {
+    "name": "Bloomberg",
+    "lean": "center",
+    "factual": "high"
+  },
+  "thetimes.com": {
+    "name": "The Times (UK)",
+    "lean": "lean-right",
+    "factual": "high"
+  },
+  "elpais.com": {
+    "name": "El País",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "bostonglobe.com": {
+    "name": "Boston Globe",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "engadget.com": {
+    "name": "Engadget",
+    "lean": "center",
+    "factual": "high"
+  },
+  "thehackernews.com": {
+    "name": "The Hacker News",
+    "lean": "center",
+    "factual": "high"
+  },
+  "space.com": {
+    "name": "Space.com",
+    "lean": "center",
+    "factual": "high"
+  },
+  "nature.com": {
+    "name": "Nature",
+    "lean": "center",
+    "factual": "high"
+  },
+  "phys.org": {
+    "name": "Phys.org",
+    "lean": "center",
+    "factual": "high"
+  },
+  "science.nasa.gov": {
+    "name": "NASA",
+    "lean": "center",
+    "factual": "high"
+  },
+  "espn.com": {
+    "name": "ESPN",
+    "lean": "center",
+    "factual": "high"
+  },
+  "nypost.com": {
+    "name": "New York Post",
+    "lean": "right",
+    "factual": "mixed"
+  },
+  "dailywire.com": {
+    "name": "The Daily Wire",
+    "lean": "right",
+    "factual": "mixed"
+  },
+  "breitbart.com": {
+    "name": "Breitbart",
+    "lean": "right",
+    "factual": "mixed"
+  },
+  "msnbc.com": {
+    "name": "MSNBC",
+    "lean": "left",
+    "factual": "mostly-factual"
+  },
+  "vox.com": {
+    "name": "Vox",
+    "lean": "left",
+    "factual": "high"
+  },
+  "slate.com": {
+    "name": "Slate",
+    "lean": "left",
+    "factual": "high"
+  },
+  "theatlantic.com": {
+    "name": "The Atlantic",
+    "lean": "lean-left",
+    "factual": "high"
+  },
+  "newyorker.com": {
+    "name": "The New Yorker",
+    "lean": "left",
+    "factual": "high"
+  },
+  "nationalreview.com": {
+    "name": "National Review",
+    "lean": "right",
+    "factual": "mostly-factual"
+  },
+  "reason.com": {
+    "name": "Reason",
+    "lean": "lean-right",
+    "factual": "high"
+  },
+  "people.com": {
+    "name": "People",
+    "lean": "center",
+    "factual": "high"
+  },
+  "yahoo.com": {
+    "name": "Yahoo",
+    "lean": "center",
+    "factual": "mostly-factual"
+  }
+}

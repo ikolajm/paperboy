@@ -2,9 +2,9 @@ import Link from 'next/link';
 import type { Podcast } from '@/types';
 import { Badge } from '@/components/atoms/Badge';
 import { Card, CardContent } from '@/components/atoms/Card';
-import { ExternalLink, Clock, Search } from 'lucide-react';
+import { ExternalLink, Clock, Search, BookOpen } from 'lucide-react';
 
-function PodcastCard({ entry, date }: { entry: Podcast; date: string }) {
+function PodcastCard({ entry, date, deepDiveExists }: { entry: Podcast; date: string; deepDiveExists: boolean }) {
   return (
     <Card variant="outline" size="sm">
       <CardContent className="flex flex-col gap-2">
@@ -34,14 +34,20 @@ function PodcastCard({ entry, date }: { entry: Podcast; date: string }) {
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0 pt-1">
-            {entry.deep_dive_eligible && (
+            {entry.deep_dive_eligible && deepDiveExists && (
               <Link
                 href={`/deep-dive/${date}/${entry.id}`}
                 className="flex items-center gap-1 text-label-sm text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
               >
-                <Search className="size-icon-0" />
-                <span>Transcript</span>
+                <BookOpen className="size-icon-0" />
+                <span>Read transcript</span>
               </Link>
+            )}
+            {entry.deep_dive_eligible && !deepDiveExists && (
+              <span className="flex items-center gap-1 text-label-sm text-on-surface-variant whitespace-nowrap">
+                <Search className="size-icon-0" />
+                <span>Generate transcript</span>
+              </span>
             )}
             {entry.episode_url && (
               <a
@@ -61,7 +67,7 @@ function PodcastCard({ entry, date }: { entry: Podcast; date: string }) {
   );
 }
 
-export function PodcastSection({ podcasts, date }: { podcasts: Podcast[]; date: string }) {
+export function PodcastSection({ podcasts, date, availableDeepDives = [] }: { podcasts: Podcast[]; date: string; availableDeepDives?: string[] }) {
   if (podcasts.length === 0) return null;
 
   return (
@@ -69,7 +75,7 @@ export function PodcastSection({ podcasts, date }: { podcasts: Podcast[]; date: 
       <h3 className="text-title-md font-semibold text-on-surface">Podcasts</h3>
       <div className="flex flex-col gap-2">
         {podcasts.map((entry) => (
-          <PodcastCard key={entry.id} entry={entry} date={date} />
+          <PodcastCard key={entry.id} entry={entry} date={date} deepDiveExists={availableDeepDives.includes(entry.id)} />
         ))}
       </div>
     </div>

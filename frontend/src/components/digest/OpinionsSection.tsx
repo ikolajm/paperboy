@@ -16,6 +16,9 @@ export function OpinionsSection({ opinions }: { opinions: Opinion[] }) {
             url={entry.url}
             snippet={entry.snippet}
             source={entry.source}
+            sourceUrl={entry.source_url}
+            storyDate={entry.date}
+            relatedArticles={entry.related_articles}
           />
         ))}
       </div>

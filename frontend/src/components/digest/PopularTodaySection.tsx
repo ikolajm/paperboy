@@ -1,4 +1,4 @@
-import type { PopularToday, PopularStory } from '@/types';
+import type { PopularToday } from '@/types';
 import { StoryCard } from './StoryCard';
 
 const SUBSECTIONS: { key: keyof PopularToday; label: string }[] = [
@@ -10,9 +10,11 @@ const SUBSECTIONS: { key: keyof PopularToday; label: string }[] = [
 export function PopularTodaySection({
   data,
   date,
+  availableDeepDives = [],
 }: {
   data: PopularToday;
   date: string;
+  availableDeepDives?: string[];
 }) {
   return (
     <div className="flex flex-col gap-5">
@@ -33,8 +35,12 @@ export function PopularTodaySection({
                   url={story.url}
                   snippet={story.snippet}
                   source={story.source}
+                  sourceUrl={story.source_url}
+                  storyDate={story.date}
                   deepDiveEligible={story.deep_dive_eligible}
                   date={date}
+                  relatedArticles={story.related_articles}
+                  availableDeepDives={availableDeepDives}
                 />
               ))}
             </div>

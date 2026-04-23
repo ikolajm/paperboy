@@ -14,9 +14,12 @@ function rssToStory(entry: RssEntry, id: string): Story {
     url: entry.url || null,
     snippet: entry.snippet,
     source: entry.source,
+    source_url: entry.source_url,
+    author: entry.author,
     date: entry.date,
     deep_dive_eligible: true,
     google_news_redirect: entry.google_news_redirect,
+    related_articles: entry.related_articles,
   };
 }
 

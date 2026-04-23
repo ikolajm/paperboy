@@ -23,6 +23,8 @@ export function LocalNewsSection({ data }: { data: LocalSection }) {
                 url={story.url}
                 snippet={story.snippet}
                 source={story.source}
+                sourceUrl={story.source_url}
+                storyDate={story.date}
               />
             ))}
           </div>

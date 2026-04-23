@@ -1,7 +1,19 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
+import type { RelatedArticle } from '@/types';
 import { Badge } from '@/components/atoms/Badge';
 import { Card, CardContent } from '@/components/atoms/Card';
-import { ExternalLink, Search } from 'lucide-react';
+import { Search, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  getFaviconUrl,
+  getMediaBias,
+  leanColor,
+  leanLabel,
+  type Lean,
+  type Factual,
+} from '@/lib/media-bias';
 
 interface StoryCardProps {
   id: string;
@@ -9,8 +21,107 @@ interface StoryCardProps {
   url: string | null;
   snippet: string;
   source: string;
+  sourceUrl?: string;
+  author?: string;
+  storyDate?: string;
   deepDiveEligible?: boolean;
   date?: string;
+  relatedArticles?: RelatedArticle[];
+  availableDeepDives?: string[];
+}
+
+function formatTimeAgo(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  if (isNaN(then)) return '';
+  const diffMs = now - then;
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay === 1) return 'yesterday';
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return '';
+}
+
+function LeanBadge({ lean }: { lean: Lean }) {
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-1 rounded-pill text-label-sm font-medium text-white"
+      style={{ backgroundColor: leanColor(lean) }}
+    >
+      {leanLabel(lean)}
+    </span>
+  );
+}
+
+function FactualBadge({ factual }: { factual: Factual }) {
+  const variant =
+    factual === 'high' ? 'success' as const
+    : factual === 'mostly-factual' ? 'success' as const
+    : factual === 'mixed' ? 'warning' as const
+    : 'destructive' as const;
+
+  const label =
+    factual === 'high' ? 'Highly Factual'
+    : factual === 'mostly-factual' ? 'Mostly Factual'
+    : factual === 'mixed' ? 'Mixed Factuality'
+    : 'Low Factuality';
+
+  return (
+    <Badge variant={variant} size="sm">
+      {label}
+    </Badge>
+  );
+}
+
+function RelatedPreview({ articles }: { articles: RelatedArticle[] }) {
+  return (
+    <div className="flex items-center gap-1.5 flex-wrap text-label-sm text-on-surface-variant">
+      <span>Also:</span>
+      {articles.map((ra) => (
+        <span key={ra.url} className="inline-flex items-center gap-1">
+          {ra.outlet}
+          {ra !== articles[articles.length - 1] && <span>·</span>}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function RelatedExpanded({ articles, date }: { articles: RelatedArticle[]; date?: string }) {
+  return (
+    <div className="flex flex-col gap-1 pl-2 border-l-2 border-outline-subtle">
+      {articles.map((ra) => {
+        const bias = getMediaBias(ra.url);
+        return (
+          <div key={ra.url} className="flex items-center gap-2 py-1">
+            <div className="flex items-center gap-1.5 min-w-0">
+              {bias && (
+                <LeanBadge lean={bias.lean} />
+              )}
+              {bias && (
+                <FactualBadge factual={bias.factual} />
+              )}
+              <a
+                href={ra.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-body-sm text-on-surface hover:text-primary transition-colors truncate"
+              >
+                {ra.headline}
+              </a>
+              <span className="text-label-sm text-on-surface-variant shrink-0">
+                — {ra.outlet}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export function StoryCard({
@@ -19,26 +130,63 @@ export function StoryCard({
   url,
   snippet,
   source,
+  sourceUrl,
+  author,
+  storyDate,
   deepDiveEligible,
   date,
+  relatedArticles,
+  availableDeepDives,
 }: StoryCardProps) {
-  const hasDeepDive = deepDiveEligible && date;
+  const [expanded, setExpanded] = useState(false);
+  const hasRelated = relatedArticles && relatedArticles.length > 0;
+  const bias = getMediaBias(sourceUrl);
+  const timeAgo = storyDate ? formatTimeAgo(storyDate) : '';
+  const deepDiveExists = availableDeepDives?.includes(id);
+  const canDeepDive = deepDiveEligible && date;
 
   return (
     <Card variant="outline" size="sm">
       <CardContent className="flex flex-col gap-2">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col gap-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-col gap-1.5 min-w-0">
+            {/* Top row: ID + outlet + time */}
+            <div className="flex items-center gap-2">
               <Badge variant="neutral" size="sm">
                 {id}
               </Badge>
+              {sourceUrl && (
+                <span className="flex items-center gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={getFaviconUrl(sourceUrl)}
+                    alt=""
+                    className="size-5 shrink-0"
+                  />
+                </span>
+              )}
               {source && (
-                <span className="text-label-sm text-on-surface-variant">
+                <span className="text-label-md text-on-surface-variant">
                   {source}
                 </span>
               )}
+              {timeAgo && (
+                <>
+                  <span className="text-label-md text-outline-subtle">·</span>
+                  <span className="text-label-md text-on-surface-variant">{timeAgo}</span>
+                </>
+              )}
             </div>
+
+            {/* Bias badges */}
+            {bias && (
+              <div className="flex items-center gap-1.5">
+                <LeanBadge lean={bias.lean} />
+                <FactualBadge factual={bias.factual} />
+              </div>
+            )}
+
+            {/* Headline — is the link */}
             {url ? (
               <a
                 href={url}
@@ -53,32 +201,58 @@ export function StoryCard({
                 {title}
               </p>
             )}
+
+            {/* Author */}
+            {author && (
+              <span className="text-label-sm text-on-surface-variant">
+                By {author}
+              </span>
+            )}
+
+            {/* Snippet */}
             {snippet && (
               <p className="text-body-sm text-on-surface-variant line-clamp-2">
                 {snippet}
               </p>
             )}
+
+            {/* Related articles: preview + expandable */}
+            {hasRelated && (
+              <div className="flex flex-col gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setExpanded(!expanded)}
+                  className="flex items-center gap-1 text-label-sm text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer self-start"
+                >
+                  <RelatedPreview articles={relatedArticles} />
+                  {expanded
+                    ? <ChevronUp className="size-3.5 shrink-0" />
+                    : <ChevronDown className="size-3.5 shrink-0" />
+                  }
+                </button>
+                {expanded && (
+                  <RelatedExpanded articles={relatedArticles} date={date} />
+                )}
+              </div>
+            )}
           </div>
+
+          {/* Actions */}
           <div className="flex items-center gap-2 shrink-0 pt-1">
-            {hasDeepDive && (
+            {canDeepDive && deepDiveExists && (
               <Link
                 href={`/deep-dive/${date}/${id}`}
                 className="flex items-center gap-1 text-label-sm text-primary hover:text-primary/80 transition-colors whitespace-nowrap"
               >
-                <Search className="size-icon-0" />
-                <span>Deep dive</span>
+                <BookOpen className="size-icon-0" />
+                <span>Read deep dive</span>
               </Link>
             )}
-            {url && (
-              <a
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-on-surface-variant hover:text-on-surface transition-colors"
-                title="Open article"
-              >
-                <ExternalLink className="size-icon-1" />
-              </a>
+            {canDeepDive && !deepDiveExists && (
+              <span className="flex items-center gap-1 text-label-sm text-on-surface-variant whitespace-nowrap">
+                <Search className="size-icon-0" />
+                <span>Generate deep dive</span>
+              </span>
             )}
           </div>
         </div>

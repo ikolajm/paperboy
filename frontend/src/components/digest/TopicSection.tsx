@@ -3,7 +3,7 @@ import { Badge } from '@/components/atoms/Badge';
 import { StoryCard } from './StoryCard';
 import { Calendar, Podcast } from 'lucide-react';
 
-export function TopicSection({ section, date }: { section: TopicGroup; date: string }) {
+export function TopicSection({ section, date, availableDeepDives = [] }: { section: TopicGroup; date: string; availableDeepDives?: string[] }) {
   const { topic, category, mode, stories, calendar_event, cross_refs, quiet } =
     section;
 
@@ -35,8 +35,13 @@ export function TopicSection({ section, date }: { section: TopicGroup; date: str
               url={story.url}
               snippet={story.snippet}
               source={story.source}
+              sourceUrl={story.source_url}
+              author={story.author}
+              storyDate={story.date}
               deepDiveEligible={story.deep_dive_eligible}
               date={date}
+              relatedArticles={story.related_articles}
+              availableDeepDives={availableDeepDives}
             />
           ))}
         </div>

@@ -20,6 +20,9 @@ export interface TmdbEntry {
   title: string;
   overview: string;
   vote_average: number;
+  vote_count?: number;
+  poster_url?: string;
+  genre_ids?: number[];
   release_date?: string;
   first_air_date?: string;
 }
@@ -58,6 +61,8 @@ async function fetchJson(url: string, apiKey: string, timeout = 15000): Promise<
   }
 }
 
+const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342";
+
 function parseResults(data: unknown, maxResults: number): TmdbEntry[] {
   const items = (data as Record<string, unknown[]>)?.results ?? [];
   const entries: TmdbEntry[] = [];
@@ -69,10 +74,15 @@ function parseResults(data: unknown, maxResults: number): TmdbEntry[] {
 
     const entry: TmdbEntry = {
       title,
-      overview: truncate(overview),
+      overview,
       vote_average: (raw.vote_average as number) ?? 0,
     };
 
+    if (raw.vote_count) entry.vote_count = raw.vote_count as number;
+    if (raw.poster_path) entry.poster_url = `${TMDB_IMAGE_BASE}${raw.poster_path}`;
+    if (Array.isArray(raw.genre_ids) && raw.genre_ids.length > 0) {
+      entry.genre_ids = raw.genre_ids as number[];
+    }
     if (raw.release_date) entry.release_date = raw.release_date as string;
     if (raw.first_air_date) entry.first_air_date = raw.first_air_date as string;
 
