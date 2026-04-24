@@ -58,13 +58,7 @@ export interface PopularTodayConfig {
 
 // --- Entertainment ---
 
-export interface TmdbEndpoints {
-  now_playing: string;
-  upcoming: string;
-  trending_movies: string;
-  trending_tv: string;
-  on_the_air: string;
-}
+export type TmdbEndpoints = Record<string, string>;
 
 // --- Local News ---
 
@@ -103,8 +97,14 @@ export interface PaperboyConfig {
     tmdb: {
       base_url: string;
       endpoints: TmdbEndpoints;
+      movie_endpoints: string[];
+      streaming_endpoints: string[];
+      upcoming_endpoints: string[];
       max_movies: number;
       max_streaming: number;
+      max_upcoming: number;
+      upcoming_cutoff_days: number;
+      enrich_watch_providers?: boolean;
     };
   };
 }

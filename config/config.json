@@ -255,14 +255,23 @@
     "tmdb": {
       "base_url": "https://api.themoviedb.org/3",
       "endpoints": {
+        "trending_movies": "/trending/movie/day?language=en-US",
+        "popular_movies": "/movie/popular?language=en-US&region=US",
         "now_playing": "/movie/now_playing?language=en-US&region=US",
         "upcoming": "/movie/upcoming?language=en-US&region=US",
-        "trending_movies": "/trending/movie/week?language=en-US",
-        "trending_tv": "/trending/tv/week?language=en-US",
+        "trending_tv": "/trending/tv/day?language=en-US",
+        "popular_tv": "/tv/popular?language=en-US",
+        "discover_streaming": "/discover/tv?language=en-US&watch_region=US&with_watch_providers=8|337|350|1899|386|9&sort_by=popularity.desc",
         "on_the_air": "/tv/on_the_air?language=en-US"
       },
-      "max_movies": 5,
-      "max_streaming": 5
+      "movie_endpoints": ["trending_movies", "popular_movies", "now_playing"],
+      "streaming_endpoints": ["trending_tv", "popular_tv", "discover_streaming"],
+      "upcoming_endpoints": ["upcoming", "on_the_air"],
+      "max_movies": 15,
+      "max_streaming": 15,
+      "max_upcoming": 10,
+      "upcoming_cutoff_days": 90,
+      "enrich_watch_providers": true
     }
   }
 }

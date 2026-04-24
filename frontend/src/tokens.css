@@ -567,6 +567,13 @@
   gap: var(--component-compact-gap);
 }
 
+/* === Scrollbar Utilities === */
+@utility scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
 /* === Animation Keyframes === */
 @keyframes accordion-down {
   from { height: 0; opacity: 0; }

@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import type { RelatedArticle } from '@/types';
-import { Badge } from '@/components/atoms/Badge';
 import { Button } from '@/components/atoms/Button';
 import { Card, CardContent } from '@/components/atoms/Card';
 import { ChevronDown, ChevronUp, Newspaper, UserRound } from 'lucide-react';
@@ -104,14 +103,10 @@ export function StoryCard({
     <Card variant="outline" size="sm">
       <CardContent className="flex flex-col gap-component">
         <div className="flex flex-col gap-component min-w-0">
-          {/* Top row: ID + attribution + time */}
+          {/* Meta row: attribution + time */}
           <div className="flex items-center gap-component">
-            <Badge variant="neutral" size="sm">
-              {id}
-            </Badge>
             {attribution && (
               <>
-                <span className="text-label-md text-outline-subtle">|</span>
                 {attributionIcon === 'author' ? (
                   <UserRound className="size-icon-1 shrink-0 text-on-surface-variant" />
                 ) : attributionIcon === 'favicon' ? (

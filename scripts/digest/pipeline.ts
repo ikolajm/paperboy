@@ -29,6 +29,7 @@ function countStories(sections: DigestSections): number {
   count += sections.opinions.length;
   count += sections.entertainment.movies.length;
   count += sections.entertainment.streaming.length;
+  count += sections.entertainment.upcoming.length;
   return count;
 }
 
@@ -91,7 +92,7 @@ export async function runPipeline(
     opinions,
   };
 
-  const dateStr = targetDate.toISOString().slice(0, 10);
+  const dateStr = targetDate.toLocaleDateString("en-CA"); // YYYY-MM-DD in local timezone
   const dayOfWeek = targetDate.toLocaleDateString("en-US", {
     weekday: "long",
     timeZone: "America/New_York",

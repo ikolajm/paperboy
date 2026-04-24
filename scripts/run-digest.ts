@@ -38,7 +38,7 @@ async function main() {
   const config = loadConfig();
   const credentials = loadCredentials();
   const targetDate = getTargetDate();
-  const dateStr = targetDate.toISOString().slice(0, 10);
+  const dateStr = targetDate.toLocaleDateString('en-CA'); // YYYY-MM-DD in local timezone
 
   console.log(`Building digest for ${dateStr}...`);
 

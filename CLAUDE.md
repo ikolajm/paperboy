@@ -86,7 +86,7 @@ share one ID sequence per day.
 | `POL` | Politics (US Politics) |
 | `SCI` | Science |
 | `HLTH` | Health |
-| `ENT` | Entertainment (movies, streaming — from TMDB) |
+| `ENT` | Entertainment (movies, streaming, upcoming — from TMDB) |
 | `POP` | Headlines (Top Stories + Local News) |
 | `POD` | Podcasts |
 | `OPN` | Opinions |
@@ -107,6 +107,26 @@ The News tab uses a two-tier filter system:
 Tier 1 is single-select (plus "All"). Tier 2 appears contextually, all active by
 default — toggle to narrow. Popular Today (top_stories/world/nation) feeds are
 consolidated into a single deduped flat list under Headlines.
+
+---
+
+## Dashboard Sections (Media tab)
+
+Single-select filter: Podcasts | Movies | Streaming | Coming Soon (plus "All").
+
+| Section | Display | Data source |
+|---------|---------|-------------|
+| **Podcasts** | List rows (thumbnail + metadata) | RSS feeds from configured shows |
+| **In Theatres** | Horizontal poster gallery with hover/tap details | TMDB daily trending + popular + now_playing |
+| **Streaming Buzz** | Horizontal poster gallery with hover/tap details | TMDB daily trending + popular + discover by provider |
+| **Coming Soon** | Horizontal poster gallery with release dates | TMDB upcoming + on_the_air (within `upcoming_cutoff_days`) |
+
+Entertainment items include watch provider logos, score badges, genres, and
+overview in the detail overlay. Unreleased items are automatically routed to
+Coming Soon based on future release dates.
+
+IDs (POP-01, SPRT-03, ENT-07, etc.) are internal — not displayed in the dashboard UI.
+They exist in the data for deep dive wiring.
 
 ---
 

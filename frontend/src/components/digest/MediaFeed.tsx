@@ -4,26 +4,29 @@ import { useState } from 'react';
 import type { DigestSections } from '@/types';
 import { Chip } from '@/components/atoms/Chip';
 import { EmptyState } from '@/components/atoms/EmptyState';
-import { Clapperboard } from 'lucide-react';
+import { Clapperboard, Podcast, Film, Tv, CalendarClock } from 'lucide-react';
 import { PodcastSection } from './PodcastSection';
 import { EntertainmentSection } from './EntertainmentSection';
 
-type MediaCategory = 'podcasts' | 'movies' | 'streaming';
+type MediaCategory = 'podcasts' | 'movies' | 'streaming' | 'upcoming';
 
-const MEDIA_CATEGORIES: { key: MediaCategory; label: string }[] = [
-  { key: 'podcasts', label: 'Podcasts' },
-  { key: 'movies', label: 'Movies' },
-  { key: 'streaming', label: 'Streaming' },
+const MEDIA_CATEGORIES: { key: MediaCategory; label: string; icon: React.ReactNode }[] = [
+  { key: 'podcasts', label: 'Podcasts', icon: <Podcast /> },
+  { key: 'movies', label: 'Movies', icon: <Film /> },
+  { key: 'streaming', label: 'Streaming', icon: <Tv /> },
+  { key: 'upcoming', label: 'Coming Soon', icon: <CalendarClock /> },
 ];
 
-function getSectionCount(sections: DigestSections, key: MediaCategory): string {
+function getSectionCount(sections: DigestSections, key: MediaCategory): number {
   switch (key) {
     case 'podcasts':
-      return `${sections.podcasts.length}`;
+      return sections.podcasts.length;
     case 'movies':
-      return `${sections.entertainment.movies.length}`;
+      return sections.entertainment.movies.length;
     case 'streaming':
-      return `${sections.entertainment.streaming.length}`;
+      return sections.entertainment.streaming.length;
+    case 'upcoming':
+      return (sections.entertainment.upcoming ?? []).length;
   }
 }
 
@@ -32,34 +35,13 @@ export function MediaFeed({
 }: {
   sections: DigestSections | null;
 }) {
-  const [showAll, setShowAll] = useState(true);
-  const [activeFilters, setActiveFilters] = useState<Set<MediaCategory>>(
-    () => new Set<MediaCategory>()
-  );
+  const [active, setActive] = useState<MediaCategory | null>(null);
 
-  function selectAll() {
-    setShowAll(true);
-    setActiveFilters(new Set());
+  function selectCategory(key: MediaCategory | null) {
+    setActive(active === key ? null : key);
   }
 
-  function toggleFilter(key: MediaCategory) {
-    setActiveFilters((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-        if (next.size === 0) {
-          setShowAll(true);
-          return next;
-        }
-      } else {
-        next.add(key);
-        setShowAll(false);
-      }
-      return next;
-    });
-  }
-
-  const isVisible = (key: MediaCategory) => showAll || activeFilters.has(key);
+  const isVisible = (key: MediaCategory) => !active || active === key;
 
   if (!sections) {
     return (
@@ -72,46 +54,41 @@ export function MediaFeed({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-section">
+      <div className="flex flex-wrap gap-component">
         <Chip
-          variant={showAll ? 'selected' : 'unselected'}
+          variant={!active ? 'selected' : 'unselected'}
           size="sm"
-          onClick={selectAll}
+          onClick={() => selectCategory(null)}
         >
           All
         </Chip>
-        {MEDIA_CATEGORIES.map((cat) => {
-          const count = getSectionCount(sections, cat.key);
-          return (
-            <Chip
-              key={cat.key}
-              variant={!showAll && activeFilters.has(cat.key) ? 'selected' : 'unselected'}
-              size="sm"
-              onClick={() => toggleFilter(cat.key)}
-            >
-              {cat.label} ({count})
-            </Chip>
-          );
-        })}
+        {MEDIA_CATEGORIES.map((cat) => (
+          <Chip
+            key={cat.key}
+            variant={active === cat.key ? 'selected' : 'unselected'}
+            size="sm"
+            leadingIcon={cat.icon}
+            onClick={() => selectCategory(cat.key)}
+          >
+            {cat.label} ({getSectionCount(sections, cat.key)})
+          </Chip>
+        ))}
       </div>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-section">
         {isVisible('podcasts') && sections.podcasts.length > 0 && (
           <section>
             <PodcastSection podcasts={sections.podcasts} />
           </section>
         )}
-        {isVisible('movies') && sections.entertainment.movies.length > 0 && (
+        {(isVisible('movies') || isVisible('streaming') || isVisible('upcoming')) && (
           <section>
             <EntertainmentSection
-              data={{ movies: sections.entertainment.movies, streaming: [] }}
-            />
-          </section>
-        )}
-        {isVisible('streaming') && sections.entertainment.streaming.length > 0 && (
-          <section>
-            <EntertainmentSection
-              data={{ movies: [], streaming: sections.entertainment.streaming }}
+              data={{
+                movies: isVisible('movies') ? sections.entertainment.movies : [],
+                streaming: isVisible('streaming') ? sections.entertainment.streaming : [],
+                upcoming: isVisible('upcoming') ? (sections.entertainment.upcoming ?? []) : [],
+              }}
             />
           </section>
         )}

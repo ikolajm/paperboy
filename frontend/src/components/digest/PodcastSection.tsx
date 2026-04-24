@@ -1,14 +1,31 @@
 import type { Podcast } from '@/types';
-import { Badge } from '@/components/atoms/Badge';
 import { Card, CardContent } from '@/components/atoms/Card';
-import { Clock, ExternalLink, Play, Mic } from 'lucide-react';
+import { Clock, ExternalLink, Play, Mic, Podcast as PodcastIcon } from 'lucide-react';
 
-function PodcastCard({ entry }: { entry: Podcast }) {
+function formatTimeAgo(dateStr: string): string {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  if (isNaN(then)) return '';
+  const diffMs = now - then;
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'just now';
+  if (diffMin < 60) return `${diffMin}m ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24) return `${diffHr}h ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay === 1) return 'yesterday';
+  if (diffDay < 7) return `${diffDay}d ago`;
+  return '';
+}
+
+function PodcastRow({ entry }: { entry: Podcast }) {
+  const timeAgo = entry.date ? formatTimeAgo(entry.date) : '';
+
   return (
     <Card variant="outline" size="sm">
-      <CardContent className="flex flex-col gap-2">
-        {/* Artwork or placeholder */}
-        <div className="w-full aspect-square rounded-md overflow-hidden bg-surface-1">
+      <CardContent className="flex gap-group">
+        {/* Thumbnail */}
+        <div className="size-[64px] shrink-0 rounded-card overflow-hidden bg-surface-1">
           {entry.image_url ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
@@ -23,86 +40,105 @@ function PodcastCard({ entry }: { entry: Podcast }) {
           )}
         </div>
 
-        {/* ID + duration */}
-        <div className="flex items-center gap-2">
-          <Badge variant="info" size="sm">
-            {entry.id}
-          </Badge>
-          <span className="flex items-center gap-1 text-label-sm text-on-surface-variant">
-            <Clock className="size-icon-0" />
-            {entry.duration}
-          </span>
-        </div>
-
-        {/* Show name */}
-        <span className="text-label-md text-on-surface-variant">
-          {entry.show}
-        </span>
-
-        {/* Title — links to episode */}
-        {entry.episode_url ? (
-          <a
-            href={entry.episode_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-body-md font-medium text-on-surface hover:text-primary transition-colors leading-snug"
-          >
-            {entry.title}
-          </a>
-        ) : (
-          <p className="text-body-md font-medium text-on-surface leading-snug">
-            {entry.title}
-          </p>
-        )}
-
-        {/* Snippet */}
-        {entry.snippet && (
-          <p className="text-body-sm text-on-surface-variant line-clamp-3">
-            {entry.snippet}
-          </p>
-        )}
-
-        {/* Action links */}
-        {(entry.youtube_url || entry.transcript_url) && (
-          <div className="flex items-center gap-3">
-            {entry.youtube_url && (
-              <a
-                href={entry.youtube_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
-              >
-                <Play className="size-icon-0" />
-                <span>YouTube</span>
-              </a>
-            )}
-            {entry.transcript_url && (
-              <a
-                href={entry.transcript_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
-              >
-                <ExternalLink className="size-icon-0" />
-                <span>Transcript</span>
-              </a>
+        {/* Metadata column */}
+        <div className="flex flex-col gap-component min-w-0">
+          {/* Meta row: show + duration + time */}
+          <div className="flex items-center gap-component flex-wrap">
+            <span className="text-label-md text-on-surface-variant">
+              {entry.show}
+            </span>
+            <span className="text-label-sm text-outline-subtle">|</span>
+            <span className="flex items-center gap-component-compact text-label-sm text-on-surface-variant">
+              <Clock className="size-icon-0" />
+              {entry.duration}
+            </span>
+            {timeAgo && (
+              <>
+                <span className="text-label-sm text-outline-subtle">·</span>
+                <span className="text-label-sm text-on-surface-variant">{timeAgo}</span>
+              </>
             )}
           </div>
-        )}
+
+          {/* Title */}
+          {entry.episode_url ? (
+            <a
+              href={entry.episode_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-body-md font-medium text-on-surface hover:text-primary transition-colors leading-snug"
+            >
+              {entry.title}
+            </a>
+          ) : (
+            <p className="text-body-md font-medium text-on-surface-variant leading-snug">
+              {entry.title}
+            </p>
+          )}
+
+          {/* Snippet */}
+          {entry.snippet?.trim() && (
+            <p className="text-body-sm text-on-surface-variant line-clamp-2">
+              {entry.snippet}
+            </p>
+          )}
+
+          {/* Action links */}
+          {(entry.audio_url || entry.youtube_url || entry.transcript_url) && (
+            <div className="flex items-center gap-group flex-wrap">
+              {entry.audio_url && (
+                <a
+                  href={entry.audio_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+                >
+                  <Play className="size-icon-0" />
+                  Listen
+                </a>
+              )}
+              {entry.youtube_url && (
+                <a
+                  href={entry.youtube_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+                >
+                  <Play className="size-icon-0" />
+                  YouTube
+                </a>
+              )}
+              {entry.transcript_url && (
+                <a
+                  href={entry.transcript_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+                >
+                  <ExternalLink className="size-icon-0" />
+                  Transcript
+                </a>
+              )}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-export function PodcastSection({ podcasts }: { podcasts: Podcast[]; date?: string; availableDeepDives?: string[] }) {
+export function PodcastSection({ podcasts }: { podcasts: Podcast[] }) {
   if (podcasts.length === 0) return null;
 
   return (
-    <div className="flex flex-col gap-3">
-      <h3 className="text-title-md font-semibold text-on-surface">Podcasts</h3>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+    <div className="flex flex-col gap-group">
+      <h3 className="flex items-center gap-group text-title-md text-on-surface">
+        <PodcastIcon className="size-icon-2 text-on-surface-variant shrink-0" />
+        Podcasts
+      </h3>
+      <div className="flex flex-col gap-component">
         {podcasts.map((entry) => (
-          <PodcastCard key={entry.id} entry={entry} />
+          <PodcastRow key={entry.id} entry={entry} />
         ))}
       </div>
     </div>

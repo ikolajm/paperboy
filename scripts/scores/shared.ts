@@ -229,7 +229,7 @@ export function getSeasonType(event: Record<string, unknown>): number {
 export function getYesterdayDateStr(targetDate: Date): string {
   const yesterday = new Date(targetDate);
   yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday.toISOString().slice(0, 10).replace(/-/g, "");
+  return yesterday.toLocaleDateString("en-CA").replace(/-/g, "");
 }
 
 /**
@@ -242,12 +242,12 @@ export function getDateRangeStr(targetDate: Date, daysBefore: number, daysAfter:
   start.setDate(start.getDate() - daysBefore);
   const end = new Date(targetDate);
   end.setDate(end.getDate() + daysAfter);
-  const fmt = (d: Date) => d.toISOString().slice(0, 10).replace(/-/g, "");
+  const fmt = (d: Date) => d.toLocaleDateString("en-CA").replace(/-/g, "");
   return `${fmt(start)}-${fmt(end)}`;
 }
 
 export function formatDateDisplay(targetDate: Date, offsetDays = 0): string {
   const d = new Date(targetDate);
   d.setDate(d.getDate() + offsetDays);
-  return d.toISOString().slice(0, 10);
+  return d.toLocaleDateString("en-CA");
 }

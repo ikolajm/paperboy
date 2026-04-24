@@ -1,8 +1,8 @@
 /**
  * Fetch entertainment data from TMDB API endpoints in parallel.
  *
- * Reads config.json for endpoint paths and credentials.json for API key.
- * Fetches all configured endpoints concurrently and outputs structured JSON.
+ * Tier 1: List endpoints (trending, popular, discover) — bulk fetch.
+ * Tier 2: Per-item watch provider enrichment (optional).
  *
  * Usage:
  *   npx tsx scripts/fetch-tmdb.ts config/config.json config/credentials.json
@@ -13,30 +13,32 @@
 
 import { readFileSync } from "node:fs";
 import type { PaperboyConfig, Credentials } from "../shared/types/config.js";
+import type { WatchProvider } from "../shared/types/entertainment.js";
 
 // --- Types ---
 
 export interface TmdbEntry {
+  tmdb_id: number;
   title: string;
   overview: string;
   vote_average: number;
   vote_count?: number;
   poster_url?: string;
+  backdrop_url?: string;
   genre_ids?: number[];
   release_date?: string;
   first_air_date?: string;
+  media_type?: "movie" | "tv";
+  watch_providers?: WatchProvider[];
 }
 
 export type TmdbResult = Record<string, TmdbEntry[] | { status: "fetch_error"; error: string }>;
 
 // --- Utilities ---
 
-function truncate(text: string, maxLen = 200): string {
-  if (!text || text.length <= maxLen) return text || "";
-  return text.slice(0, maxLen - 3) + "...";
-}
-
-// --- Fetching ---
+const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342";
+const TMDB_BACKDROP_BASE = "https://image.tmdb.org/t/p/w780";
+const TMDB_LOGO_BASE = "https://image.tmdb.org/t/p/w92";
 
 async function fetchJson(url: string, apiKey: string, timeout = 15000): Promise<unknown> {
   const separator = url.includes("?") ? "&" : "?";
@@ -61,7 +63,7 @@ async function fetchJson(url: string, apiKey: string, timeout = 15000): Promise<
   }
 }
 
-const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342";
+// --- Tier 1: List parsing ---
 
 function parseResults(data: unknown, maxResults: number): TmdbEntry[] {
   const items = (data as Record<string, unknown[]>)?.results ?? [];
@@ -73,6 +75,7 @@ function parseResults(data: unknown, maxResults: number): TmdbEntry[] {
     const overview = (raw.overview || "") as string;
 
     const entry: TmdbEntry = {
+      tmdb_id: (raw.id as number) ?? 0,
       title,
       overview,
       vote_average: (raw.vote_average as number) ?? 0,
@@ -80,11 +83,13 @@ function parseResults(data: unknown, maxResults: number): TmdbEntry[] {
 
     if (raw.vote_count) entry.vote_count = raw.vote_count as number;
     if (raw.poster_path) entry.poster_url = `${TMDB_IMAGE_BASE}${raw.poster_path}`;
+    if (raw.backdrop_path) entry.backdrop_url = `${TMDB_BACKDROP_BASE}${raw.backdrop_path}`;
     if (Array.isArray(raw.genre_ids) && raw.genre_ids.length > 0) {
       entry.genre_ids = raw.genre_ids as number[];
     }
     if (raw.release_date) entry.release_date = raw.release_date as string;
     if (raw.first_air_date) entry.first_air_date = raw.first_air_date as string;
+    if (raw.media_type) entry.media_type = raw.media_type as "movie" | "tv";
 
     entries.push(entry);
     if (entries.length >= maxResults) break;
@@ -111,6 +116,53 @@ async function fetchEndpoint(
   }
 }
 
+// --- Tier 2: Watch provider enrichment ---
+
+async function fetchWatchProviders(
+  tmdbId: number,
+  mediaType: "movie" | "tv",
+  baseUrl: string,
+  apiKey: string,
+): Promise<WatchProvider[]> {
+  try {
+    const url = `${baseUrl}/${mediaType}/${tmdbId}/watch/providers`;
+    const data = await fetchJson(url, apiKey) as Record<string, unknown>;
+    const results = data.results as Record<string, unknown> | undefined;
+    if (!results) return [];
+
+    const us = results.US as Record<string, unknown> | undefined;
+    if (!us) return [];
+
+    // Prefer flatrate (subscription), fall back to ads or buy
+    const providers = (us.flatrate || us.ads || us.buy) as Array<Record<string, unknown>> | undefined;
+    if (!providers) return [];
+
+    return providers.slice(0, 4).map((p) => ({
+      provider_name: (p.provider_name as string) || "",
+      logo_url: p.logo_path ? `${TMDB_LOGO_BASE}${p.logo_path}` : "",
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function enrichWithProviders(
+  entries: TmdbEntry[],
+  mediaType: "movie" | "tv",
+  baseUrl: string,
+  apiKey: string,
+): Promise<void> {
+  const promises = entries.map(async (entry) => {
+    entry.watch_providers = await fetchWatchProviders(
+      entry.tmdb_id,
+      mediaType,
+      baseUrl,
+      apiKey,
+    );
+  });
+  await Promise.all(promises);
+}
+
 // --- Public API ---
 
 export async function fetchTmdb(config: PaperboyConfig, credentials: Credentials): Promise<TmdbResult> {
@@ -121,17 +173,18 @@ export async function fetchTmdb(config: PaperboyConfig, credentials: Credentials
     return { _error: { status: "fetch_error", error: "Missing TMDB base_url or api_key" } };
   }
 
-  const maxMap: Record<string, number> = {
-    now_playing: tmdb.max_movies,
-    upcoming: tmdb.max_movies,
-    trending_movies: tmdb.max_movies,
-    trending_tv: tmdb.max_streaming,
-    on_the_air: tmdb.max_streaming,
-  };
+  // Determine max per endpoint based on which list it belongs to
+  const movieSet = new Set(tmdb.movie_endpoints);
+  const streamingSet = new Set(tmdb.streaming_endpoints);
+  const upcomingSet = new Set(tmdb.upcoming_endpoints);
 
-  const promises = Object.entries(tmdb.endpoints).map(([name, path]) =>
-    fetchEndpoint(name, `${tmdb.base_url}${path}`, apiKey, maxMap[name] ?? 4)
-  );
+  const promises = Object.entries(tmdb.endpoints).map(([name, path]) => {
+    const max = movieSet.has(name) ? tmdb.max_movies
+      : streamingSet.has(name) ? tmdb.max_streaming
+      : upcomingSet.has(name) ? tmdb.max_upcoming
+      : 10;
+    return fetchEndpoint(name, `${tmdb.base_url}${path}`, apiKey, max);
+  });
 
   const settled = await Promise.all(promises);
   const results: TmdbResult = {};
@@ -139,7 +192,6 @@ export async function fetchTmdb(config: PaperboyConfig, credentials: Credentials
 
   for (const [name, data] of settled) {
     if (Array.isArray(data)) {
-      // Dedup across endpoints — keep first occurrence of each title
       const deduped = data.filter((entry) => {
         const key = entry.title.toLowerCase();
         if (seenTitles.has(key)) return false;
@@ -150,6 +202,27 @@ export async function fetchTmdb(config: PaperboyConfig, credentials: Credentials
     } else {
       results[name] = data;
     }
+  }
+
+  // Tier 2: Enrich with watch providers if enabled
+  if (tmdb.enrich_watch_providers) {
+    const movieEntries: TmdbEntry[] = [];
+    const tvEntries: TmdbEntry[] = [];
+
+    for (const [name, data] of Object.entries(results)) {
+      if (!Array.isArray(data)) continue;
+      if (movieSet.has(name)) movieEntries.push(...data);
+      else if (streamingSet.has(name)) tvEntries.push(...data);
+    }
+
+    await Promise.all([
+      movieEntries.length > 0
+        ? enrichWithProviders(movieEntries, "movie", tmdb.base_url, apiKey)
+        : Promise.resolve(),
+      tvEntries.length > 0
+        ? enrichWithProviders(tvEntries, "tv", tmdb.base_url, apiKey)
+        : Promise.resolve(),
+    ]);
   }
 
   return results;
