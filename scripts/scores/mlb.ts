@@ -8,7 +8,7 @@
  */
 
 import {
-  type CompletedGame, type ScheduledGame, type GameLeader,
+  type CompletedGame, type ScheduledGame, type GameLeader, type FeaturedPitcher,
   parseTeamInfo, parseLeaders, parseVenue, parseNotes,
   parseHeadline, parseBroadcasts, parseStartTime,
   getStatusDetail, getGameState, getSeasonType,
@@ -29,6 +29,61 @@ function parseNotable(event: Record<string, unknown>, homeScore: number, awaySco
   if (homeScore + awayScore >= 15) return `${homeScore + awayScore} runs`;
 
   return null;
+}
+
+const PITCHER_ROLES: Record<string, "win" | "loss" | "save"> = {
+  winningPitcher: "win",
+  losingPitcher: "loss",
+  savingPitcher: "save",
+};
+
+function parseFeaturedPitchers(comp: Record<string, unknown>): FeaturedPitcher[] {
+  const status = comp.status as Record<string, unknown> | undefined;
+  const featured = status?.featuredAthletes as Array<Record<string, unknown>> | undefined;
+  if (!featured) return [];
+
+  const pitchers: FeaturedPitcher[] = [];
+  for (const fa of featured) {
+    const role = PITCHER_ROLES[fa.name as string];
+    if (!role) continue;
+
+    const athlete = fa.athlete as Record<string, unknown> | undefined;
+    if (!athlete) continue;
+
+    const stats = fa.statistics as Array<{ displayValue: string }> | undefined;
+    // Stats order: W, L, SV, ERA, IP (typical ESPN order)
+    const record = stats && stats.length >= 2
+      ? `${stats[0]?.displayValue ?? 0}-${stats[1]?.displayValue ?? 0}`
+      : undefined;
+    const era = stats?.[3]?.displayValue;
+
+    const pitcher: FeaturedPitcher = {
+      role,
+      name: (athlete.displayName || athlete.shortName || "") as string,
+    };
+    if (athlete.jersey) pitcher.jersey = athlete.jersey as string;
+    if (record) pitcher.record = record;
+    if (era) pitcher.era = era;
+    pitchers.push(pitcher);
+  }
+  return pitchers;
+}
+
+function parseHitsErrors(
+  home: Record<string, unknown>,
+  away: Record<string, unknown>,
+): { home: { hits: number; errors: number }; away: { hits: number; errors: number } } | undefined {
+  const hH = home.hits as number | undefined;
+  const eH = home.errors as number | undefined;
+  const hA = away.hits as number | undefined;
+  const eA = away.errors as number | undefined;
+
+  if (hH == null && eH == null && hA == null && eA == null) return undefined;
+
+  return {
+    home: { hits: hH ?? 0, errors: eH ?? 0 },
+    away: { hits: hA ?? 0, errors: eA ?? 0 },
+  };
 }
 
 export function parseCompletedGames(data: unknown): CompletedGame[] {
@@ -77,6 +132,8 @@ export function parseCompletedGames(data: unknown): CompletedGame[] {
       broadcasts: parseBroadcasts(comp),
       leaders,
       linescores: { home: homeLinescores, away: awayLinescores },
+      hitsErrors: parseHitsErrors(home, away),
+      pitchers: parseFeaturedPitchers(comp),
     });
   }
 

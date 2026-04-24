@@ -4,9 +4,9 @@ import type { DigestMeta } from '@/types';
 import { TopBar } from '@/components/atoms/TopBar';
 import { Button } from '@/components/atoms/Button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/atoms/ToggleGroup';
-import { Newspaper, Clapperboard, Trophy, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
+import { Newspaper, Clapperboard, Trophy, Radio, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 
-export type ActiveTab = 'news' | 'media' | 'scores';
+export type ActiveTab = 'news' | 'media' | 'scores' | 'live';
 
 function formatHeaderDate(meta: DigestMeta): string {
   const d = new Date(meta.date + 'T12:00:00');
@@ -104,6 +104,10 @@ export function DigestTopBar({
         <ToggleGroupItem value="scores" size="sm" className="gap-component">
           <Trophy className="size-icon-1" />
           Scores
+        </ToggleGroupItem>
+        <ToggleGroupItem value="live" size="sm" className="gap-component">
+          <Radio className="size-icon-1" />
+          Live
         </ToggleGroupItem>
       </ToggleGroup>
     </TopBar>

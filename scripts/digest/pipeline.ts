@@ -82,11 +82,62 @@ export async function runPipeline(
   const opinions = assembleOpinions(rssData, config, ids);
   const entertainment = assembleEntertainment(tmdbResult, config, ids);
 
-  // Enrich completed games with summary endpoint data
-  const enrichments = await enrichAllGames(scores.team_sports.recaps);
+  // Inject standings into team info on all games (recaps + schedule)
+  const standingsMap = new Map<string, { seed: number; gamesBehind: string; streak: string; clinch: string }>();
+  for (const s of scores.team_sports.standings) {
+    for (const group of s.groups) {
+      for (const team of group.teams) {
+        standingsMap.set(`${s.sport}:${team.abbreviation}`, {
+          seed: team.seed,
+          gamesBehind: team.gamesBehind,
+          streak: team.streak,
+          clinch: team.clinch,
+        });
+      }
+    }
+  }
+
+  function injectStandings(sport: string, team: { abbreviation: string; seed?: number; gamesBehind?: string; streak?: string; clinch?: string }) {
+    const standing = standingsMap.get(`${sport}:${team.abbreviation}`);
+    if (standing) {
+      team.seed = standing.seed;
+      team.gamesBehind = standing.gamesBehind;
+      team.streak = standing.streak;
+      team.clinch = standing.clinch;
+    }
+  }
+
+  for (const recap of scores.team_sports.recaps) {
+    for (const game of recap.games) {
+      injectStandings(recap.sport, game.home);
+      injectStandings(recap.sport, game.away);
+    }
+  }
+  for (const sched of scores.team_sports.schedule) {
+    for (const game of sched.games) {
+      injectStandings(sched.sport, game.home);
+      injectStandings(sched.sport, game.away);
+    }
+  }
+
+  // Enrich all games (recaps + schedule) with summary endpoint data
+  const allGameSets = [
+    ...scores.team_sports.recaps,
+    ...scores.team_sports.schedule,
+  ];
+  const enrichments = await enrichAllGames(allGameSets);
   let enrichedCount = 0;
   for (const recap of scores.team_sports.recaps) {
     for (const game of recap.games) {
+      const enrichment = enrichments.get(game.id);
+      if (enrichment) {
+        game.enrichment = enrichment;
+        enrichedCount++;
+      }
+    }
+  }
+  for (const sched of scores.team_sports.schedule) {
+    for (const game of sched.games) {
       const enrichment = enrichments.get(game.id);
       if (enrichment) {
         game.enrichment = enrichment;

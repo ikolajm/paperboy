@@ -1,5 +1,5 @@
 import { getDigest, getLatestDigest, getDigestDates } from "@/lib/digest";
-import { DigestShell } from "@/components/digest/DigestShell";
+import { DigestShell } from "@/components/digest/shell/DigestShell";
 
 export default async function Home({
   searchParams,

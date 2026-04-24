@@ -22,8 +22,9 @@ import type {
   ScoresSection,
 } from "../shared/types/digest.js";
 import {
-  fetchEspn, getYesterdayDateStr, getDateRangeStr, formatDateDisplay,
+  fetchEspn, getTodayDateStr, getYesterdayDateStr, getDateRangeStr, formatDateDisplay,
 } from "./scores/shared.js";
+import { fetchAllStandings } from "./scores/standings.js";
 
 // Team sport modules
 import * as nba from "./scores/nba.js";
@@ -97,7 +98,8 @@ async function fetchTeamSport(
 
   if (config.schedule) {
     try {
-      const data = await fetchEspn(url);
+      const todayStr = getTodayDateStr(targetDate);
+      const data = await fetchEspn(`${url}?dates=${todayStr}`);
       const games = mod.parseScheduledGames(data, targetDate);
       schedule = { sport: sportName, date: todayDisplay, games };
     } catch (err) {
@@ -230,16 +232,19 @@ export async function fetchAllScores(config: PaperboyConfig, targetDate?: Date):
   }
 
   // Fetch all in parallel
-  const [teamResults, ufcResult, f1Result] = await Promise.all([
+  const sportNames = teamSports.map(([name]) => name);
+  const [teamResults, ufcResult, f1Result, standings] = await Promise.all([
     Promise.all(teamSports.map(([name, cfg]) => fetchTeamSport(name, cfg, date))),
     ufcConfig ? fetchUfc(ufcConfig, date) : null,
     f1Config ? fetchF1(f1Config, date) : null,
+    fetchAllStandings(sportNames),
   ]);
 
   return {
     team_sports: {
       recaps: teamResults.map(r => r.recaps),
       schedule: teamResults.map(r => r.schedule).filter(s => s.games.length > 0),
+      standings,
     },
     ufc: ufcResult ?? {
       recaps: { sport: "UFC", date: formatDateDisplay(date), status: "no_events", cards: [] },

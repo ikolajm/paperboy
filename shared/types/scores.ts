@@ -11,6 +11,10 @@ export interface TeamInfo {
   color?: string;
   alternateColor?: string;
   records: Record<string, string>;
+  seed?: number;
+  gamesBehind?: string;
+  streak?: string;
+  clinch?: string;
 }
 
 export interface GameLeader {
@@ -18,6 +22,14 @@ export interface GameLeader {
   shortName: string;
   athlete: string;
   displayValue: string;
+}
+
+export interface FeaturedPitcher {
+  role: "win" | "loss" | "save";
+  name: string;
+  jersey?: string;
+  record?: string;        // "1-0"
+  era?: string;           // "2.57"
 }
 
 export interface CompletedGame {
@@ -33,6 +45,10 @@ export interface CompletedGame {
   broadcasts: string[];
   leaders: GameLeader[];
   linescores: { home: number[]; away: number[] };
+  /** MLB only: hits and errors per team */
+  hitsErrors?: { home: { hits: number; errors: number }; away: { hits: number; errors: number } };
+  /** MLB only: winning, losing, saving pitchers */
+  pitchers?: FeaturedPitcher[];
   enrichment?: GameEnrichment;
 }
 
@@ -45,6 +61,7 @@ export interface ScheduledGame {
   broadcasts: string[];
   notes: string[];
   venue: string;
+  enrichment?: GameEnrichment;
 }
 
 export interface SportRecaps {

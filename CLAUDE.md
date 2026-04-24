@@ -17,8 +17,13 @@ See `config/CONFIG-REFERENCE.md` for field-by-field documentation.
 ```
 npx tsx scripts/run-digest.ts [--date YYYY-MM-DD]
 ```
-Fetches all data sources in parallel (~2 seconds), applies filtering and dedup,
-writes `digests/YYYY-MM-DD/digest.json`.
+Fetches all data sources in parallel (~2-3 seconds), applies filtering and dedup,
+writes `digests/YYYY-MM-DD/digest.json` (minified JSON, ~365KB/day).
+
+To prettify a digest for inspection:
+```
+jq . digests/YYYY-MM-DD/digest.json > expanded.json
+```
 
 ### 2. News Deep Dive (on demand, agent-driven)
 > "Go deeper on SPRT-01"
@@ -62,12 +67,22 @@ scripts/                TypeScript pipeline scripts
   run-digest.ts         Entry point — runs the full pipeline
   digest/               Pipeline modules (feeds, filter, assemble-*)
   scores/               Per-sport score modules (nba, nhl, mlb, nfl, college-*)
+    enrich.ts           ESPN summary endpoint enrichment (box score, injuries, series)
+    standings.ts        Conference/division standings fetch
   fetch-rss.ts          RSS batch fetching
-  fetch-tmdb.ts         TMDB entertainment fetching
-  fetch-scores.ts       Scores orchestrator
+  fetch-tmdb.ts         TMDB entertainment fetching (daily trending, watch providers)
+  fetch-scores.ts       Scores orchestrator (scoreboard + standings + enrichment)
   normalize-url.ts      URL normalization for dedup
-shared/types/           TypeScript interfaces (digest.ts, config.ts)
-frontend/               Next.js 16 + React 19 dashboard (in development)
+shared/types/           TypeScript interfaces (digest.ts, config.ts, enrichment.ts, standings.ts)
+frontend/               Next.js 16 + React 19 dashboard
+  src/components/digest/
+    shell/              Layout: DigestShell, Sidebar, TopBar
+    news/               News tab: NewsFeed, StoryCard, sections
+    media/              Media tab: MediaFeed, PodcastSection, PosterGallery
+    scores/             Scores tab: ScoreboardPanel, GameCard, ScheduledGameCard
+    live/               Live tab: LiveFeed (placeholder)
+    shared/             Shared: TeamHalf, color utilities
+  src/lib/              Shared hooks + utilities (format, useMediaQuery, digest)
 context/                Agent-driven on-demand stages
 docs/                   Feature docs, legacy chain archive
 ```

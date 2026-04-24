@@ -55,7 +55,7 @@ async function main() {
   mkdirSync(join(outDir, "deep-dives"), { recursive: true });
 
   const outPath = join(outDir, "digest.json");
-  writeFileSync(outPath, JSON.stringify(digest, null, 2));
+  writeFileSync(outPath, JSON.stringify(digest));
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   const teamScores = digest.sections.scores.team_sports.recaps.filter(r => r.games.length > 0).length;

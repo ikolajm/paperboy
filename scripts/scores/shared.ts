@@ -14,6 +14,10 @@ export interface TeamInfo {
   color?: string;           // hex without #, e.g. "c8102e"
   alternateColor?: string;  // hex without #, e.g. "fdb927"
   records: Record<string, string>;  // e.g. { total: "45-37", home: "23-18", road: "22-19" }
+  seed?: number;
+  gamesBehind?: string;
+  streak?: string;
+  clinch?: string;
 }
 
 export interface GameLeader {
@@ -21,6 +25,14 @@ export interface GameLeader {
   shortName: string;    // e.g. "Pts", "G", "PASS"
   athlete: string;      // e.g. "T. Maxey"
   displayValue: string; // e.g. "31 PTS, 6 AST"
+}
+
+export interface FeaturedPitcher {
+  role: "win" | "loss" | "save";
+  name: string;
+  jersey?: string;
+  record?: string;
+  era?: string;
 }
 
 export interface CompletedGame {
@@ -36,6 +48,8 @@ export interface CompletedGame {
   broadcasts: string[];
   leaders: GameLeader[];
   linescores: { home: number[]; away: number[] };
+  hitsErrors?: { home: { hits: number; errors: number }; away: { hits: number; errors: number } };
+  pitchers?: FeaturedPitcher[];
 }
 
 export interface ScheduledGame {
@@ -47,6 +61,7 @@ export interface ScheduledGame {
   broadcasts: string[];
   notes: string[];
   venue: string;
+  enrichment?: import("../../shared/types/enrichment.js").GameEnrichment;
 }
 
 export interface SportRecaps {
@@ -231,6 +246,10 @@ export function getSeasonType(event: Record<string, unknown>): number {
 }
 
 // --- Date utilities ---
+
+export function getTodayDateStr(targetDate: Date): string {
+  return targetDate.toLocaleDateString("en-CA").replace(/-/g, "");
+}
 
 export function getYesterdayDateStr(targetDate: Date): string {
   const yesterday = new Date(targetDate);
