@@ -56,15 +56,15 @@ export function ScoreboardPanel({
     <Tabs defaultValue="recaps">
       <TabsList>
         <TabsTrigger value="live">
-          <span className="flex items-center gap-1.5">
-            <Radio className="size-3.5" />
+          <span className="flex items-center gap-component-compact">
+            <Radio className="size-icon-1" />
             Live
           </span>
         </TabsTrigger>
         <TabsTrigger value="recaps">Recaps</TabsTrigger>
         <TabsTrigger value="schedule">
-          <span className="flex items-center gap-1.5">
-            <Clock className="size-3.5" />
+          <span className="flex items-center gap-component-compact">
+            <Clock className="size-icon-1" />
             Schedule
           </span>
         </TabsTrigger>
@@ -91,11 +91,11 @@ export function ScoreboardPanel({
 
 function RecapsContent({ scores }: { scores: ScoresSection }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-section">
       {scores.team_sports.recaps.map((recap) => (
-        <div key={recap.sport} className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <h3 className="text-title-md font-semibold text-on-surface">
+        <div key={recap.sport} className="flex flex-col gap-group">
+          <div className="flex items-center gap-component">
+            <h3 className="text-title-md text-on-surface">
               {recap.sport}
             </h3>
             <Badge variant={statusVariant(recap.status)} size="sm">
@@ -103,7 +103,7 @@ function RecapsContent({ scores }: { scores: ScoresSection }) {
             </Badge>
           </div>
           {recap.games.length > 0 ? (
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-component">
               {recap.games.map((game) => (
                 <GameCard key={game.id} game={game} />
               ))}
@@ -116,9 +116,9 @@ function RecapsContent({ scores }: { scores: ScoresSection }) {
         </div>
       ))}
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-title-md font-semibold text-on-surface">UFC</h3>
+      <div className="flex flex-col gap-component">
+        <div className="flex items-center gap-component">
+          <h3 className="text-title-md text-on-surface">UFC</h3>
           <Badge
             variant={statusVariant(scores.ufc.recaps.status)}
             size="sm"
@@ -127,7 +127,7 @@ function RecapsContent({ scores }: { scores: ScoresSection }) {
           </Badge>
         </div>
         {scores.ufc.recaps.cards.length > 0 ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-component">
             {scores.ufc.recaps.cards.map((card) => (
               <UFCRecapCard key={card.id} card={card} />
             ))}
@@ -137,9 +137,9 @@ function RecapsContent({ scores }: { scores: ScoresSection }) {
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-title-md font-semibold text-on-surface">F1</h3>
+      <div className="flex flex-col gap-component">
+        <div className="flex items-center gap-component">
+          <h3 className="text-title-md text-on-surface">F1</h3>
           <Badge
             variant={statusVariant(scores.f1.recaps.status)}
             size="sm"
@@ -148,7 +148,7 @@ function RecapsContent({ scores }: { scores: ScoresSection }) {
           </Badge>
         </div>
         {scores.f1.recaps.weekends.length > 0 ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-component">
             {scores.f1.recaps.weekends.map((weekend) => (
               <F1RecapCard key={weekend.id} weekend={weekend} />
             ))}
@@ -179,15 +179,15 @@ function ScheduleContent({ scores }: { scores: ScoresSection }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-section">
       {scores.team_sports.schedule.map((sport) => {
         if (sport.games.length === 0) return null;
         return (
           <div key={sport.sport} className="flex flex-col gap-2">
-            <h3 className="text-title-md font-semibold text-on-surface">
+            <h3 className="text-title-md text-on-surface">
               {sport.sport}
             </h3>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-component">
               {sport.games.map((game) => (
                 <ScheduledGameCard key={game.id} game={game} />
               ))}
@@ -197,8 +197,8 @@ function ScheduleContent({ scores }: { scores: ScoresSection }) {
       })}
 
       {hasUfc && (
-        <div className="flex flex-col gap-2">
-          <h3 className="text-title-md font-semibold text-on-surface">
+        <div className="flex flex-col gap-component">
+          <h3 className="text-title-md text-on-surface">
             UFC — Upcoming
           </h3>
           {scores.ufc.schedule.cards.map((card) => (
@@ -208,8 +208,8 @@ function ScheduleContent({ scores }: { scores: ScoresSection }) {
       )}
 
       {hasF1 && (
-        <div className="flex flex-col gap-2">
-          <h3 className="text-title-md font-semibold text-on-surface">
+        <div className="flex flex-col gap-component">
+          <h3 className="text-title-md text-on-surface">
             F1 — Upcoming
           </h3>
           {scores.f1.schedule.weekends.map((weekend) => (

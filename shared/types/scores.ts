@@ -2,10 +2,14 @@
  * Team sports score types — shared across NBA, NHL, MLB, NFL, College.
  */
 
+import type { GameEnrichment } from "./enrichment.js";
+
 export interface TeamInfo {
   displayName: string;
   abbreviation: string;
   logo: string;
+  color?: string;
+  alternateColor?: string;
   records: Record<string, string>;
 }
 
@@ -26,8 +30,10 @@ export interface CompletedGame {
   headline: string;
   notes: string[];
   venue: string;
+  broadcasts: string[];
   leaders: GameLeader[];
   linescores: { home: number[]; away: number[] };
+  enrichment?: GameEnrichment;
 }
 
 export interface ScheduledGame {

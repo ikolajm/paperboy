@@ -17,18 +17,18 @@ function TeamRow({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-component">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logo} alt={abbreviation} className="size-6 object-contain" />
+        <img src={logo} alt={abbreviation} className="size-icon-3 object-contain" />
         <span
-          className={`text-body-md ${isWinner ? 'font-semibold text-on-surface' : 'text-on-surface-variant'}`}
+          className={`text-body-md ${isWinner ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}
         >
           {abbreviation}
         </span>
         <span className="text-label-sm text-on-surface-variant">{record}</span>
       </div>
       <span
-        className={`text-body-md tabular-nums ${isWinner ? 'font-semibold text-on-surface' : 'text-on-surface-variant'}`}
+        className={`text-body-md tabular-nums ${isWinner ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}
       >
         {score}
       </span>
@@ -39,8 +39,6 @@ function TeamRow({
 function LeadersRow({ leaders }: { leaders: GameLeader[] }) {
   if (leaders.length === 0) return null;
 
-  // Leaders come in pairs: first 3 are home team, last 3 are away team
-  // Group by category for display
   const categories = ['Pts', 'Reb', 'Ast'];
   const displayed = categories
     .map((cat) => leaders.find((l) => l.shortName === cat))
@@ -49,7 +47,7 @@ function LeadersRow({ leaders }: { leaders: GameLeader[] }) {
   if (displayed.length === 0) return null;
 
   return (
-    <div className="flex gap-3 text-label-sm text-on-surface-variant">
+    <div className="flex gap-group text-label-sm text-on-surface-variant">
       {displayed.map((l) => (
         <span key={`${l.shortName}-${l.athlete}`}>
           {l.shortName}: {l.athlete} {l.displayValue}
@@ -65,9 +63,9 @@ export function GameCard({ game }: { game: Game }) {
 
   return (
     <Card variant="outline" size="sm">
-      <CardContent className="flex flex-col gap-2">
+      <CardContent className="flex flex-col gap-component">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-component">
             <Badge variant="neutral" size="sm">
               {game.status}
             </Badge>
@@ -79,7 +77,7 @@ export function GameCard({ game }: { game: Game }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-component-compact">
           <TeamRow
             logo={game.away.logo}
             abbreviation={game.away.abbreviation}

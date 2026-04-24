@@ -78,6 +78,7 @@ export function parseCompletedGames(data: unknown): CompletedGame[] {
       headline: notable ? `${notable}${headline ? ` — ${headline}` : ""}` : headline,
       notes: parseNotes(comp),
       venue: parseVenue(comp),
+      broadcasts: parseBroadcasts(comp),
       leaders,
       linescores: { home: homeLinescores, away: awayLinescores },
     });

@@ -11,6 +11,8 @@ export interface TeamInfo {
   displayName: string;
   abbreviation: string;
   logo: string;
+  color?: string;           // hex without #, e.g. "c8102e"
+  alternateColor?: string;  // hex without #, e.g. "fdb927"
   records: Record<string, string>;  // e.g. { total: "45-37", home: "23-18", road: "22-19" }
 }
 
@@ -31,6 +33,7 @@ export interface CompletedGame {
   headline: string;        // recap text from ESPN
   notes: string[];         // context like "NBA Play-In - East", "Round 1 - Game 3"
   venue: string;
+  broadcasts: string[];
   leaders: GameLeader[];
   linescores: { home: number[]; away: number[] };
 }
@@ -99,12 +102,15 @@ export function parseTeamInfo(competitor: Record<string, unknown>): TeamInfo {
     }
   }
 
-  return {
+  const info: TeamInfo = {
     displayName: (team.displayName || team.shortDisplayName || team.name || "Unknown") as string,
     abbreviation: (team.abbreviation || "???") as string,
     logo: (team.logo || "") as string,
     records,
   };
+  if (team.color) info.color = team.color as string;
+  if (team.alternateColor) info.alternateColor = team.alternateColor as string;
+  return info;
 }
 
 /** Categories to exclude — ESPN internal ratings, not real stats */

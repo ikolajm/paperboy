@@ -10,6 +10,7 @@
 
 export * from "./editorial.js";
 export * from "./scores.js";
+export * from "./enrichment.js";
 export * from "./ufc.js";
 export * from "./f1.js";
 export * from "./entertainment.js";

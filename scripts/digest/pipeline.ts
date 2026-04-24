@@ -16,6 +16,7 @@ import { assembleTopics } from "./assemble-topics.js";
 import { assemblePodcasts } from "./assemble-podcasts.js";
 import { assembleOpinions } from "./assemble-opinions.js";
 import { assembleEntertainment } from "./assemble-entertainment.js";
+import { enrichAllGames } from "../scores/enrich.js";
 
 // --- Story count ---
 
@@ -80,6 +81,22 @@ export async function runPipeline(
   const podcasts = assemblePodcasts(rssData, config, targetDate, ids);
   const opinions = assembleOpinions(rssData, config, ids);
   const entertainment = assembleEntertainment(tmdbResult, config, ids);
+
+  // Enrich completed games with summary endpoint data
+  const enrichments = await enrichAllGames(scores.team_sports.recaps);
+  let enrichedCount = 0;
+  for (const recap of scores.team_sports.recaps) {
+    for (const game of recap.games) {
+      const enrichment = enrichments.get(game.id);
+      if (enrichment) {
+        game.enrichment = enrichment;
+        enrichedCount++;
+      }
+    }
+  }
+  if (enrichedCount > 0) {
+    console.log(`  ✓ Enriched ${enrichedCount} games with summary data`);
+  }
 
   const sections: DigestSections = {
     popular_today: popularToday,

@@ -5,8 +5,8 @@ import { Badge } from '@/components/atoms/Badge';
 export function ScheduledGameCard({ game }: { game: ScheduledGame }) {
   return (
     <Card variant="outline" size="sm">
-      <CardContent className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
+      <CardContent className="flex flex-col gap-component">
+        <div className="flex items-center gap-component flex-wrap">
           <Badge variant="info" size="sm">
             {game.startTime}
           </Badge>
@@ -22,13 +22,13 @@ export function ScheduledGameCard({ game }: { game: ScheduledGame }) {
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-group">
+          <div className="flex items-center gap-component">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={game.away.logo}
               alt={game.away.abbreviation}
-              className="size-6 object-contain"
+              className="size-icon-3 object-contain"
             />
             <span className="text-body-md font-medium text-on-surface">
               {game.away.abbreviation}
@@ -38,12 +38,12 @@ export function ScheduledGameCard({ game }: { game: ScheduledGame }) {
             </span>
           </div>
           <span className="text-label-sm text-on-surface-variant">@</span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-component">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={game.home.logo}
               alt={game.home.abbreviation}
-              className="size-6 object-contain"
+              className="size-icon-3 object-contain"
             />
             <span className="text-body-md font-medium text-on-surface">
               {game.home.abbreviation}
