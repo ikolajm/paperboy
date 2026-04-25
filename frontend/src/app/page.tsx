@@ -1,4 +1,4 @@
-import { getDigest, getLatestDigest, getDigestDates } from "@/lib/digest";
+import { getDigest, getLatestDigest, getDigestDates, getDeepDiveIds } from "@/lib/digest";
 import { DigestShell } from "@/components/digest/shell/DigestShell";
 
 export default async function Home({
@@ -12,7 +12,10 @@ export default async function Home({
   const digest =
     typeof date === "string" ? await getDigest(date) : await getLatestDigest();
 
+  const currentDate = digest?.meta.date ?? dates[0] ?? '';
+  const availableDeepDives = await getDeepDiveIds(currentDate);
+
   const initialTab = typeof tab === "string" ? tab : undefined;
 
-  return <DigestShell digest={digest} dates={dates} initialTab={initialTab} />;
+  return <DigestShell digest={digest} dates={dates} initialTab={initialTab} availableDeepDives={availableDeepDives} />;
 }

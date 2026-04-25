@@ -29,6 +29,9 @@ interface PosterItemProps {
   genres?: string[];
   watchProviders?: WatchProvider[];
   releaseDate?: string;
+  deepDiveEligible?: boolean;
+  date?: string;
+  availableDeepDives?: string[];
 }
 
 // --- Helpers ---
@@ -85,6 +88,7 @@ function PosterImage({ posterUrl, title }: { posterUrl?: string; title: string }
 }
 
 function DetailContent({
+  id,
   title,
   overview,
   score,
@@ -92,8 +96,11 @@ function DetailContent({
   genres,
   watchProviders,
   releaseDate,
+  deepDiveEligible,
+  date,
+  availableDeepDives,
   showTitle = true,
-}: Omit<PosterItemProps, 'id' | 'posterUrl'> & { showTitle?: boolean }) {
+}: Omit<PosterItemProps, 'posterUrl'> & { showTitle?: boolean }) {
   const unreleased = isUnreleased(releaseDate);
 
   return (
@@ -145,6 +152,7 @@ function DetailContent({
             ))}
         </div>
       )}
+
     </div>
   );
 }
@@ -161,10 +169,13 @@ export function PosterItem({
   genres,
   watchProviders,
   releaseDate,
+  deepDiveEligible,
+  date,
+  availableDeepDives,
 }: PosterItemProps) {
   const canHover = useMediaQuery('(hover: hover)');
 
-  const detailProps = { title, overview, score, voteCount, genres, watchProviders, releaseDate };
+  const detailProps = { id, title, overview, score, voteCount, genres, watchProviders, releaseDate, deepDiveEligible, date, availableDeepDives };
 
   if (canHover) {
     return (

@@ -27,10 +27,12 @@ export function DigestShell({
   digest,
   dates,
   initialTab,
+  availableDeepDives = [],
 }: {
   digest: Digest | null;
   dates: string[];
   initialTab?: string;
+  availableDeepDives?: string[];
 }) {
   const router = useRouter();
   const currentDate = digest?.meta.date ?? dates[0] ?? '';
@@ -104,11 +106,15 @@ export function DigestShell({
             <NewsFeed
               sections={digest?.sections ?? null}
               date={currentDate}
-              availableDeepDives={digest?.deep_dives.map(d => d.id) ?? []}
+              availableDeepDives={availableDeepDives}
             />
           )}
           {activeTab === 'media' && (
-            <MediaFeed sections={digest?.sections ?? null} />
+            <MediaFeed
+              sections={digest?.sections ?? null}
+              date={currentDate}
+              availableDeepDives={availableDeepDives}
+            />
           )}
           {activeTab === 'scores' && (
             <ScoreboardPanel scores={digest?.sections.scores ?? null} date={currentDate} />

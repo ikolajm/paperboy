@@ -17,9 +17,10 @@ interface GalleryItem {
   watch_providers?: WatchProvider[];
   release_date?: string;
   first_air_date?: string;
+  deep_dive_eligible?: boolean;
 }
 
-export function PosterGallery({ items }: { items: GalleryItem[] }) {
+export function PosterGallery({ items, date, availableDeepDives }: { items: GalleryItem[]; date?: string; availableDeepDives?: string[] }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   if (items.length === 0) return null;
@@ -65,6 +66,9 @@ export function PosterGallery({ items }: { items: GalleryItem[] }) {
             genres={item.genres}
             watchProviders={item.watch_providers}
             releaseDate={item.release_date ?? item.first_air_date}
+            deepDiveEligible={item.deep_dive_eligible}
+            date={date}
+            availableDeepDives={availableDeepDives}
           />
         ))}
       </div>

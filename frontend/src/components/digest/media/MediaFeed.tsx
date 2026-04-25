@@ -32,8 +32,12 @@ function getSectionCount(sections: DigestSections, key: MediaCategory): number {
 
 export function MediaFeed({
   sections,
+  date,
+  availableDeepDives = [],
 }: {
   sections: DigestSections | null;
+  date?: string;
+  availableDeepDives?: string[];
 }) {
   const [active, setActive] = useState<MediaCategory | null>(null);
 
@@ -78,7 +82,7 @@ export function MediaFeed({
       <div className="flex flex-col gap-section">
         {isVisible('podcasts') && sections.podcasts.length > 0 && (
           <section>
-            <PodcastSection podcasts={sections.podcasts} />
+            <PodcastSection podcasts={sections.podcasts} date={date} availableDeepDives={availableDeepDives} />
           </section>
         )}
         {(isVisible('movies') || isVisible('streaming') || isVisible('upcoming')) && (
@@ -89,6 +93,8 @@ export function MediaFeed({
                 streaming: isVisible('streaming') ? sections.entertainment.streaming : [],
                 upcoming: isVisible('upcoming') ? (sections.entertainment.upcoming ?? []) : [],
               }}
+              date={date}
+              availableDeepDives={availableDeepDives}
             />
           </section>
         )}

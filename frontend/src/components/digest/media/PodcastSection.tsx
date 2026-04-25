@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/atoms/Card';
 import { Clock, ExternalLink, Play, Mic, Podcast as PodcastIcon } from 'lucide-react';
 import { formatTimeAgo } from '@/lib/format';
 
-function PodcastRow({ entry }: { entry: Podcast }) {
+function PodcastRow({ entry, date, availableDeepDives }: { entry: Podcast; date?: string; availableDeepDives?: string[] }) {
   const timeAgo = entry.date ? formatTimeAgo(entry.date) : '';
 
   return (
@@ -69,50 +69,48 @@ function PodcastRow({ entry }: { entry: Podcast }) {
           )}
 
           {/* Action links */}
-          {(entry.audio_url || entry.youtube_url || entry.transcript_url) && (
-            <div className="flex items-center gap-group flex-wrap">
-              {entry.audio_url && (
-                <a
-                  href={entry.audio_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
-                >
-                  <Play className="size-icon-0" />
-                  Listen
-                </a>
-              )}
-              {entry.youtube_url && (
-                <a
-                  href={entry.youtube_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
-                >
-                  <Play className="size-icon-0" />
-                  YouTube
-                </a>
-              )}
-              {entry.transcript_url && (
-                <a
-                  href={entry.transcript_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
-                >
-                  <ExternalLink className="size-icon-0" />
-                  Transcript
-                </a>
-              )}
-            </div>
-          )}
+          <div className="flex items-center gap-group flex-wrap">
+            {entry.audio_url && (
+              <a
+                href={entry.audio_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                <Play className="size-icon-0" />
+                Listen
+              </a>
+            )}
+            {entry.youtube_url && (
+              <a
+                href={entry.youtube_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                <Play className="size-icon-0" />
+                YouTube
+              </a>
+            )}
+            {entry.transcript_url && (
+              <a
+                href={entry.transcript_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
+              >
+                <ExternalLink className="size-icon-0" />
+                Transcript
+              </a>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
   );
 }
 
-export function PodcastSection({ podcasts }: { podcasts: Podcast[] }) {
+export function PodcastSection({ podcasts, date, availableDeepDives }: { podcasts: Podcast[]; date?: string; availableDeepDives?: string[] }) {
   if (podcasts.length === 0) return null;
 
   return (
@@ -123,7 +121,7 @@ export function PodcastSection({ podcasts }: { podcasts: Podcast[] }) {
       </h3>
       <div className="flex flex-col gap-component">
         {podcasts.map((entry) => (
-          <PodcastRow key={entry.id} entry={entry} />
+          <PodcastRow key={entry.id} entry={entry} date={date} availableDeepDives={availableDeepDives} />
         ))}
       </div>
     </div>

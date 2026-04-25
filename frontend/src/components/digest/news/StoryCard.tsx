@@ -54,7 +54,10 @@ export function StoryCard({
   sourceUrl,
   author,
   storyDate,
+  deepDiveEligible,
+  date,
   relatedArticles,
+  availableDeepDives,
 }: StoryCardProps) {
   const [expanded, setExpanded] = useState(false);
   const hasRelated = relatedArticles && relatedArticles.length > 0;
@@ -157,6 +160,8 @@ export function StoryCard({
               )}
             </div>
           )}
+
+
         </div>
       </CardContent>
     </Card>

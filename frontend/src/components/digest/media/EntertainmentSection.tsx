@@ -2,7 +2,7 @@ import type { EntertainmentSection as EntertainmentType } from '@/types';
 import { Film, Tv, CalendarClock } from 'lucide-react';
 import { PosterGallery } from './PosterGallery';
 
-export function EntertainmentSection({ data }: { data: EntertainmentType }) {
+export function EntertainmentSection({ data, date, availableDeepDives }: { data: EntertainmentType; date?: string; availableDeepDives?: string[] }) {
   const { movies, streaming, upcoming = [] } = data;
   if (movies.length === 0 && streaming.length === 0 && upcoming.length === 0) return null;
 
@@ -14,7 +14,7 @@ export function EntertainmentSection({ data }: { data: EntertainmentType }) {
             <Film className="size-icon-2 text-on-surface-variant shrink-0" />
             In Theatres
           </h3>
-          <PosterGallery items={movies} />
+          <PosterGallery items={movies} date={date} availableDeepDives={availableDeepDives} />
         </div>
       )}
       {streaming.length > 0 && (
@@ -23,7 +23,7 @@ export function EntertainmentSection({ data }: { data: EntertainmentType }) {
             <Tv className="size-icon-2 text-on-surface-variant shrink-0" />
             Streaming Buzz
           </h3>
-          <PosterGallery items={streaming} />
+          <PosterGallery items={streaming} date={date} availableDeepDives={availableDeepDives} />
         </div>
       )}
       {upcoming.length > 0 && (
@@ -32,7 +32,7 @@ export function EntertainmentSection({ data }: { data: EntertainmentType }) {
             <CalendarClock className="size-icon-2 text-on-surface-variant shrink-0" />
             Coming Soon
           </h3>
-          <PosterGallery items={upcoming} />
+          <PosterGallery items={upcoming} date={date} availableDeepDives={availableDeepDives} />
         </div>
       )}
     </div>
