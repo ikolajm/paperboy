@@ -6,11 +6,13 @@ export default async function Home({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { date } = await searchParams;
+  const { date, tab } = await searchParams;
   const dates = await getDigestDates();
 
   const digest =
     typeof date === "string" ? await getDigest(date) : await getLatestDigest();
 
-  return <DigestShell digest={digest} dates={dates} />;
+  const initialTab = typeof tab === "string" ? tab : undefined;
+
+  return <DigestShell digest={digest} dates={dates} initialTab={initialTab} />;
 }

@@ -2,6 +2,12 @@
  * Team color utilities shared across scores components.
  */
 
+/** Our dark surface color luminance (~0.102 for #181b1a) */
+const SURFACE_LUMINANCE = 0.102;
+
+/** Minimum contrast distance between team color and surface for readability */
+const MIN_CONTRAST = 0.15;
+
 export function hexLuminance(hex: string): number {
   const r = parseInt(hex.slice(0, 2), 16) / 255;
   const g = parseInt(hex.slice(2, 4), 16) / 255;
@@ -10,16 +16,23 @@ export function hexLuminance(hex: string): number {
 }
 
 /**
- * Returns a team color hex that has sufficient contrast against a dark surface.
- * Falls back to alternateColor if the primary is too dark.
+ * Returns a team color hex that has sufficient contrast against our dark surface.
+ * Compares both primary and alternate color against the surface luminance,
+ * picks the one with better contrast. Falls back to primary if both are poor.
  */
 export function ensureContrast(color?: string, altColor?: string): string | undefined {
   if (!color) return undefined;
-  const lum = hexLuminance(color);
-  if (lum < 0.15 && altColor) {
-    const altLum = hexLuminance(altColor);
-    if (altLum > lum) return altColor;
+
+  const primaryContrast = Math.abs(hexLuminance(color) - SURFACE_LUMINANCE);
+
+  if (primaryContrast >= MIN_CONTRAST) return color;
+
+  // Primary has poor contrast — try alternate
+  if (altColor) {
+    const altContrast = Math.abs(hexLuminance(altColor) - SURFACE_LUMINANCE);
+    if (altContrast > primaryContrast) return altColor;
   }
+
   return color;
 }
 

@@ -21,15 +21,20 @@ export interface GameLeader {
   category: string;
   shortName: string;
   athlete: string;
+  athleteId?: string;
+  jersey?: string;
+  position?: string;
   displayValue: string;
 }
 
 export interface FeaturedPitcher {
   role: "win" | "loss" | "save";
   name: string;
+  athleteId?: string;
   jersey?: string;
-  record?: string;        // "1-0"
-  era?: string;           // "2.57"
+  record?: string;
+  era?: string;
+  stats?: Record<string, string>;
 }
 
 export interface CompletedGame {

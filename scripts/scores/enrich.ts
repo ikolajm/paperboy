@@ -154,8 +154,6 @@ function parsePlayerStats(data: Record<string, unknown>): TeamPlayerStats[] {
 
     if (statGroups) {
       for (const group of statGroups) {
-        const groupName = (group.name || "") as string;
-        const isStarter = groupName.toLowerCase() === "starters";
         const groupLabels = group.labels as string[] | undefined;
         if (groupLabels && groupLabels.length > labels.length) {
           labels = groupLabels;
@@ -173,7 +171,7 @@ function parsePlayerStats(data: Record<string, unknown>): TeamPlayerStats[] {
             headshot: headshot?.href,
             position: (athlete?.position as Record<string, string>)?.abbreviation,
             jersey: athlete?.jersey as string | undefined,
-            starter: isStarter,
+            starter: !!(a.starter),
             stats: (a.stats || []) as string[],
           });
         }

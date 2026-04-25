@@ -145,6 +145,34 @@ They exist in the data for deep dive wiring.
 
 ---
 
+## Dashboard Sections (Scores tab)
+
+Recaps + Schedule sub-tabs with per-sport chip filters. UFC/F1 deferred.
+
+| Sub-tab | Content | Data |
+|---------|---------|------|
+| **Recaps** | Completed game cards with team colors, expanded linescore/leaders/series | ESPN scoreboard (yesterday) + summary enrichment |
+| **Schedule** | Upcoming game cards with start times, pre-game scouting on expand | ESPN scoreboard (today) + summary enrichment |
+
+Game cards: collapsed (team gradients, logos, seeds, scores, winner indicator) →
+expanded (blockquote headline, linescore, leaders, pitchers, venue/broadcast, provenance).
+Full game detail at `/scores/[date]/[gameId]` with Overview + Box Score tabs.
+
+Pipeline enrichment per game: box score, player stats, season leaders, season series,
+injuries, article, venue image, standings injection. ~35 games enriched in ~3.5s.
+
+Team colors use `ensureContrast()` — compares against surface luminance, swaps to
+alternateColor when primary has insufficient contrast.
+
+---
+
+## Dashboard Sections (Live tab)
+
+Placeholder. Will poll ESPN scoreboard for today's games on 30-60s interval.
+Hybrid: live scores + static context from digest enrichment.
+
+---
+
 ## Key Principles
 - **Script-first pipeline.** The daily digest runs as `npx tsx scripts/run-digest.ts`.
   No agent involvement. Agent is reserved for on-demand deep dives and flash checks.

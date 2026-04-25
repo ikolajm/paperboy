@@ -37,11 +37,11 @@ export function TeamHalf({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={logo} alt={abbreviation} className="size-[48px] object-contain shrink-0" />
       <div className={`flex flex-col ${isAway ? '' : 'items-end'}`}>
-        <span className={`text-body-md ${hasScore && isWinner ? 'font-medium text-on-surface' : hasScore ? 'text-on-surface-variant' : 'font-medium text-on-surface'}`}>
+        <span className={`text-body-lg ${hasScore && isWinner ? 'font-medium text-on-surface' : hasScore ? 'text-on-surface-variant' : 'font-medium text-on-surface'}`}>
           {abbreviation}
-          {seed != null && <sub className="text-label-sm text-on-surface-variant ml-0.5">{seed}</sub>}
+          {seed != null && <sub className="text-label-md text-on-surface-variant ml-0.5">{seed}</sub>}
         </span>
-        <span className="text-label-sm text-on-surface-variant">{record}</span>
+        <span className="text-label-md text-on-surface-variant">{record}</span>
       </div>
     </>
   );
@@ -61,8 +61,8 @@ export function TeamHalf({
       style={{
         background: safeColor
           ? isAway
-            ? `linear-gradient(to right, #${safeColor}30, transparent 70%)`
-            : `linear-gradient(to left, #${safeColor}30, transparent 70%)`
+            ? `linear-gradient(to right, #${safeColor}40, transparent 70%)`
+            : `linear-gradient(to left, #${safeColor}40, transparent 70%)`
           : undefined,
       }}
     >

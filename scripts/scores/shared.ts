@@ -23,16 +23,21 @@ export interface TeamInfo {
 export interface GameLeader {
   category: string;     // e.g. "Points", "Goals", "Passing"
   shortName: string;    // e.g. "Pts", "G", "PASS"
-  athlete: string;      // e.g. "T. Maxey"
+  athlete: string;      // e.g. "Jalen Johnson"
+  athleteId?: string;   // ESPN athlete ID — construct headshot: /i/headshots/{sport}/players/full/{id}.png
+  jersey?: string;      // e.g. "1"
+  position?: string;    // e.g. "F", "G", "C"
   displayValue: string; // e.g. "31 PTS, 6 AST"
 }
 
 export interface FeaturedPitcher {
   role: "win" | "loss" | "save";
   name: string;
+  athleteId?: string;
   jersey?: string;
   record?: string;
   era?: string;
+  stats?: Record<string, string>;  // all available stats: W, L, SV, ERA, H, R, AVG, E
 }
 
 export interface CompletedGame {
@@ -158,12 +163,17 @@ export function parseLeaders(competitor: Record<string, unknown>): GameLeader[] 
     if (!topLeader) continue;
 
     const athlete = topLeader.athlete as Record<string, unknown> | undefined;
-    leaders.push({
+    const position = athlete?.position as Record<string, string> | undefined;
+    const leader: GameLeader = {
       category: categoryName,
       shortName,
-      athlete: (athlete?.shortName || athlete?.displayName || "") as string,
+      athlete: (athlete?.displayName || athlete?.shortName || "") as string,
       displayValue: (topLeader.displayValue || "") as string,
-    });
+    };
+    if (athlete?.id) leader.athleteId = String(athlete.id);
+    if (athlete?.jersey) leader.jersey = athlete.jersey as string;
+    if (position?.abbreviation) leader.position = position.abbreviation;
+    leaders.push(leader);
   }
 
   return leaders;

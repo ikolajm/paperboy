@@ -1,7 +1,7 @@
 import { readFile, readdir } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import type { Digest } from "@/types";
+import type { Digest, Game, ScheduledGame } from "@/types";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../../..");
@@ -57,6 +57,31 @@ export async function getDeepDive(
   } catch {
     return null;
   }
+}
+
+/** Find a game by ID across recaps and schedule. Returns the game + sport name. */
+export async function getGame(
+  date: string,
+  gameId: string,
+): Promise<{ game: Game | ScheduledGame; sport: string; type: 'recap' | 'schedule' } | null> {
+  const digest = await getDigest(date);
+  if (!digest) return null;
+
+  const scores = digest.sections.scores;
+
+  // Search recaps first
+  for (const recap of scores.team_sports.recaps) {
+    const game = recap.games.find((g) => g.id === gameId);
+    if (game) return { game, sport: recap.sport, type: 'recap' };
+  }
+
+  // Then schedule
+  for (const sched of scores.team_sports.schedule) {
+    const game = sched.games.find((g) => g.id === gameId);
+    if (game) return { game, sport: sched.sport, type: 'schedule' };
+  }
+
+  return null;
 }
 
 /** List deep-dive IDs available for a given date */

@@ -21,16 +21,22 @@ import { LiveFeed } from '../live/LiveFeed';
 import { Logo } from '../../atoms/Logo';
 import { Separator } from '../../atoms/Separator';
 
+const VALID_TABS: ActiveTab[] = ['news', 'media', 'scores', 'live'];
+
 export function DigestShell({
   digest,
   dates,
+  initialTab,
 }: {
   digest: Digest | null;
   dates: string[];
+  initialTab?: string;
 }) {
   const router = useRouter();
   const currentDate = digest?.meta.date ?? dates[0] ?? '';
-  const [activeTab, setActiveTab] = useState<ActiveTab>('news');
+  const [activeTab, setActiveTab] = useState<ActiveTab>(
+    VALID_TABS.includes(initialTab as ActiveTab) ? (initialTab as ActiveTab) : 'news'
+  );
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const currentIndex = dates.indexOf(currentDate);

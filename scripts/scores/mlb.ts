@@ -61,9 +61,20 @@ function parseFeaturedPitchers(comp: Record<string, unknown>): FeaturedPitcher[]
       role,
       name: (athlete.displayName || athlete.shortName || "") as string,
     };
+    if (athlete.id) pitcher.athleteId = String(athlete.id);
     if (athlete.jersey) pitcher.jersey = athlete.jersey as string;
     if (record) pitcher.record = record;
     if (era) pitcher.era = era;
+
+    // Capture all available stats
+    if (stats && stats.length > 0) {
+      const allStats: Record<string, string> = {};
+      for (const s of stats as Array<{ displayValue: string; abbreviation?: string; shortDisplayName?: string; name?: string }>) {
+        const key = s.abbreviation || s.shortDisplayName || s.name || '';
+        if (key) allStats[key] = s.displayValue;
+      }
+      if (Object.keys(allStats).length > 0) pitcher.stats = allStats;
+    }
     pitchers.push(pitcher);
   }
   return pitchers;
