@@ -3,7 +3,7 @@
 import type { Game, ScheduledGame } from '@/types';
 import { isCompletedGame } from '../shared/utils';
 import { LinescoreTable } from '../shared/LinescoreTable';
-import { LeaderComparison } from '../shared/LeaderComparison';
+import { LeaderComparison } from '../shared/StatLeaders';
 import { PitcherMatchup } from '../shared/PitcherSection';
 import { InjuryReport } from '../shared/InjuryReport';
 import { VenueBroadcast } from '../shared/VenueBroadcast';
@@ -27,7 +27,17 @@ function SeasonLeaderSection({ enrichment, awayTeam, homeTeam }: {
   const combined = [...leaders[0].leaders, ...leaders[1].leaders];
 
   return (
-    <LeaderComparison leaders={combined} title="Season Leaders" matchKey="category" awayTeam={awayTeam} homeTeam={homeTeam} />
+    <LeaderComparison
+      leaders={combined}
+      title="Season Leaders"
+      matchKey="category"
+      awayColor={awayTeam.color}
+      homeColor={homeTeam.color}
+      awayAlternateColor={awayTeam.alternateColor}
+      homeAlternateColor={homeTeam.alternateColor}
+      awayLogo={awayTeam.logo}
+      homeLogo={homeTeam.logo}
+    />
   );
 }
 
@@ -108,7 +118,6 @@ export function GameOverview({
         <>
           <ScoringBreakdown
             teamStats={enrichment.teamStats}
-            linescores={game.linescores}
             sport={sport}
             awayColor={game.away.color}
             homeColor={game.home.color}

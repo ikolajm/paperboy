@@ -2,7 +2,7 @@
 
 import type { Game } from '@/types';
 import { linescoreHeaders } from './linescore';
-import { ensureContrast } from './color';
+
 
 export function LinescoreTable({
   sport,
@@ -44,7 +44,6 @@ export function LinescoreTable({
         </thead>
         <tbody>
           {rows.map(({ side, team, scores, total, won }) => {
-            const safeColor = ensureContrast(team.color, team.alternateColor);
             return (
               <tr key={side} className="border-b border-outline-subtle last:border-b-0">
                 {/* Team cell with logo + abbreviation */}
@@ -57,14 +56,15 @@ export function LinescoreTable({
                     </span>
                   </div>
                 </td>
-                {/* Period scores */}
-                {scores.map((val, i) => (
-                  <td key={i} className="text-body-sm tabular-nums text-on-surface text-center px-component-compact py-component">{val}</td>
+                {/* Period scores — pad with "-" if fewer innings than header count */}
+                {periodHeaders.map((_, i) => (
+                  <td key={i} className="text-body-sm tabular-nums text-on-surface text-center px-component-compact py-component">
+                    {i < scores.length ? scores[i] : '—'}
+                  </td>
                 ))}
                 {/* Total */}
                 <td
                   className={`text-body-sm tabular-nums text-center px-group py-component border-l border-outline-subtle ${won ? 'font-medium text-primary' : 'text-on-surface'}`}
-                  style={won && safeColor ? { color: `#${safeColor}` } : undefined}
                 >
                   {total}
                 </td>

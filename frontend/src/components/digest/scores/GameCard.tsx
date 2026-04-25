@@ -4,28 +4,22 @@ import { useState } from 'react';
 import type { Game } from '@/types';
 import { Card } from '@/components/atoms/Card';
 import { Button } from '@/components/atoms/Button';
-import { ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Minus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Minus } from 'lucide-react';
 import { TeamHalf } from '../shared/TeamHalf';
-import { LinescoreTable } from '../shared/LinescoreTable';
-import { LeaderComparison } from '../shared/LeaderComparison';
-import { PitcherSection } from '../shared/PitcherSection';
-import { Blockquote } from '../shared/Blockquote';
-import { VenueBroadcast } from '../shared/VenueBroadcast';
-import { Provenance } from '../shared/Provenance';
-import { GameDetailLink } from '../shared/GameDetailLink';
 import { getSeriesSummary } from '../shared/utils';
+import { ExpandedCardContent } from './ExpandedCardContent';
 
-// --- Winner indicator (card-specific) ---
+// --- Winner indicator ---
 
 function WinnerIndicator({ awayWon, tied }: { awayWon: boolean; tied: boolean }) {
   return (
-    <div className="flex items-center justify-center shrink-0 text-on-surface-variant">
+    <div className="flex items-center justify-center shrink-0 text-on-surface">
       {tied ? (
-        <Minus className="size-icon-1" />
+        <Minus className="size-icon-1 text-on-surface-variant" />
       ) : awayWon ? (
-        <ChevronLeft className="size-icon-2" />
+        <span className="text-body-sm">◀</span>
       ) : (
-        <ChevronRight className="size-icon-2" />
+        <span className="text-body-sm">▶</span>
       )}
     </div>
   );
@@ -40,8 +34,6 @@ export function GameCard({ game, sport, date }: { game: Game; sport: string; dat
   return (
     <Card variant="outline" size="sm" className="!p-0 gap-0 overflow-hidden">
       {/* === Collapsed: always visible === */}
-
-      {/* Team halves with gradient backgrounds */}
       <div className="flex items-stretch">
         <TeamHalf
           side="away"
@@ -99,43 +91,9 @@ export function GameCard({ game, sport, date }: { game: Game; sport: string; dat
         </Button>
       </div>
 
-      {/* === Expanded: toggled === */}
+      {/* === Expanded === */}
       {expanded && (
-        <div className="flex flex-col gap-section-compact px-content py-group border-t border-outline-subtle">
-          <div className="flex flex-col gap-section">
-            {game.headline && (
-              <Blockquote>{game.headline}</Blockquote>
-            )}
-            <LinescoreTable sport={sport} game={game} />
-            {sport === 'MLB' && game.pitchers && game.pitchers.length > 0 && (
-              <PitcherSection
-                pitchers={game.pitchers}
-                awayWon={awayWon}
-                awayColor={game.away.color}
-                homeColor={game.home.color}
-                awayAlternateColor={game.away.alternateColor}
-                homeAlternateColor={game.home.alternateColor}
-                awayLogo={game.away.logo}
-                homeLogo={game.home.logo}
-              />
-            )}
-            <LeaderComparison
-              leaders={game.leaders}
-              title={sport === 'MLB' ? 'Batting Leaders' : 'Game Leaders'}
-              awayTeam={{ color: game.away.color, alternateColor: game.away.alternateColor, logo: game.away.logo }}
-              homeTeam={{ color: game.home.color, alternateColor: game.home.alternateColor, logo: game.home.logo }}
-            />
-          </div>
-
-          <VenueBroadcast venue={game.venue} broadcasts={game.broadcasts} />
-
-          <div className="flex flex-col gap-component-compact">
-            {game.enrichment && date && (
-              <GameDetailLink date={date} gameId={game.id} />
-            )}
-            {game.enrichment && <Provenance enrichment={game.enrichment} />}
-          </div>
-        </div>
+        <ExpandedCardContent game={game} sport={sport} date={date} />
       )}
     </Card>
   );

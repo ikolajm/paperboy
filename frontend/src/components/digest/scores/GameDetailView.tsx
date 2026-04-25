@@ -10,7 +10,7 @@ import {
 import { ensureContrast } from '../shared/color';
 import { isCompletedGame, getSeriesSummary } from '../shared/utils';
 import { Provenance } from '../shared/Provenance';
-import { ChevronLeft, ChevronRight, Minus, Clock } from 'lucide-react';
+import { Minus, Clock, MapPin } from 'lucide-react';
 import { GameOverview } from './GameOverview';
 import { BoxScoreTable } from './BoxScoreTable';
 
@@ -40,23 +40,24 @@ function GameHero({
         backgroundPosition: 'center',
       }}
     >
-      {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/70" />
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/60 to-black/40" />
 
       {/* Content */}
-      <div className="relative flex flex-col items-center gap-group py-section px-content">
+      <div className="relative flex flex-col items-center gap-group py-section pb-[var(--space-8)] px-content">
         {/* Teams + Score */}
         <div className="flex items-center gap-section w-full max-w-2xl">
           {/* Away */}
-          <div className="flex-1 flex flex-col items-center gap-component">
+          <div className="flex-1 flex flex-col items-center gap-component text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={game.away.logo} alt={game.away.abbreviation} className="size-[72px] md:size-[96px] object-contain" />
             <div className="flex flex-col items-center">
               <span className="text-title-md text-white font-medium">
                 {game.away.displayName}
+                {game.away.seed != null && <sub className="text-label-md text-white/50 ml-0.5">{game.away.seed}</sub>}
               </span>
               <span className="text-label-sm text-white/60">
-                {game.away.seed ? `#${game.away.seed} · ` : ''}{game.away.records.total ?? ''}
+                {game.away.records.total ?? ''}
               </span>
             </div>
           </div>
@@ -72,13 +73,13 @@ function GameHero({
                   >
                     {game.awayScore}
                   </span>
-                  <div className="text-white/30">
+                  <div className="text-white">
                     {game.awayScore === game.homeScore ? (
-                      <Minus className="size-icon-2" />
+                      <Minus className="size-icon-2 text-white/30" />
                     ) : game.awayScore > game.homeScore ? (
-                      <ChevronLeft className="size-icon-2" />
+                      <span className="text-title-md">◀</span>
                     ) : (
-                      <ChevronRight className="size-icon-2" />
+                      <span className="text-title-md">▶</span>
                     )}
                   </div>
                   <span
@@ -101,37 +102,44 @@ function GameHero({
           </div>
 
           {/* Home */}
-          <div className="flex-1 flex flex-col items-center gap-component">
+          <div className="flex-1 flex flex-col items-center gap-component text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={game.home.logo} alt={game.home.abbreviation} className="size-[72px] md:size-[96px] object-contain" />
             <div className="flex flex-col items-center">
               <span className="text-title-md text-white font-medium">
                 {game.home.displayName}
+                {game.home.seed != null && <sub className="text-label-md text-white/50 ml-0.5">{game.home.seed}</sub>}
               </span>
               <span className="text-label-sm text-white/60">
-                {game.home.seed ? `#${game.home.seed} · ` : ''}{game.home.records.total ?? ''}
+                {game.home.records.total ?? ''}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Context: notes + series + venue */}
-        <div className="flex items-center gap-component flex-wrap text-label-sm text-white/50">
-          {game.notes.length > 0 && <span>{game.notes[0]}</span>}
-          {(() => {
-            const summary = getSeriesSummary(game.enrichment);
-            return summary ? (
-              <>
-                {game.notes.length > 0 && <span>·</span>}
-                <span>{summary}</span>
-              </>
-            ) : null;
-          })()}
+        {/* Context: notes + series */}
+        <div className="flex flex-col items-center gap-component-compact">
+          <div className="flex items-center gap-component flex-wrap justify-center text-label-md text-white/70">
+            {game.notes.length > 0 && (
+              <span className="font-medium">{game.notes[0]}</span>
+            )}
+            {(() => {
+              const summary = getSeriesSummary(game.enrichment);
+              return summary ? (
+                <>
+                  {game.notes.length > 0 && <span className="text-white/40">·</span>}
+                  <span>{summary}</span>
+                </>
+              ) : null;
+            })()}
+          </div>
+
+          {/* Venue on its own line */}
           {game.venue && (
-            <>
-              <span>·</span>
+            <div className="flex items-center gap-component-compact text-label-sm text-white/50">
+              <MapPin className="size-icon-0 shrink-0" />
               <span>{game.venue}</span>
-            </>
+            </div>
           )}
         </div>
       </div>
@@ -174,7 +182,12 @@ export function GameDetailView({
 
             <TabsContent value="boxscore">
               <div className="py-group">
-                <BoxScoreTable playerStats={game.enrichment!.playerStats} sport={sport} />
+                <BoxScoreTable
+                  playerStats={game.enrichment!.playerStats}
+                  sport={sport}
+                  awayTeam={{ abbreviation: game.away.abbreviation, color: game.away.color, alternateColor: game.away.alternateColor }}
+                  homeTeam={{ abbreviation: game.home.abbreviation, color: game.home.color, alternateColor: game.home.alternateColor }}
+                />
               </div>
             </TabsContent>
           </Tabs>

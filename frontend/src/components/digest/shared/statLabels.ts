@@ -57,6 +57,9 @@ export const NBA_BOX_LABELS: Record<string, StatMeta> = {
 // --- NHL ---
 
 export const NHL_TEAM_STATS: Record<string, StatMeta> = {
+  'Goals':   { label: 'Goals', group: 'offense' },
+  'Assists': { label: 'Assists', group: 'offense' },
+  'Points':  { label: 'Points', group: 'offense' },
   'S':    { label: 'Shots', group: 'offense' },
   'SOG':  { label: 'Shootout Goals', group: 'offense' },
   'PPG':  { label: 'Power Play Goals', group: 'offense' },
@@ -100,10 +103,18 @@ export const NHL_BOX_LABELS: Record<string, StatMeta> = {
 // --- MLB ---
 
 export const MLB_TEAM_STATS: Record<string, StatMeta> = {
-  'Batting':  { label: 'Batting', group: 'offense' },
-  'Pitching': { label: 'Pitching', group: 'defense' },
-  'Fielding': { label: 'Fielding', group: 'defense' },
-  'Records':  { label: 'Records', group: 'other' },
+  'H':    { label: 'Hits', group: 'offense' },
+  'R':    { label: 'Runs', group: 'offense' },
+  'HR':   { label: 'Home Runs', group: 'offense' },
+  'RBI':  { label: 'Runs Batted In', group: 'offense' },
+  'BB':   { label: 'Walks', group: 'offense' },
+  'SB':   { label: 'Stolen Bases', group: 'offense' },
+  'SO':   { label: 'Strikeouts', group: 'defense' },
+  'K':    { label: 'Strikeouts (P)', group: 'defense' },
+  'ERA':  { label: 'Earned Run Average', group: 'defense' },
+  'IP':   { label: 'Innings Pitched', group: 'defense' },
+  'LOB':  { label: 'Left on Base', group: 'offense' },
+  'E':    { label: 'Errors', group: 'defense' },
 };
 
 export const MLB_BOX_LABELS: Record<string, StatMeta> = {

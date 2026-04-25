@@ -31,7 +31,7 @@ function MatchupCard({ game, teams }: {
           </span>
           <span className={`text-body-sm tabular-nums ml-auto ${awayWon ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
             {game.awayScore}
-            {awayWon && <span className="text-primary ml-0.5">◀</span>}
+            {awayWon && <span className="text-on-surface ml-0.5">◀</span>}
           </span>
         </div>
         {/* Home row */}
@@ -45,7 +45,7 @@ function MatchupCard({ game, teams }: {
           </span>
           <span className={`text-body-sm tabular-nums ml-auto ${!awayWon ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
             {game.homeScore}
-            {!awayWon && <span className="text-primary ml-0.5">◀</span>}
+            {!awayWon && <span className="text-on-surface ml-0.5">◀</span>}
           </span>
         </div>
       </div>

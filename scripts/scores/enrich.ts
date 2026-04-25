@@ -123,17 +123,43 @@ function parseTeamStats(data: Record<string, unknown>): TeamStatsBlock[] {
 
   return teams.map((t) => {
     const team = t.team as Record<string, unknown> | undefined;
-    const statistics = t.statistics as Array<Record<string, string>> | undefined;
+    const statistics = t.statistics as Array<Record<string, unknown>> | undefined;
+
+    // ESPN MLB nests stats inside categories (batting.stats[], pitching.stats[]).
+    // NBA/NHL have flat stats with displayValue at the top level.
+    // Detect nested structure and flatten.
+    const flatStats: { name: string; label: string; abbreviation: string; displayValue: string }[] = [];
+
+    for (const s of statistics || []) {
+      const nested = s.stats as Array<Record<string, string>> | undefined;
+      if (nested && Array.isArray(nested)) {
+        // Nested: flatten inner stats (MLB)
+        for (const inner of nested) {
+          if (inner.displayValue) {
+            flatStats.push({
+              name: inner.name || "",
+              label: inner.displayName || inner.shortDisplayName || "",
+              abbreviation: inner.abbreviation || "",
+              displayValue: inner.displayValue || "",
+            });
+          }
+        }
+      } else {
+        // Flat: use directly (NBA, NHL)
+        const stat = s as Record<string, string>;
+        flatStats.push({
+          name: stat.name || "",
+          label: stat.label || stat.displayName || "",
+          abbreviation: stat.abbreviation || "",
+          displayValue: stat.displayValue || "",
+        });
+      }
+    }
 
     return {
       team: (team?.displayName || "") as string,
       abbreviation: (team?.abbreviation || "") as string,
-      stats: (statistics || []).map((s) => ({
-        name: s.name || "",
-        label: s.label || s.displayName || "",
-        abbreviation: s.abbreviation || "",
-        displayValue: s.displayValue || "",
-      })),
+      stats: flatStats,
     };
   });
 }
