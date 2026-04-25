@@ -7,3 +7,9 @@ export type {
   ScheduledGame,
   SportSchedule,
 } from "@shared/types/scores";
+
+export type {
+  StandingsTeam,
+  StandingsGroup,
+  SportStandings,
+} from "@shared/types/standings";

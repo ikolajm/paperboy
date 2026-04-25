@@ -13,6 +13,7 @@ import { EmptyState } from '@/components/atoms/EmptyState';
 import { Trophy, Clock, CalendarDays } from 'lucide-react';
 import { GameCard } from './GameCard';
 import { ScheduledGameCard } from './ScheduledGameCard';
+import { StandingsContent } from './StandingsContent';
 
 // --- Helpers ---
 
@@ -56,6 +57,7 @@ export function ScoreboardPanel({
       <TabsList>
         <TabsTrigger value="recaps">Recaps</TabsTrigger>
         <TabsTrigger value="schedule">Schedule</TabsTrigger>
+        <TabsTrigger value="standings">Standings</TabsTrigger>
       </TabsList>
 
       <TabsContent value="recaps">
@@ -64,6 +66,10 @@ export function ScoreboardPanel({
 
       <TabsContent value="schedule">
         <ScheduleContent scores={scores} date={date} />
+      </TabsContent>
+
+      <TabsContent value="standings">
+        <StandingsContent standings={scores.team_sports.standings} />
       </TabsContent>
     </Tabs>
   );
