@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { TeamStatsBlock } from '@/types';
 import { getStatLabel as getFullStatLabel, getStatGroup } from '../shared/statLabels';
+import { ComparisonRow } from '../shared/PlayerCard';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 // --- Curated stats per sport (ordered: offense first, then defense) ---
@@ -33,30 +34,6 @@ interface StatPair {
   homeNumeric: number;
 }
 
-// --- Stat row ---
-
-function StatRow({ pair, isLast }: { pair: StatPair; isLast: boolean }) {
-  const awayWins = pair.awayNumeric > pair.homeNumeric;
-  const homeWins = pair.homeNumeric > pair.awayNumeric;
-
-  return (
-    <div
-      className={`flex items-center py-component ${isLast ? '' : 'border-b border-outline-subtle'}`}
-      title={pair.fullLabel}
-    >
-      <span className={`text-body-sm tabular-nums w-[48px] text-left ${awayWins ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
-        {pair.awayValue}
-      </span>
-      <span className="text-label-sm text-on-surface-variant text-center flex-1 select-none">
-        {pair.label}
-      </span>
-      <span className={`text-body-sm tabular-nums w-[48px] text-right ${homeWins ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
-        {pair.homeValue}
-      </span>
-    </div>
-  );
-}
-
 // --- Stat table (one group) ---
 
 function StatTable({ title, pairs, awayAbbr, homeAbbr }: {
@@ -70,13 +47,13 @@ function StatTable({ title, pairs, awayAbbr, homeAbbr }: {
   return (
     <div className="flex flex-col gap-component">
       <div className="flex items-center">
-        <span className="text-body-sm text-on-surface font-medium w-[48px] text-left">{awayAbbr}</span>
+        <span className="text-body-sm text-on-surface font-medium w-[56px] text-left">{awayAbbr}</span>
         <span className="text-label-sm text-on-surface-variant text-center flex-1">{title}</span>
-        <span className="text-body-sm text-on-surface font-medium w-[48px] text-right">{homeAbbr}</span>
+        <span className="text-body-sm text-on-surface font-medium w-[56px] text-right">{homeAbbr}</span>
       </div>
       <div className="flex flex-col rounded-card border border-outline-subtle overflow-hidden bg-surface-1 px-group">
         {pairs.map((pair, i) => (
-          <StatRow key={pair.label} pair={pair} isLast={i === pairs.length - 1} />
+          <ComparisonRow key={pair.label} label={pair.label} val1={pair.awayValue} val2={pair.homeValue} isLast={i === pairs.length - 1} title={pair.fullLabel} />
         ))}
       </div>
     </div>

@@ -68,3 +68,60 @@ export function CardLabel({ text, className = '' }: { text: string; className?: 
 export function headshotUrl(sport: string, athleteId: string): string {
   return `https://a.espncdn.com/i/headshots/${sport.toLowerCase()}/players/full/${athleteId}.png`;
 }
+
+// --- Flag backdrop for card headers (F1 circuits, UFC venues) ---
+
+export function FlagBackdrop({
+  flagUrl,
+  children,
+  className = '',
+}: {
+  flagUrl: string | null;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`relative flex flex-col gap-component-compact px-content py-component overflow-hidden ${className}`}
+      style={flagUrl ? { backgroundImage: `url(${flagUrl})`, backgroundSize: '115%', backgroundPosition: 'center' } : undefined}
+    >
+      {flagUrl && <div className="absolute inset-0 bg-surface-1/90 pointer-events-none" />}
+      {children}
+    </div>
+  );
+}
+
+// --- Stat comparison row (team stats, fight stats) ---
+
+export function ComparisonRow({
+  label,
+  val1,
+  val2,
+  isLast = false,
+  title,
+}: {
+  label: string;
+  val1: string;
+  val2: string;
+  isLast?: boolean;
+  title?: string;
+}) {
+  const num1 = parseFloat(val1) || 0;
+  const num2 = parseFloat(val2) || 0;
+  const win1 = num1 > num2;
+  const win2 = num2 > num1;
+
+  return (
+    <div className={`flex items-center py-component ${isLast ? '' : 'border-b border-outline-subtle'}`} title={title}>
+      <span className={`text-body-sm tabular-nums w-[56px] text-left ${win1 ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
+        {val1}
+      </span>
+      <span className="text-label-sm text-on-surface-variant text-center flex-1 select-none">
+        {label}
+      </span>
+      <span className={`text-body-sm tabular-nums w-[56px] text-right ${win2 ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
+        {val2}
+      </span>
+    </div>
+  );
+}

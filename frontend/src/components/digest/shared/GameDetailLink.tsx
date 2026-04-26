@@ -1,3 +1,5 @@
+import { buttonVariants } from '@/components/atoms/Button';
+import { cn } from '@/components/atoms/cn';
 import { ExternalLink } from 'lucide-react';
 
 export function GameDetailLink({
@@ -12,9 +14,9 @@ export function GameDetailLink({
   return (
     <a
       href={`/scores/${date}/${gameId}`}
-      className="inline-flex items-center gap-component-compact text-label-sm text-primary hover:text-on-surface transition-colors self-start"
+      className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-primary self-start')}
     >
-      <ExternalLink className="size-icon-0" />
+      <ExternalLink className="size-icon-1 shrink-0" />
       {label}
     </a>
   );

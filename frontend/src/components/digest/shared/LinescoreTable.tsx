@@ -50,7 +50,7 @@ export function LinescoreTable({
                 <td className="py-component px-group">
                   <div className="flex items-center gap-component">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={team.logo} alt={team.abbreviation} className="size-icon-2 object-contain shrink-0" />
+                    <img src={team.logo} alt={team.abbreviation} loading="lazy" className="size-icon-2 object-contain shrink-0" />
                     <span className={`text-body-sm ${won ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
                       {team.abbreviation}
                     </span>

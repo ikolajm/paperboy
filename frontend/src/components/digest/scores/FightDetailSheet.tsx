@@ -10,6 +10,7 @@ import {
   SheetDescription,
 } from '@/components/atoms/Sheet';
 import { Badge } from '@/components/atoms/Badge';
+import { ComparisonRow } from '../shared/PlayerCard';
 
 // --- Method badge ---
 
@@ -46,6 +47,7 @@ function FighterProfile({ fighter, side }: { fighter: Fighter; side: 'left' | 'r
         <img
           src={fighter.headshot}
           alt={fighter.name}
+          loading="lazy"
           className="size-[72px] md:size-[88px] rounded-full object-cover bg-surface-1"
         />
       ) : (
@@ -58,7 +60,7 @@ function FighterProfile({ fighter, side }: { fighter: Fighter; side: 'left' | 'r
       <div className="flex items-center gap-component-compact">
         {fighter.flagUrl && (
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={fighter.flagUrl} alt="" className="size-icon-1 object-contain shrink-0" />
+          <img src={fighter.flagUrl} alt="" loading="lazy" className="size-icon-1 object-contain shrink-0" />
         )}
         <span className={`text-body-sm font-medium text-on-surface text-center ${fighter.winner ? 'text-primary' : ''}`}>
           {fighter.name}
@@ -76,34 +78,6 @@ function FighterProfile({ fighter, side }: { fighter: Fighter; side: 'left' | 'r
           {fighter.reach && <span>{fighter.reach} reach</span>}
         </div>
       )}
-    </div>
-  );
-}
-
-// --- Stat comparison row ---
-
-function StatRow({ label, val1, val2, isLast = false }: {
-  label: string;
-  val1: string;
-  val2: string;
-  isLast?: boolean;
-}) {
-  const num1 = parseFloat(val1) || 0;
-  const num2 = parseFloat(val2) || 0;
-  const win1 = num1 > num2;
-  const win2 = num2 > num1;
-
-  return (
-    <div className={`flex items-center py-component ${isLast ? '' : 'border-b border-outline-subtle'}`}>
-      <span className={`text-body-sm tabular-nums w-[56px] text-left ${win1 ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
-        {val1}
-      </span>
-      <span className="text-label-sm text-on-surface-variant text-center flex-1 select-none">
-        {label}
-      </span>
-      <span className={`text-body-sm tabular-nums w-[56px] text-right ${win2 ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
-        {val2}
-      </span>
     </div>
   );
 }
@@ -131,7 +105,7 @@ function StatsComparison({ stats1, stats2 }: { stats1: FightStats; stats2: Fight
       {/* Main stats */}
       <div className="flex flex-col rounded-card border border-outline-subtle overflow-hidden bg-surface-1 px-group">
         {rows.map((row, i) => (
-          <StatRow key={row.label} label={row.label} val1={row.val1} val2={row.val2} isLast={i === rows.length - 1} />
+          <ComparisonRow key={row.label} label={row.label} val1={row.val1} val2={row.val2} isLast={i === rows.length - 1} />
         ))}
       </div>
 
@@ -140,7 +114,7 @@ function StatsComparison({ stats1, stats2 }: { stats1: FightStats; stats2: Fight
         <span className="text-label-sm text-on-surface-variant text-center">Significant Strikes by Target</span>
         <div className="flex flex-col rounded-card border border-outline-subtle overflow-hidden bg-surface-1 px-group">
           {targetRows.map((row, i) => (
-            <StatRow key={row.label} label={row.label} val1={row.val1} val2={row.val2} isLast={i === targetRows.length - 1} />
+            <ComparisonRow key={row.label} label={row.label} val1={row.val1} val2={row.val2} isLast={i === targetRows.length - 1} />
           ))}
         </div>
       </div>

@@ -35,7 +35,7 @@ export function TeamHalf({
   const teamInfo = (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={logo} alt={abbreviation} className="size-[48px] object-contain shrink-0" />
+      <img src={logo} alt={abbreviation} loading="lazy" className="size-[48px] object-contain shrink-0" />
       <div className={`flex flex-col ${isAway ? '' : 'items-end'}`}>
         <span className={`text-body-lg ${hasScore && isWinner ? 'font-medium text-on-surface' : hasScore ? 'text-on-surface-variant' : 'font-medium text-on-surface'}`}>
           {abbreviation}

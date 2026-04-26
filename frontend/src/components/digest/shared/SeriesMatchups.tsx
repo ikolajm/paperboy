@@ -24,7 +24,7 @@ function MatchupCard({ game, teams }: {
         <div className="flex items-center gap-component">
           {awayTeam?.logo && (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={awayTeam.logo} alt={game.awayTeam} className="size-icon-2 object-contain shrink-0" />
+            <img src={awayTeam.logo} alt={game.awayTeam} loading="lazy" className="size-icon-2 object-contain shrink-0" />
           )}
           <span className={`text-body-sm ${awayWon ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
             {game.awayTeam}
@@ -38,7 +38,7 @@ function MatchupCard({ game, teams }: {
         <div className="flex items-center gap-component">
           {homeTeam?.logo && (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={homeTeam.logo} alt={game.homeTeam} className="size-icon-2 object-contain shrink-0" />
+            <img src={homeTeam.logo} alt={game.homeTeam} loading="lazy" className="size-icon-2 object-contain shrink-0" />
           )}
           <span className={`text-body-sm ${!awayWon ? 'font-medium text-on-surface' : 'text-on-surface-variant'}`}>
             {game.homeTeam}

@@ -50,7 +50,7 @@ function GameHero({
           {/* Away */}
           <div className="flex-1 flex flex-col items-center gap-component text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={game.away.logo} alt={game.away.abbreviation} className="size-[72px] md:size-[96px] object-contain" />
+            <img src={game.away.logo} alt={game.away.abbreviation} loading="lazy" className="size-[72px] md:size-[96px] object-contain" />
             <div className="flex flex-col items-center">
               <span className="text-title-md text-white font-medium">
                 {game.away.displayName}
@@ -104,7 +104,7 @@ function GameHero({
           {/* Home */}
           <div className="flex-1 flex flex-col items-center gap-component text-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={game.home.logo} alt={game.home.abbreviation} className="size-[72px] md:size-[96px] object-contain" />
+            <img src={game.home.logo} alt={game.home.abbreviation} loading="lazy" className="size-[72px] md:size-[96px] object-contain" />
             <div className="flex flex-col items-center">
               <span className="text-title-md text-white font-medium">
                 {game.home.displayName}

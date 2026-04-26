@@ -3,6 +3,7 @@
 import type { F1Weekend } from '@/types';
 import { Card, CardContent } from '@/components/atoms/Card';
 import { MapPin, Clock } from 'lucide-react';
+import { FlagBackdrop } from '../shared/PlayerCard';
 import { getCircuitFlagUrl } from './f1-flags';
 
 // --- Session type labels ---
@@ -25,12 +26,7 @@ export function F1ScheduleCard({ weekend }: { weekend: F1Weekend }) {
     <Card variant="outline" size="sm" className="!p-0 gap-0 overflow-hidden">
       <CardContent className="flex flex-col gap-0">
         {/* Header: event name + circuit with country flag backdrop */}
-        <div
-          className="relative flex flex-col gap-component-compact px-content py-component"
-          style={flagUrl ? { backgroundImage: `url(${flagUrl})`, backgroundSize: '115%', backgroundPosition: 'center' } : undefined}
-        >
-          {/* Flag overlay scrim */}
-          {flagUrl && <div className="absolute inset-0 bg-surface-1/90 pointer-events-none" />}
+        <FlagBackdrop flagUrl={flagUrl}>
           <h4 className="relative text-body-md font-medium text-on-surface">
             {weekend.eventName}
           </h4>
@@ -38,7 +34,7 @@ export function F1ScheduleCard({ weekend }: { weekend: F1Weekend }) {
             <MapPin className="size-icon-0 shrink-0" />
             <span>{weekend.circuit} — {weekend.city}</span>
           </div>
-        </div>
+        </FlagBackdrop>
 
         {/* Session schedule */}
         {sessionsWithTimes.length > 0 && (

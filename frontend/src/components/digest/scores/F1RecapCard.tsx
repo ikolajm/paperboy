@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/atoms/Card';
 import { Badge } from '@/components/atoms/Badge';
 import { MapPin, Trophy } from 'lucide-react';
 import { ExpandToggle } from '../shared/ExpandToggle';
+import { FlagBackdrop } from '../shared/PlayerCard';
 import { ensureContrast } from '../shared/color';
 import { getCircuitFlagUrl } from './f1-flags';
 
@@ -94,7 +95,7 @@ function CollapsibleSession({ session, showTeam }: { session: F1Session; showTea
         <span>{label}: {topDriver?.name ?? 'No results'}</span>
       </ExpandToggle>
       {expanded && (
-        <div className="px-content py-group border-t border-outline-subtle">
+        <div className="px-content py-component border-t border-outline-subtle">
           <SessionTable session={session} showTeam={showTeam} />
         </div>
       )}
@@ -116,12 +117,7 @@ export function F1RecapCard({ weekend, date }: { weekend: F1Weekend; date?: stri
     <Card variant="outline" size="sm" className="!p-0 gap-0 overflow-hidden">
       <CardContent className="flex flex-col gap-0">
         {/* Header: event name + circuit with country flag backdrop */}
-        <div
-          className="relative flex flex-col gap-component-compact px-content py-component"
-          style={flagUrl ? { backgroundImage: `url(${flagUrl})`, backgroundSize: '115%', backgroundPosition: 'center' } : undefined}
-        >
-          {/* Flag overlay scrim */}
-          {flagUrl && <div className="absolute inset-0 bg-surface-1/90 pointer-events-none" />}
+        <FlagBackdrop flagUrl={flagUrl}>
           <h4 className="relative text-body-md font-medium text-on-surface">
             {weekend.eventName}
           </h4>
@@ -129,7 +125,7 @@ export function F1RecapCard({ weekend, date }: { weekend: F1Weekend; date?: stri
             <MapPin className="size-icon-0 shrink-0" />
             <span>{weekend.circuit} — {weekend.city}</span>
           </div>
-        </div>
+        </FlagBackdrop>
 
         {/* Primary session (always expanded) */}
         {primarySession && primarySession.drivers.length > 0 && (

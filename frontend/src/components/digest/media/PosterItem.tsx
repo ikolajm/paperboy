@@ -76,6 +76,7 @@ function PosterImage({ posterUrl, title }: { posterUrl?: string; title: string }
         <img
           src={posterUrl}
           alt={title}
+          loading="lazy"
           className="w-full h-full object-cover"
         />
       ) : (

@@ -5,6 +5,7 @@ import type { UFCCard, Fight } from '@/types';
 import { Card, CardContent } from '@/components/atoms/Card';
 import { MapPin, Tv } from 'lucide-react';
 import { ExpandToggle } from '../shared/ExpandToggle';
+import { FlagBackdrop } from '../shared/PlayerCard';
 import { getVenueFlagUrl } from './ufc-flags';
 import { FightDetailSheet } from './FightDetailSheet';
 
@@ -123,21 +124,15 @@ export function UFCRecapCard({ card, date }: { card: UFCCard; date?: string }) {
     <Card variant="outline" size="sm" className="!p-0 gap-0 overflow-hidden">
       <CardContent className="flex flex-col gap-0">
         {/* Header: event name + venue with country flag backdrop */}
-        <div
-          className="relative flex flex-col gap-component-compact px-content py-component overflow-hidden"
-          style={flagUrl ? { backgroundImage: `url(${flagUrl})`, backgroundSize: '115%', backgroundPosition: 'center' } : undefined}
-        >
-          {flagUrl && <div className="absolute inset-0 bg-surface-1/90 pointer-events-none" />}
+        <FlagBackdrop flagUrl={flagUrl}>
           <h4 className="relative text-body-md font-medium text-on-surface">
             {card.eventName}
           </h4>
-          <div className="relative flex items-center gap-component text-label-sm text-on-surface-variant">
-            <div className="flex items-center gap-component-compact">
-              <MapPin className="size-icon-0 shrink-0" />
-              <span>{card.venue}</span>
-            </div>
+          <div className="relative flex items-center gap-component-compact text-label-sm text-on-surface-variant">
+            <MapPin className="size-icon-0 shrink-0" />
+            <span>{card.venue}</span>
           </div>
-        </div>
+        </FlagBackdrop>
 
         {/* Main card fights */}
         <div className="flex flex-col border-t border-outline-subtle px-content py-component">

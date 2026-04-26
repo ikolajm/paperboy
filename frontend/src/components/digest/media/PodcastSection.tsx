@@ -1,5 +1,7 @@
 import type { Podcast } from '@/types';
 import { Card, CardContent } from '@/components/atoms/Card';
+import { buttonVariants } from '@/components/atoms/Button';
+import { cn } from '@/components/atoms/cn';
 import { Clock, ExternalLink, Play, Mic, Podcast as PodcastIcon } from 'lucide-react';
 import { formatTimeAgo } from '@/lib/format';
 
@@ -16,6 +18,7 @@ function PodcastRow({ entry, date, availableDeepDives }: { entry: Podcast; date?
             <img
               src={entry.image_url}
               alt={entry.show}
+              loading="lazy"
               className="w-full h-full object-cover"
             />
           ) : (
@@ -69,37 +72,22 @@ function PodcastRow({ entry, date, availableDeepDives }: { entry: Podcast; date?
           )}
 
           {/* Action links */}
-          <div className="flex items-center gap-group flex-wrap">
+          <div className="flex items-center gap-component flex-wrap">
             {entry.audio_url && (
-              <a
-                href={entry.audio_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
-              >
-                <Play className="size-icon-0" />
+              <a href={entry.audio_url} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-primary')}>
+                <Play className="size-icon-1 shrink-0" />
                 Listen
               </a>
             )}
             {entry.youtube_url && (
-              <a
-                href={entry.youtube_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
-              >
-                <Play className="size-icon-0" />
+              <a href={entry.youtube_url} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-primary')}>
+                <Play className="size-icon-1 shrink-0" />
                 YouTube
               </a>
             )}
             {entry.transcript_url && (
-              <a
-                href={entry.transcript_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-component-compact text-label-sm text-on-surface-variant hover:text-on-surface transition-colors"
-              >
-                <ExternalLink className="size-icon-0" />
+              <a href={entry.transcript_url} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-primary')}>
+                <ExternalLink className="size-icon-1 shrink-0" />
                 Transcript
               </a>
             )}
