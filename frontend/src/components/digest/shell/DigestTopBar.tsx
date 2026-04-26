@@ -105,10 +105,6 @@ export function DigestTopBar({
           <Trophy className="size-icon-1" />
           Scores
         </ToggleGroupItem>
-        {/* <ToggleGroupItem value="live" size="sm" className="gap-component">
-          <Radio className="size-icon-1" />
-          Live
-        </ToggleGroupItem> */}
       </ToggleGroup>
     </TopBar>
   );

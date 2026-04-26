@@ -1,5 +1,6 @@
 export type {
   FighterInfo as Fighter,
+  FightStats,
   FightResult as Fight,
   FightCard as UFCCard,
   UfcRecaps as UFCRecaps,

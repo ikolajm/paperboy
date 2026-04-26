@@ -17,7 +17,7 @@ import {
   getStatusDetail, getGameState, fetchEspn,
 } from "./shared.js";
 
-import type { FightResult, FightCard, FighterInfo } from "../../shared/types/digest.js";
+import type { FightResult, FightCard, FighterInfo, FightStats } from "../../shared/types/digest.js";
 
 // --- Parsing ---
 
@@ -59,6 +59,114 @@ async function fetchFightMethod(eventId: string, fightId: string): Promise<{
     };
   } catch {
     return { method: "Final" };
+  }
+}
+
+/** Fetch per-fighter stats from the core API */
+async function fetchFighterStats(eventId: string, fightId: string, athleteId: string): Promise<FightStats | null> {
+  try {
+    const data = await fetchEspn(
+      `https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/${eventId}/competitions/${fightId}/competitors/${athleteId}/statistics`
+    ) as Record<string, unknown>;
+
+    const stats = ((data.splits as Record<string, unknown>)?.categories as Array<Record<string, unknown>>)?.[0]
+      ?.stats as Array<Record<string, unknown>> | undefined;
+    if (!stats) return null;
+
+    function getStat(abbr: string): number {
+      const s = stats!.find(s => s.abbreviation === abbr);
+      return (s?.value as number) ?? 0;
+    }
+    function getStatStr(abbr: string): string {
+      const s = stats!.find(s => s.abbreviation === abbr);
+      return (s?.displayValue as string) ?? "0:00";
+    }
+
+    return {
+      knockdowns: getStat('KD'),
+      totalStrikesLanded: getStat('TSL'),
+      totalStrikesAttempted: getStat('TSA'),
+      sigStrikesLanded: getStat('SSL'),
+      sigStrikesAttempted: getStat('SSA'),
+      takedownsLanded: getStat('TDL'),
+      takedownsAttempted: getStat('TDA'),
+      submissionAttempts: getStat('SM'),
+      controlTime: getStatStr('TIC'),
+      headStrikes: getStat('SIGDISTHSL') + getStat('SCHL') + getStat('SGHL'),
+      bodyStrikes: getStat('SIGDISTBSL') + getStat('SCBL') + getStat('SGBL'),
+      legStrikes: getStat('SIGDISTLSL') + getStat('SCLL') + getStat('SGLL'),
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Fetch athlete profile for headshot + physical stats */
+async function fetchAthleteProfile(athleteId: string): Promise<{
+  headshot?: string;
+  height?: string;
+  weight?: string;
+  reach?: string;
+} | null> {
+  try {
+    const data = await fetchEspn(
+      `https://sports.core.api.espn.com/v2/sports/mma/athletes/${athleteId}`
+    ) as Record<string, unknown>;
+
+    const headshot = data.headshot as Record<string, string> | undefined;
+    const height = data.height as Record<string, string> | undefined;
+    const weight = data.weight as Record<string, string> | undefined;
+    const reach = data.reach as Record<string, string> | undefined;
+
+    return {
+      headshot: headshot?.href,
+      height: height?.displayValue,
+      weight: weight?.displayValue,
+      reach: reach?.displayValue,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Enrich a fight with stats + athlete profiles. 5 calls per fight (status + 2 stats + 2 athletes). */
+async function enrichFight(eventId: string, fight: FightResult, comp: Record<string, unknown>): Promise<void> {
+  const competitors = comp.competitors as Array<Record<string, unknown>> | undefined;
+  if (!competitors || competitors.length < 2) return;
+
+  const id1 = competitors[0].id as string;
+  const id2 = competitors[1].id as string;
+
+  const [method, stats1, stats2, profile1, profile2] = await Promise.all([
+    fetchFightMethod(eventId, fight.id),
+    fetchFighterStats(eventId, fight.id, id1),
+    fetchFighterStats(eventId, fight.id, id2),
+    fetchAthleteProfile(id1),
+    fetchAthleteProfile(id2),
+  ]);
+
+  // Method
+  fight.method = method.method;
+  fight.methodDetail = method.methodDetail;
+  if (method.endRound) fight.endRound = method.endRound;
+  if (method.endTime) fight.endTime = method.endTime;
+
+  // Stats (mapped to fighter1/fighter2 by competitor order)
+  if (stats1) fight.fighter1Stats = stats1;
+  if (stats2) fight.fighter2Stats = stats2;
+
+  // Athlete profiles
+  if (profile1) {
+    fight.fighter1.headshot = profile1.headshot;
+    fight.fighter1.height = profile1.height;
+    fight.fighter1.weight = profile1.weight;
+    fight.fighter1.reach = profile1.reach;
+  }
+  if (profile2) {
+    fight.fighter2.headshot = profile2.headshot;
+    fight.fighter2.height = profile2.height;
+    fight.fighter2.weight = profile2.weight;
+    fight.fighter2.reach = profile2.reach;
   }
 }
 
@@ -104,18 +212,12 @@ async function parseCompletedFights(event: Record<string, unknown>): Promise<Fig
 
   if (pendingFights.length === 0) return null;
 
-  // Fetch methods in parallel (13 calls for a full card)
-  const methods = await Promise.all(
-    pendingFights.map(({ fight }) => fetchFightMethod(eventId, fight.id))
+  // Enrich all fights in parallel (5 calls per fight: status + 2 stats + 2 athletes)
+  await Promise.all(
+    pendingFights.map(({ fight, comp }) => enrichFight(eventId, fight, comp))
   );
 
-  for (let i = 0; i < pendingFights.length; i++) {
-    const fight = pendingFights[i].fight;
-    const m = methods[i];
-    fight.method = m.method;
-    fight.methodDetail = m.methodDetail;
-    if (m.endRound) fight.endRound = m.endRound;
-    if (m.endTime) fight.endTime = m.endTime;
+  for (const { fight } of pendingFights) {
     fights.push(fight);
   }
 

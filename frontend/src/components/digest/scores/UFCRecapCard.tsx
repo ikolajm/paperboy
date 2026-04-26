@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/atoms/Card';
 import { MapPin, Tv } from 'lucide-react';
 import { ExpandToggle } from '../shared/ExpandToggle';
 import { getVenueFlagUrl } from './ufc-flags';
+import { FightDetailSheet } from './FightDetailSheet';
 
 // --- Method display ---
 
@@ -28,7 +29,7 @@ function formatMethod(fight: Fight): string {
 
 // --- Fight row ---
 
-function FightRow({ fight, isLast = false }: { fight: Fight; isLast?: boolean }) {
+function FightRowContent({ fight, isLast = false }: { fight: Fight; isLast?: boolean }) {
   const winner = fight.fighter1.winner ? fight.fighter1 : fight.fighter2.winner ? fight.fighter2 : null;
   const loser = fight.fighter1.winner ? fight.fighter2 : fight.fighter2.winner ? fight.fighter1 : null;
   const method = formatMethod(fight);
@@ -82,6 +83,22 @@ function FightRow({ fight, isLast = false }: { fight: Fight; isLast?: boolean })
       </div>
     </div>
   );
+}
+
+function FightRow({ fight, isLast = false }: { fight: Fight; isLast?: boolean }) {
+  const hasDetail = !!(fight.fighter1Stats && fight.fighter2Stats);
+
+  if (hasDetail) {
+    return (
+      <FightDetailSheet fight={fight}>
+        <button type="button" className="text-left w-full cursor-pointer hover:bg-surface-2/50 transition-colors rounded-component -mx-1 px-1">
+          <FightRowContent fight={fight} isLast={isLast} />
+        </button>
+      </FightDetailSheet>
+    );
+  }
+
+  return <FightRowContent fight={fight} isLast={isLast} />;
 }
 
 // --- Main component ---

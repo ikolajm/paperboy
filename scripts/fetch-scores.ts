@@ -131,7 +131,7 @@ async function fetchUfc(
 
   if (config.recaps) {
     try {
-      const dateRange = getDateRangeStr(targetDate, 7, 0);
+      const dateRange = getDateRangeStr(targetDate, 1, 0);
       const data = await fetchEspn(`${url}?dates=${dateRange}`);
       const cards = await parseCompletedEvents(data);
       recaps = {

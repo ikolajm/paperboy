@@ -7,6 +7,26 @@ export interface FighterInfo {
   record: string;
   winner: boolean;
   flagUrl?: string;
+  headshot?: string;
+  height?: string;
+  weight?: string;
+  reach?: string;
+}
+
+export interface FightStats {
+  knockdowns: number;
+  totalStrikesLanded: number;
+  totalStrikesAttempted: number;
+  sigStrikesLanded: number;
+  sigStrikesAttempted: number;
+  takedownsLanded: number;
+  takedownsAttempted: number;
+  submissionAttempts: number;
+  controlTime: string;         // "2:45"
+  /** Significant strikes by target */
+  headStrikes: number;
+  bodyStrikes: number;
+  legStrikes: number;
 }
 
 export interface FightResult {
@@ -21,6 +41,9 @@ export interface FightResult {
   endTime?: string;             // Time in the round (e.g. "2:30")
   cardSegment?: string;         // "Main Card", "Prelims"
   headline: string;
+  /** Per-fighter stats — only populated for completed fights */
+  fighter1Stats?: FightStats;
+  fighter2Stats?: FightStats;
 }
 
 export interface FightCard {

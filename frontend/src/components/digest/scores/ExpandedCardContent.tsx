@@ -118,6 +118,8 @@ export function ExpandedCardContent({
             enrichment={enrichment}
             awayColors={{ color: game.away.color, alternateColor: game.away.alternateColor }}
             homeColors={{ color: game.home.color, alternateColor: game.home.alternateColor }}
+            awayAbbr={game.away.abbreviation}
+            homeAbbr={game.home.abbreviation}
           />
         </div>
       )}
