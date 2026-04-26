@@ -71,8 +71,8 @@ export function ExpandedCardContent({
         </div>
       )}
 
-      {/* Key players: pitchers + leaders */}
-      {completed && (
+      {/* Key players: pitchers + leaders (only render section if we have data) */}
+      {completed && (game.leaders.length > 0 || (sport === 'MLB' && game.pitchers && game.pitchers.length > 0)) && (
         <div className="flex flex-col gap-section py-group border-t border-outline-subtle">
           {sport === 'MLB' && game.pitchers && game.pitchers.length > 0 && (
             <PitcherSection
@@ -111,8 +111,8 @@ export function ExpandedCardContent({
         </div>
       )}
 
-      {/* Injuries */}
-      {enrichment && (
+      {/* Injuries (only if any team has actual injuries) */}
+      {enrichment && enrichment.injuries.some(t => t.injuries.length > 0) && (
         <div className="py-group border-t border-outline-subtle">
           <InjuryReport
             enrichment={enrichment}

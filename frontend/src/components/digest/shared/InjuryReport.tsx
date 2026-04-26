@@ -16,7 +16,9 @@ export function InjuryReport({
   homeColors?: TeamColors;
 }) {
   const allTeams = enrichment.injuries;
-  if (allTeams.length === 0) return null;
+  // Only render if at least one team has actual injuries
+  const hasAnyInjuries = allTeams.some(t => t.injuries.length > 0);
+  if (allTeams.length === 0 || !hasAnyInjuries) return null;
 
   const colors = [
     awayColors ? ensureContrast(awayColors.color, awayColors.alternateColor) : undefined,

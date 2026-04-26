@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import type { Game } from '@/types';
 import { Card } from '@/components/atoms/Card';
-import { Button } from '@/components/atoms/Button';
-import { ChevronDown, ChevronUp, Minus } from 'lucide-react';
+import { Minus } from 'lucide-react';
 import { TeamHalf } from '../shared/TeamHalf';
+import { ExpandToggle } from '../shared/ExpandToggle';
 import { getSeriesSummary } from '../shared/utils';
 import { ExpandedCardContent } from './ExpandedCardContent';
 
@@ -60,36 +60,25 @@ export function GameCard({ game, sport, date }: { game: Game; sport: string; dat
         />
       </div>
 
-      {/* Footer: notes + status + expand toggle */}
-      <div className="flex items-center justify-between px-content py-component border-t border-outline-subtle">
-        <div className="flex items-center gap-component flex-wrap text-label-sm text-on-surface-variant">
-          <span>{game.status}</span>
-          {game.notes.length > 0 && (
+      {/* Footer */}
+      <ExpandToggle expanded={expanded} onToggle={() => setExpanded(!expanded)}>
+        <span>{game.status}</span>
+        {game.notes.length > 0 && (
+          <>
+            <span className="text-outline-subtle">·</span>
+            <span>{game.notes[0]}</span>
+          </>
+        )}
+        {(() => {
+          const summary = getSeriesSummary(game.enrichment);
+          return summary ? (
             <>
               <span className="text-outline-subtle">·</span>
-              <span>{game.notes[0]}</span>
+              <span>{summary}</span>
             </>
-          )}
-          {(() => {
-            const summary = getSeriesSummary(game.enrichment);
-            return summary ? (
-              <>
-                <span className="text-outline-subtle">·</span>
-                <span>{summary}</span>
-              </>
-            ) : null;
-          })()}
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          iconOnly
-          onClick={() => setExpanded(!expanded)}
-          title={expanded ? 'Collapse' : 'Expand'}
-        >
-          {expanded ? <ChevronUp /> : <ChevronDown />}
-        </Button>
-      </div>
+          ) : null;
+        })()}
+      </ExpandToggle>
 
       {/* === Expanded === */}
       {expanded && (

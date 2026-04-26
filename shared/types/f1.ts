@@ -6,12 +6,16 @@ export interface DriverResult {
   position: number;
   name: string;
   team: string;
-  flag: string;
+  teamColor?: string;     // hex, e.g. "00D2BE"
+  flag: string;           // country name, e.g. "Britain"
+  flagUrl?: string;       // ESPN flag image URL
   winner: boolean;
 }
 
 export interface SessionResult {
   type: string;
+  date: string;           // ISO timestamp for this session
+  localDate: string;      // YYYY-MM-DD at the venue
   status: string;
   drivers: DriverResult[];
   headline: string;

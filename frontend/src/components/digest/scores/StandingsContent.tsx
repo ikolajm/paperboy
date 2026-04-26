@@ -134,6 +134,111 @@ function GroupTable({
   );
 }
 
+// --- F1 constructor colors (matches pipeline static grid) ---
+
+const F1_CONSTRUCTOR_COLORS: Record<string, string> = {
+  'Mercedes': '00D2BE',
+  'Ferrari': 'DC0000',
+  'McLaren': 'FF8700',
+  'Red Bull': '00327D',
+  'Haas': '5A5A5A',
+  'Racing Bulls': '6692FF',
+  'Audi': 'FF2D00',
+  'Alpine': 'FFF500',
+  'Williams': '64C4FF', // FFFFFF too light for dark theme, use brand blue
+  'Aston Martin': '006F62',
+  'Cadillac': 'A2AAAD',
+};
+
+// Driver→constructor for standings color lookup
+const F1_DRIVER_TEAMS: Record<string, string> = {
+  'George Russell': 'Mercedes', 'Kimi Antonelli': 'Mercedes',
+  'Charles Leclerc': 'Ferrari', 'Lewis Hamilton': 'Ferrari',
+  'Lando Norris': 'McLaren', 'Oscar Piastri': 'McLaren',
+  'Max Verstappen': 'Red Bull', 'Isack Hadjar': 'Red Bull',
+  'Oliver Bearman': 'Haas', 'Esteban Ocon': 'Haas',
+  'Arvid Lindblad': 'Racing Bulls', 'Liam Lawson': 'Racing Bulls',
+  'Gabriel Bortoleto': 'Audi', 'Nico Hülkenberg': 'Audi',
+  'Pierre Gasly': 'Alpine', 'Franco Colapinto': 'Alpine',
+  'Alexander Albon': 'Williams', 'Carlos Sainz': 'Williams',
+  'Sergio Pérez': 'Cadillac', 'Valtteri Bottas': 'Cadillac',
+  'Lance Stroll': 'Aston Martin', 'Fernando Alonso': 'Aston Martin',
+};
+
+function getF1Color(name: string, isDriver: boolean): string | undefined {
+  if (isDriver) {
+    const team = F1_DRIVER_TEAMS[name];
+    return team ? F1_CONSTRUCTOR_COLORS[team] : undefined;
+  }
+  return F1_CONSTRUCTOR_COLORS[name];
+}
+
+// --- F1 standings table (rank + color bar + name + points) ---
+
+function F1GroupTable({
+  groupName,
+  teams,
+}: {
+  groupName: string;
+  teams: StandingsTeam[];
+}) {
+  const isDrivers = groupName.toLowerCase().includes('driver');
+
+  return (
+    <div className="flex flex-col gap-component">
+      <h4 className="text-body-sm text-on-surface font-medium">{groupName}</h4>
+      <div className="overflow-x-auto scrollbar-none rounded-card border border-outline-subtle">
+        <Table size="sm">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="min-w-[40px] text-center">#</TableHead>
+              <TableHead className="min-w-[180px]">{isDrivers ? 'Driver' : 'Constructor'}</TableHead>
+              <TableHead className="text-center">PTS</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {teams.map((team) => {
+              const color = getF1Color(team.displayName, isDrivers);
+              return (
+                <TableRow key={team.abbreviation || team.displayName}>
+                  <TableCell className="text-center text-body-sm text-on-surface-variant tabular-nums">
+                    {team.seed}
+                  </TableCell>
+                  <TableCell className="min-w-[180px]">
+                    <div className="flex items-center gap-component">
+                      {color && (
+                        <div
+                          className="w-[3px] h-[20px] rounded-full shrink-0"
+                          style={{ backgroundColor: `#${color}` }}
+                        />
+                      )}
+                      {isDrivers && team.logo && (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={team.logo}
+                          alt={team.abbreviation}
+                          loading="lazy"
+                          className="size-icon-1 object-contain shrink-0"
+                        />
+                      )}
+                      <span className="text-body-sm text-on-surface font-medium">
+                        {team.displayName}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center text-body-sm tabular-nums font-medium">
+                    {team.differential}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  );
+}
+
 // --- Main export ---
 
 export function StandingsContent({
@@ -184,15 +289,25 @@ export function StandingsContent({
       <div className="flex flex-col gap-section">
         {visibleStandings.map((sportStandings) => (
           <div key={sportStandings.sport} className="flex flex-col gap-group">
-            <h3 className="text-title-md text-on-surface">{sportStandings.sport}</h3>
+            <h3 className="text-title-md text-on-surface">
+              {sportStandings.sport === 'F1' ? 'Formula 1' : sportStandings.sport}
+            </h3>
             <div className="flex flex-col gap-section-compact">
               {sportStandings.groups.map((group) => (
-                <GroupTable
-                  key={group.name}
-                  groupName={group.name}
-                  teams={group.teams}
-                  sport={sportStandings.sport}
-                />
+                sportStandings.sport === 'F1' ? (
+                  <F1GroupTable
+                    key={group.name}
+                    groupName={group.name}
+                    teams={group.teams}
+                  />
+                ) : (
+                  <GroupTable
+                    key={group.name}
+                    groupName={group.name}
+                    teams={group.teams}
+                    sport={sportStandings.sport}
+                  />
+                )
               ))}
             </div>
           </div>

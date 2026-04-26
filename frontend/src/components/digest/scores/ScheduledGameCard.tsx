@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import type { ScheduledGame } from '@/types';
 import { Card } from '@/components/atoms/Card';
-import { Button } from '@/components/atoms/Button';
-import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { TeamHalf } from '../shared/TeamHalf';
+import { ExpandToggle } from '../shared/ExpandToggle';
 import { getSeriesSummary } from '../shared/utils';
 import { ExpandedCardContent } from './ExpandedCardContent';
 
@@ -53,34 +53,25 @@ export function ScheduledGameCard({ game, sport, date }: { game: ScheduledGame; 
         />
       </div>
 
-      {/* Footer: notes + series + expand */}
-      <div className="flex items-center justify-between px-content py-component border-t border-outline-subtle">
-        <div className="flex items-center gap-component flex-wrap text-label-sm text-on-surface-variant">
-          {game.notes.length > 0 && (
-            <span>{game.notes[0]}</span>
-          )}
-          {(() => {
-            const summary = getSeriesSummary(game.enrichment);
-            return summary ? (
-              <>
-                {game.notes.length > 0 && <span className="text-outline-subtle">·</span>}
-                <span>{summary}</span>
-              </>
-            ) : null;
-          })()}
-        </div>
-        {hasExpandable && (
-          <Button
-            variant="ghost"
-            size="sm"
-            iconOnly
-            onClick={() => setExpanded(!expanded)}
-            title={expanded ? 'Collapse' : 'Expand'}
-          >
-            {expanded ? <ChevronUp /> : <ChevronDown />}
-          </Button>
+      {/* Footer */}
+      <ExpandToggle
+        expanded={expanded}
+        onToggle={() => setExpanded(!expanded)}
+        showToggle={hasExpandable}
+      >
+        {game.notes.length > 0 && (
+          <span>{game.notes[0]}</span>
         )}
-      </div>
+        {(() => {
+          const summary = getSeriesSummary(game.enrichment);
+          return summary ? (
+            <>
+              {game.notes.length > 0 && <span className="text-outline-subtle">·</span>}
+              <span>{summary}</span>
+            </>
+          ) : null;
+        })()}
+      </ExpandToggle>
 
       {/* === Expanded === */}
       {expanded && game.enrichment && (

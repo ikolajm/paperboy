@@ -24,7 +24,7 @@ import type {
 import {
   fetchEspn, getTodayDateStr, getYesterdayDateStr, getDateRangeStr, formatDateDisplay,
 } from "./scores/shared.js";
-import { fetchAllStandings } from "./scores/standings.js";
+import { fetchAllStandings, fetchF1Teams, fetchF1Standings } from "./scores/standings.js";
 
 // Team sport modules
 import * as nba from "./scores/nba.js";
@@ -36,7 +36,7 @@ import * as collegeFball from "./scores/college-football.js";
 
 // Event-based sport modules
 import { parseCompletedEvents, parseScheduledEvents } from "./scores/ufc.js";
-import { parseCompletedWeekends, parseScheduledWeekends, parseRaceWeekend } from "./scores/f1.js";
+import { parseCompletedWeekends, parseScheduledWeekends, parseRaceWeekend, setF1TeamLookup } from "./scores/f1.js";
 
 // --- Team sport module registry ---
 
@@ -173,6 +173,10 @@ async function fetchF1(
   const url = config.url!;
   const todayDisplay = formatDateDisplay(targetDate);
 
+  // Fetch team lookup first (1 call) so driver results get team + color
+  const teamLookup = await fetchF1Teams();
+  setF1TeamLookup(teamLookup);
+
   let recaps: F1Recaps = {
     sport: "F1", date: todayDisplay, status: "no_race", weekends: [],
   };
@@ -233,12 +237,15 @@ export async function fetchAllScores(config: PaperboyConfig, targetDate?: Date):
 
   // Fetch all in parallel
   const sportNames = teamSports.map(([name]) => name);
-  const [teamResults, ufcResult, f1Result, standings] = await Promise.all([
+  const [teamResults, ufcResult, f1Result, teamStandings, f1Standings] = await Promise.all([
     Promise.all(teamSports.map(([name, cfg]) => fetchTeamSport(name, cfg, date))),
     ufcConfig ? fetchUfc(ufcConfig, date) : null,
     f1Config ? fetchF1(f1Config, date) : null,
     fetchAllStandings(sportNames),
+    f1Config ? fetchF1Standings() : null,
   ]);
+
+  const standings = [...teamStandings, ...(f1Standings ? [f1Standings] : [])];
 
   return {
     team_sports: {

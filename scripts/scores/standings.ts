@@ -92,3 +92,86 @@ export async function fetchAllStandings(sports: string[]): Promise<SportStanding
   );
   return results.filter((r): r is SportStandings => r !== null);
 }
+
+// --- F1 Standings ---
+
+export interface F1TeamInfo {
+  name: string;
+  color: string;
+}
+
+/** Fetch F1 teams → returns a map of team name → { color } */
+export async function fetchF1Teams(): Promise<Map<string, F1TeamInfo>> {
+  const map = new Map<string, F1TeamInfo>();
+  try {
+    const data = await fetchEspn("https://site.api.espn.com/apis/site/v2/sports/racing/f1/teams") as Record<string, unknown>;
+    const sports = data.sports as Array<Record<string, unknown>> | undefined;
+    const league = sports?.[0]?.leagues as Array<Record<string, unknown>> | undefined;
+    const teams = league?.[0]?.teams as Array<Record<string, unknown>> | undefined;
+
+    if (teams) {
+      for (const t of teams) {
+        const team = t.team as Record<string, unknown>;
+        const name = (team.displayName || "") as string;
+        const color = (team.color || "777777") as string;
+        if (name) map.set(name, { name, color });
+      }
+    }
+  } catch (err) {
+    console.warn(`  ⚠ F1 teams fetch failed: ${err instanceof Error ? err.message : err}`);
+  }
+  return map;
+}
+
+/** Fetch F1 driver + constructor standings */
+export async function fetchF1Standings(): Promise<SportStandings | null> {
+  try {
+    const data = await fetchEspn("https://site.api.espn.com/apis/v2/sports/racing/f1/standings") as Record<string, unknown>;
+    const children = data.children as Array<Record<string, unknown>> | undefined;
+    if (!children) return null;
+
+    const groups: StandingsGroup[] = [];
+
+    for (const child of children) {
+      const groupName = (child.name || "") as string;
+      const standings = child.standings as Record<string, unknown> | undefined;
+      const entries = standings?.entries as Array<Record<string, unknown>> | undefined;
+      if (!entries) continue;
+
+      const teams: StandingsTeam[] = entries.map((entry, index) => {
+        const stats = entry.stats as Array<Record<string, string>> | undefined ?? [];
+        const rank = parseInt(parseStat(stats, "RK"), 10) || (index + 1);
+        const points = parseStat(stats, "PTS") || "0";
+
+        // Driver standings have athlete, constructor standings have team
+        const athlete = entry.athlete as Record<string, unknown> | undefined;
+        const team = entry.team as Record<string, unknown> | undefined;
+        const flag = athlete?.flag as Record<string, string> | undefined;
+
+        return {
+          displayName: (athlete?.displayName || team?.displayName || "") as string,
+          abbreviation: (athlete?.abbreviation || team?.abbreviation || "") as string,
+          logo: flag?.href || "",
+          seed: rank,
+          wins: parseInt(points, 10) || 0, // repurpose wins as points for F1
+          losses: 0,
+          gamesBehind: "-",
+          streak: "",
+          clinch: "",
+          differential: points,  // store points in differential for display
+        };
+      });
+
+      groups.push({ name: groupName, teams });
+    }
+
+    return {
+      sport: "F1",
+      groups,
+      fetched_at: new Date().toISOString(),
+    };
+  } catch (err) {
+    console.warn(`  ⚠ F1 standings fetch failed: ${err instanceof Error ? err.message : err}`);
+    return null;
+  }
+}
