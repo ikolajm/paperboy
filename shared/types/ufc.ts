@@ -6,6 +6,7 @@ export interface FighterInfo {
   name: string;
   record: string;
   winner: boolean;
+  flagUrl?: string;
 }
 
 export interface FightResult {
@@ -14,7 +15,11 @@ export interface FightResult {
   fighter2: FighterInfo;
   weightClass: string;
   rounds: number;
-  method: string;
+  method: string;               // "KO/TKO", "Submission", "Decision", "Final"
+  methodDetail?: string;        // "Punch", "Rear Naked Choke", etc.
+  endRound?: number;            // Round the fight ended
+  endTime?: string;             // Time in the round (e.g. "2:30")
+  cardSegment?: string;         // "Main Card", "Prelims"
   headline: string;
 }
 

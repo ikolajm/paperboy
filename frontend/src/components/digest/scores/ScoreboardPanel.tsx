@@ -15,6 +15,7 @@ import { GameCard } from './GameCard';
 import { ScheduledGameCard } from './ScheduledGameCard';
 import { F1RecapCard } from './F1RecapCard';
 import { F1ScheduleCard } from './F1ScheduleCard';
+import { UFCRecapCard } from './UFCRecapCard';
 import { StandingsContent } from './StandingsContent';
 import type { F1Weekend, F1Session } from '@/types';
 
@@ -120,6 +121,10 @@ function getRecapChips(scores: ScoresSection): SportChip[] {
     }
   }
 
+  if (scores.ufc.recaps.cards.length > 0) {
+    chips.push({ key: 'UFC', label: 'UFC', count: scores.ufc.recaps.cards.length });
+  }
+
   if (scores.f1.recaps.weekends.length > 0) {
     chips.push({ key: 'F1', label: 'F1', count: scores.f1.recaps.weekends.length });
   }
@@ -134,6 +139,10 @@ function getScheduleChips(scores: ScoresSection): SportChip[] {
     if (sched.games.length > 0) {
       chips.push({ key: sched.sport, label: sched.sport, count: sched.games.length });
     }
+  }
+
+  if (scores.ufc.schedule.cards.length > 0) {
+    chips.push({ key: 'UFC', label: 'UFC', count: scores.ufc.schedule.cards.length });
   }
 
   if (scores.f1.schedule.weekends.length > 0) {
@@ -160,6 +169,7 @@ function RecapsContent({ scores, date }: { scores: ScoresSection; date?: string 
   }
 
   const recapDate = scores.team_sports.recaps.find(r => r.games.length > 0)?.date;
+  const showUFC = !activeSport || activeSport === 'UFC';
   const showF1 = !activeSport || activeSport === 'F1';
   const showTeamSport = (sport: string) => !activeSport || activeSport === sport;
 
@@ -220,6 +230,18 @@ function RecapsContent({ scores, date }: { scores: ScoresSection; date?: string 
             </div>
           ))}
 
+        {/* UFC */}
+        {showUFC && scores.ufc.recaps.cards.length > 0 && (
+          <div className="flex flex-col gap-group">
+            <h3 className="text-title-md text-on-surface">UFC</h3>
+            <div className="flex flex-col gap-component">
+              {scores.ufc.recaps.cards.map((card) => (
+                <UFCRecapCard key={card.id} card={card} date={date} />
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* F1 */}
         {showF1 && scores.f1.recaps.weekends.map((weekend) => {
           const days = splitF1ByDay(weekend);
@@ -257,6 +279,7 @@ function ScheduleContent({ scores, date }: { scores: ScoresSection; date?: strin
   }
 
   const scheduleDate = scores.team_sports.schedule.find(s => s.games.length > 0)?.date;
+  const showUFC = !activeSport || activeSport === 'UFC';
   const showF1 = !activeSport || activeSport === 'F1';
   const showTeamSport = (sport: string) => !activeSport || activeSport === sport;
 
@@ -306,6 +329,18 @@ function ScheduleContent({ scores, date }: { scores: ScoresSection; date?: strin
               </div>
             </div>
           ))}
+
+        {/* UFC */}
+        {showUFC && scores.ufc.schedule.cards.length > 0 && (
+          <div className="flex flex-col gap-group">
+            <h3 className="text-title-md text-on-surface">UFC</h3>
+            <div className="flex flex-col gap-component">
+              {scores.ufc.schedule.cards.map((card) => (
+                <UFCRecapCard key={card.id} card={card} date={date} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* F1 */}
         {showF1 && scores.f1.schedule.weekends.length > 0 && (

@@ -133,7 +133,7 @@ async function fetchUfc(
     try {
       const dateRange = getDateRangeStr(targetDate, 7, 0);
       const data = await fetchEspn(`${url}?dates=${dateRange}`);
-      const cards = parseCompletedEvents(data);
+      const cards = await parseCompletedEvents(data);
       recaps = {
         sport: "UFC", date: todayDisplay,
         status: cards.length > 0 ? "events_completed" : "no_events",
