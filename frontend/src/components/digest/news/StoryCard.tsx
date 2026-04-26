@@ -83,7 +83,13 @@ export function StoryCard({
     attribution = trimmedSource;
     attributionIcon = hasSourceUrl ? 'favicon' : 'outlet';
   } else {
-    attribution = '';
+    // Fallback: extract domain from sourceUrl or url
+    const fallbackUrl = sourceUrl || url;
+    try {
+      attribution = fallbackUrl ? new URL(fallbackUrl).hostname.replace(/^www\./, '') : '';
+    } catch {
+      attribution = '';
+    }
     attributionIcon = 'outlet';
   }
 

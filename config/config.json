@@ -4,20 +4,20 @@
   "popular_today": {
     "top_stories": {
       "rss": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
-      "max": 5
+      "max": 3
     },
     "world": {
       "rss": "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en",
-      "max": 5
+      "max": 3
     },
     "nation": {
       "rss": "https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en",
-      "max": 5
+      "max": 3
     }
   },
 
   "local_news": {
-    "max_stories_per_location": 5,
+    "max_stories_per_location": 4,
     "locations": [
       {
         "label": "Stevensville, MI",
@@ -245,8 +245,9 @@
   "opinions": {
     "_note": "Opinion/editorial RSS feeds. Sporadic schedule — fetch all on every run, no schedule filtering.",
     "feeds": [
-      "https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/opinion/rss.xml",
-      "https://www.theguardian.com/uk/commentisfree/rss"
+      "https://www.theguardian.com/uk/commentisfree/rss",
+      "https://thehill.com/opinion/feed/",
+      "https://feeds.washingtonpost.com/rss/opinions"
     ],
     "max_stories": 5
   },
