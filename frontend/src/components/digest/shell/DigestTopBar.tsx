@@ -4,9 +4,9 @@ import type { DigestMeta } from '@/types';
 import { TopBar } from '@/components/atoms/TopBar';
 import { Button } from '@/components/atoms/Button';
 import { ToggleGroup, ToggleGroupItem } from '@/components/atoms/ToggleGroup';
-import { Newspaper, Clapperboard, Trophy, Radio, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
+import { Newspaper, Clapperboard, Trophy, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 
-export type ActiveTab = 'news' | 'media' | 'scores' | 'live';
+export type ActiveTab = 'news' | 'media' | 'scores';
 
 function formatHeaderDate(meta: DigestMeta): string {
   const d = new Date(meta.date + 'T12:00:00');

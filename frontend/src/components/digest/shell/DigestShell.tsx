@@ -11,17 +11,16 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/atoms/Sheet';
-import { Newspaper, Clapperboard, Trophy, Radio } from 'lucide-react';
+import { Newspaper, Clapperboard, Trophy } from 'lucide-react';
 import { DigestSidebar, DigestSidebarContent } from './DigestSidebar';
 import { DigestTopBar, type ActiveTab } from './DigestTopBar';
 import { NewsFeed } from '../news/NewsFeed';
 import { MediaFeed } from '../media/MediaFeed';
 import { ScoreboardPanel } from '../scores/ScoreboardPanel';
-import { LiveFeed } from '../live/LiveFeed';
 import { Logo } from '../../atoms/Logo';
 import { Separator } from '../../atoms/Separator';
 
-const VALID_TABS: ActiveTab[] = ['news', 'media', 'scores', 'live'];
+const VALID_TABS: ActiveTab[] = ['news', 'media', 'scores'];
 
 export function DigestShell({
   digest,
@@ -119,9 +118,6 @@ export function DigestShell({
           {activeTab === 'scores' && (
             <ScoreboardPanel scores={digest?.sections.scores ?? null} date={currentDate} />
           )}
-          {activeTab === 'live' && (
-            <LiveFeed />
-          )}
         </main>
 
         {/* Mobile bottom nav */}
@@ -147,13 +143,6 @@ export function DigestShell({
               icon={<Trophy className="size-icon-2" />}
             >
               Scores
-            </BottomNavItem>
-            <BottomNavItem
-              active={activeTab === 'live'}
-              onClick={() => setActiveTab('live')}
-              icon={<Radio className="size-icon-2" />}
-            >
-              Live
             </BottomNavItem>
           </BottomNav>
         </div>
