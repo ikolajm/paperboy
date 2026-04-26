@@ -1,0 +1,144 @@
+@import "tailwindcss";
+@import "../tokens.css";
+
+body {
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+/* Global focus ring — guarantees every focusable element uses primary,
+   no browser-default blue ever leaks through. */
+:focus-visible {
+  outline: 2px solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+/* Components that use Tailwind ring utilities already handle their own
+   focus styles, so suppress the duplicate outline on those. */
+[class*="focus-visible:ring"]:focus-visible {
+  outline: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--on-surface-variant);
+  border-radius: var(--br-999);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--on-surface);
+}
+
+/* Deep dive markdown prose */
+.prose-digest {
+  color: var(--on-surface);
+  line-height: 1.7;
+}
+.prose-digest h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 0.75rem;
+  color: var(--on-surface);
+}
+.prose-digest h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  color: var(--on-surface);
+}
+.prose-digest h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1.5rem;
+  margin-bottom: 0.375rem;
+  color: var(--on-surface);
+}
+.prose-digest p {
+  margin-bottom: 0.75rem;
+}
+.prose-digest strong {
+  font-weight: 600;
+  color: var(--on-surface);
+}
+.prose-digest a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-digest a:hover {
+  color: var(--primary-variant, var(--primary));
+  opacity: 0.85;
+}
+.prose-digest ul,
+.prose-digest ol {
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+}
+.prose-digest ul {
+  list-style-type: disc;
+}
+.prose-digest ol {
+  list-style-type: decimal;
+}
+.prose-digest li {
+  margin-bottom: 0.25rem;
+}
+.prose-digest hr {
+  border: none;
+  border-top: 1px solid var(--outline-subtle);
+  margin: 1.5rem 0;
+}
+.prose-digest blockquote {
+  border-left: 3px solid var(--outline-subtle);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--on-surface-variant);
+  font-style: italic;
+}
+.prose-digest table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.prose-digest th,
+.prose-digest td {
+  border: 1px solid var(--outline-subtle);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.prose-digest th {
+  background: var(--surface-1);
+  font-weight: 600;
+}
+.prose-digest code {
+  background: var(--surface-1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.875em;
+}
+.prose-digest pre {
+  background: var(--surface-1);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.prose-digest pre code {
+  background: none;
+  padding: 0;
+}

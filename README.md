@@ -1,79 +1,73 @@
-# News Digest
+# Paperboy
 
-A prompt-chain–driven daily digest covering news, social chatter, and
-podcasts. No application code. Claude reads the markdown chain, fetches
-live content via web search, and writes your digest as markdown files.
+A personal daily news digest with a React dashboard.
+
+Paperboy aggregates news, sports scores, entertainment, and podcasts into a
+single JSON file each day, then renders it in a tabbed dashboard with
+sport-specific detail views, poster galleries, and layered filtering.
+
+---
+
+## How It Works
+
+A TypeScript pipeline fetches RSS feeds, ESPN scores, and TMDB data in
+parallel, applies filtering and dedup, and writes one JSON file per day.
+The Next.js dashboard reads that file at request time. No server process
+runs between invocations.
+
+```bash
+npm run digest            # Run today's pipeline
+npm run dev               # Start the dashboard
+```
 
 ---
 
 ## Setup
 
-1. Open this folder in Claude Code
-2. Edit `config/config.json` — add your interests, shows, and fetch guidance
-3. Say **"Run the daily digest"**
+```bash
+npm install && npm --prefix frontend install
+```
 
-See `config/CONFIG-REFERENCE.md` for a field-by-field guide to the config.
+The pipeline needs a TMDB API key in `config/credentials.json` (gitignored).
+See `config/CONFIG-REFERENCE.md` for details.
+
+All feed configuration lives in `config/config.json` — topics, scores
+endpoints, podcast shows, entertainment settings, and opinion feeds.
 
 ---
 
-## Quick Commands
+## The Dashboard
 
-**Daily digest**
-```
-"Run the daily digest"
-```
+Three tabs: **News**, **Media**, **Scores**.
 
-**News deep dive**
-```
-"Go deeper on SPRT-01"
-"More on TECH-03"
-"Deep dive on yesterday's SPRT-02"
-```
+**News** — Two-tier filtering. Pick a category (Headlines, Topics, Sports,
+Opinions), then narrow with contextual sub-filters. Cross-topic deduplication
+keeps the same story from appearing twice.
 
-**Podcast deep dive / transcript**
-```
-"Transcript for POD-02"
-"Go deeper on POD-01"
-```
+**Media** — Podcasts as list rows with action links. Movies, streaming, and
+upcoming releases as horizontal poster galleries with detail overlays showing
+genres, scores, and watch provider logos.
 
-**Flash check (real-time, no files written)**
-```
-"Quick check my feeds"
-"Live NBA scores"
-"What's going on with [topic]"
-```
+**Scores** — Recaps and Schedule sub-tabs with per-sport filters. Game cards
+expand to show linescores, stat leaders, and series info. Full game detail
+pages with box scores. Sport-specific rendering for MLB pitchers, F1 session
+cards, UFC fight stats, and NBA/NHL scoring breakdowns. Conference standings.
 
 ---
 
-## Folder Structure
+## On-Demand Features
 
-```
-news-aggregator/
-├── CLAUDE.md                       ← Operational detail — read this
-├── README.md                       ← You are here
-├── config/
-│   ├── config.json                 ← The only file you edit
-│   ├── CONFIG-REFERENCE.md         ← Field-by-field config guide
-│   ├── credentials.json            ← Gitignored — Bluesky + TMDB auth
-│   └── DECISIONS.md                ← Log of config decisions
-├── context/
-│   ├── CONTEXT.md                  ← Chain index
-│   ├── BOOTSTRAP.md
-│   ├── FETCH-NEWS.md
-│   ├── FILTER.md
-│   ├── POPULAR.md
-│   ├── FETCH-ENTERTAINMENT.md
-│   ├── FETCH-SOCIAL.md
-│   ├── FETCH-PODCASTS.md
-│   ├── WRITE.md
-│   ├── DEEP-DIVE-NEWS.md           ← On demand
-│   ├── DEEP-DIVE-PODCAST.md        ← On demand
-│   └── FLASH-CHECK.md              ← On demand
-└── digests/                        ← Git-ignored output
-    └── YYYY-MM-DD/
-        ├── digest.md
-        ├── digest-index.md
-        └── deep-dives/
-```
+These are agent-driven (require Claude Code), not part of the automated pipeline.
 
-For operational detail — entry points, ID prefixes, key principles — see `CLAUDE.md`.
+- **Deep dive** — `"Go deeper on SPRT-01"` — writes analysis to `digests/YYYY-MM-DD/deep-dives/`
+- **Flash check** — `"Quick check my feeds"` — inline output, no files written
+
+---
+
+## Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [CLAUDE.md](CLAUDE.md) | Operational reference for working in this codebase |
+| [config/CONFIG-REFERENCE.md](config/CONFIG-REFERENCE.md) | Field-by-field config guide |
+| [docs/DEFERRED.md](docs/DEFERRED.md) | What was deferred from V1 and why |
