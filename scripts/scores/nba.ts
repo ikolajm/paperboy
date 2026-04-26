@@ -54,10 +54,10 @@ export function parseCompletedGames(data: unknown): CompletedGame[] {
     const homeLinescores = (home.linescores as Array<{ value: number }> | undefined)?.map(l => l.value) ?? [];
     const awayLinescores = (away.linescores as Array<{ value: number }> | undefined)?.map(l => l.value) ?? [];
 
-    // Merge leaders from both teams
+    // Merge leaders from both teams (away first — matches frontend convention)
     const leaders: GameLeader[] = [
-      ...parseLeaders(home),
       ...parseLeaders(away),
+      ...parseLeaders(home),
     ];
 
     const notable = parseNotable(evt, homeScore, awayScore);

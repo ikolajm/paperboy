@@ -14,6 +14,33 @@ import { Minus, Clock, MapPin } from 'lucide-react';
 import { GameOverview } from './GameOverview';
 import { BoxScoreTable } from './BoxScoreTable';
 
+// --- Team rendering ---
+
+function TeamHalf({
+  game,
+  isAway
+}: {
+  game: Game | ScheduledGame;
+  isAway: boolean;
+}) {
+  const team = isAway? game.away : game.home;
+  return (
+    <div className="flex-1 flex flex-col items-center gap-component text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={team.logo} alt={team.abbreviation} loading="lazy" className="size-[72px] md:size-[96px] object-contain" />
+      <div className="flex flex-col items-center">
+        <span className="text-title-md text-white font-medium">
+          {team.displayName}
+          {team.seed != null && <sub className="text-label-md text-white/70 ml-0.5">{team.seed}</sub>}
+        </span>
+        <span className="text-label-md text-white/70">
+          {team.records.total ?? ''}
+        </span>
+      </div>
+    </div>
+  )
+}
+
 // --- Hero section ---
 
 function GameHero({
@@ -48,19 +75,7 @@ function GameHero({
         {/* Teams + Score */}
         <div className="flex items-center gap-section w-full max-w-2xl">
           {/* Away */}
-          <div className="flex-1 flex flex-col items-center gap-component text-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={game.away.logo} alt={game.away.abbreviation} loading="lazy" className="size-[72px] md:size-[96px] object-contain" />
-            <div className="flex flex-col items-center">
-              <span className="text-title-md text-white font-medium">
-                {game.away.displayName}
-                {game.away.seed != null && <sub className="text-label-md text-white/50 ml-0.5">{game.away.seed}</sub>}
-              </span>
-              <span className="text-label-sm text-white/60">
-                {game.away.records.total ?? ''}
-              </span>
-            </div>
-          </div>
+          <TeamHalf game={game} isAway />
 
           {/* Center: score or time */}
           <div className="flex flex-col items-center gap-component-compact shrink-0">
@@ -69,13 +84,12 @@ function GameHero({
                 <div className="flex items-center gap-group">
                   <span
                     className="text-display-lg tabular-nums font-medium"
-                    style={{ color: game.awayScore > game.homeScore && awayColor ? `#${awayColor}` : 'rgba(255,255,255,0.5)' }}
                   >
                     {game.awayScore}
                   </span>
                   <div className="text-white">
                     {game.awayScore === game.homeScore ? (
-                      <Minus className="size-icon-2 text-white/30" />
+                      <Minus className="size-icon-2 text-white" />
                     ) : game.awayScore > game.homeScore ? (
                       <span className="text-title-md">◀</span>
                     ) : (
@@ -84,16 +98,15 @@ function GameHero({
                   </div>
                   <span
                     className="text-display-lg tabular-nums font-medium"
-                    style={{ color: game.homeScore > game.awayScore && homeColor ? `#${homeColor}` : 'rgba(255,255,255,0.5)' }}
                   >
                     {game.homeScore}
                   </span>
                 </div>
-                <span className="text-label-md text-white/60">{game.status}</span>
+                <span className="text-label-md text-white">{game.status}</span>
               </>
             ) : (
               <>
-                <Clock className="size-icon-2 text-white/60" />
+                <Clock className="size-icon-2 text-white" />
                 <span className="text-title-md text-white font-medium">
                   {(game as ScheduledGame).startTime}
                 </span>
@@ -102,24 +115,12 @@ function GameHero({
           </div>
 
           {/* Home */}
-          <div className="flex-1 flex flex-col items-center gap-component text-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={game.home.logo} alt={game.home.abbreviation} loading="lazy" className="size-[72px] md:size-[96px] object-contain" />
-            <div className="flex flex-col items-center">
-              <span className="text-title-md text-white font-medium">
-                {game.home.displayName}
-                {game.home.seed != null && <sub className="text-label-md text-white/50 ml-0.5">{game.home.seed}</sub>}
-              </span>
-              <span className="text-label-sm text-white/60">
-                {game.home.records.total ?? ''}
-              </span>
-            </div>
-          </div>
+          <TeamHalf game={game} isAway={false} />
         </div>
 
         {/* Context: notes + series */}
         <div className="flex flex-col items-center gap-component-compact">
-          <div className="flex items-center gap-component flex-wrap justify-center text-label-md text-white/70">
+          <div className="flex items-center gap-component flex-wrap justify-center text-label-md text-white">
             {game.notes.length > 0 && (
               <span className="font-medium">{game.notes[0]}</span>
             )}
@@ -127,7 +128,7 @@ function GameHero({
               const summary = getSeriesSummary(game.enrichment);
               return summary ? (
                 <>
-                  {game.notes.length > 0 && <span className="text-white/40">·</span>}
+                  {game.notes.length > 0 && <span className="text-white/70">·</span>}
                   <span>{summary}</span>
                 </>
               ) : null;
@@ -136,7 +137,7 @@ function GameHero({
 
           {/* Venue on its own line */}
           {game.venue && (
-            <div className="flex items-center gap-component-compact text-label-sm text-white/50">
+            <div className="flex items-center gap-component-compact text-label-sm text-white/70">
               <MapPin className="size-icon-0 shrink-0" />
               <span>{game.venue}</span>
             </div>

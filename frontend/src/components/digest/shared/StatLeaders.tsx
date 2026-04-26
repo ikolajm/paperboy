@@ -105,19 +105,25 @@ function deriveMatchups(
   sport: string,
   playerStats?: TeamPlayerStats[],
   gameLeaders?: GameLeader[],
+  awayAbbr?: string,
+  homeAbbr?: string,
 ): Matchup[] {
   const categories = STAT_CATEGORIES[sport] ?? STAT_CATEGORIES.NBA;
   const halfLen = Math.floor((gameLeaders?.length ?? 0) / 2);
   const awayGameLeaders = gameLeaders?.slice(0, halfLen) ?? [];
   const homeGameLeaders = gameLeaders?.slice(halfLen) ?? [];
 
+  // Match playerStats by team abbreviation rather than assuming array order
+  const awayStats = playerStats?.find(p => p.abbreviation === awayAbbr) ?? playerStats?.[0];
+  const homeStats = playerStats?.find(p => p.abbreviation === homeAbbr) ?? playerStats?.[1];
+
   return categories.map((cat) => {
     let awayLeader: DerivedLeader | null = null;
     let homeLeader: DerivedLeader | null = null;
 
-    if (playerStats && playerStats.length >= 2) {
-      awayLeader = findLeaderInBoxScore(playerStats[0], cat.key);
-      homeLeader = findLeaderInBoxScore(playerStats[1], cat.key);
+    if (awayStats && homeStats) {
+      awayLeader = findLeaderInBoxScore(awayStats, cat.key);
+      homeLeader = findLeaderInBoxScore(homeStats, cat.key);
     }
 
     // Cross-reference game leaders for athleteId
@@ -405,6 +411,8 @@ export function StatLeaders({
   homeAlternateColor,
   awayLogo,
   homeLogo,
+  awayAbbr,
+  homeAbbr,
   defaultExpanded = true,
   title = 'Stat Leaders',
 }: {
@@ -417,12 +425,14 @@ export function StatLeaders({
   homeAlternateColor?: string;
   awayLogo: string;
   homeLogo: string;
+  awayAbbr?: string;
+  homeAbbr?: string;
   defaultExpanded?: boolean;
   title?: string;
 }) {
   const safeAway = ensureContrast(awayColor, awayAlternateColor) ?? '778880';
   const safeHome = ensureContrast(homeColor, homeAlternateColor) ?? '778880';
-  const matchups = deriveMatchups(sport, playerStats, gameLeaders);
+  const matchups = deriveMatchups(sport, playerStats, gameLeaders, awayAbbr, homeAbbr);
 
   return (
     <LeaderGrid

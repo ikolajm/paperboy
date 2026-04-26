@@ -20,7 +20,11 @@ function SeasonLeaderSection({ enrichment, game }: {
   const leaders = enrichment.seasonLeaders;
   if (leaders.length < 2) return null;
 
-  const combined = [...leaders[0].leaders, ...leaders[1].leaders];
+  // Match by abbreviation to ensure away-first ordering
+  const awayBlock = leaders.find(l => l.abbreviation === game.away.abbreviation) ?? leaders[0];
+  const homeBlock = leaders.find(l => l.abbreviation === game.home.abbreviation) ?? leaders[1];
+  const combined = [...awayBlock.leaders, ...homeBlock.leaders];
+
   return (
     <LeaderComparison
       leaders={combined}

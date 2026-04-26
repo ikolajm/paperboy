@@ -18,13 +18,16 @@ import { TeamStatsComparison } from './TeamStatsComparison';
 
 function SeasonLeaderSection({ enrichment, awayTeam, homeTeam }: {
   enrichment: NonNullable<Game['enrichment']>;
-  awayTeam: { color?: string; alternateColor?: string; logo: string };
-  homeTeam: { color?: string; alternateColor?: string; logo: string };
+  awayTeam: { abbreviation: string; color?: string; alternateColor?: string; logo: string };
+  homeTeam: { abbreviation: string; color?: string; alternateColor?: string; logo: string };
 }) {
   const leaders = enrichment.seasonLeaders;
   if (leaders.length < 2) return null;
 
-  const combined = [...leaders[0].leaders, ...leaders[1].leaders];
+  // Match by abbreviation to ensure away-first ordering
+  const awayBlock = leaders.find(l => l.abbreviation === awayTeam.abbreviation) ?? leaders[0];
+  const homeBlock = leaders.find(l => l.abbreviation === homeTeam.abbreviation) ?? leaders[1];
+  const combined = [...awayBlock.leaders, ...homeBlock.leaders];
 
   return (
     <LeaderComparison
@@ -90,6 +93,8 @@ export function GameOverview({
             homeAlternateColor={game.home.alternateColor}
             awayLogo={game.away.logo}
             homeLogo={game.home.logo}
+            awayAbbr={game.away.abbreviation}
+            homeAbbr={game.home.abbreviation}
           />
           {/* MLB: pitcher matchup cards */}
           {sport === 'MLB' && game.pitchers && game.pitchers.length > 0 && (
@@ -108,8 +113,8 @@ export function GameOverview({
       ) : enrichment ? (
         <SeasonLeaderSection
           enrichment={enrichment}
-          awayTeam={{ color: game.away.color, alternateColor: game.away.alternateColor, logo: game.away.logo }}
-          homeTeam={{ color: game.home.color, alternateColor: game.home.alternateColor, logo: game.home.logo }}
+          awayTeam={{ abbreviation: game.away.abbreviation, color: game.away.color, alternateColor: game.away.alternateColor, logo: game.away.logo }}
+          homeTeam={{ abbreviation: game.home.abbreviation, color: game.home.color, alternateColor: game.home.alternateColor, logo: game.home.logo }}
         />
       ) : null}
 

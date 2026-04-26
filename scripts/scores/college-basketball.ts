@@ -49,7 +49,7 @@ export function parseCompletedGames(data: unknown): CompletedGame[] {
     const homeLinescores = (home.linescores as Array<{ value: number }> | undefined)?.map(l => l.value) ?? [];
     const awayLinescores = (away.linescores as Array<{ value: number }> | undefined)?.map(l => l.value) ?? [];
 
-    const leaders: GameLeader[] = [...parseLeaders(home), ...parseLeaders(away)];
+    const leaders: GameLeader[] = [...parseLeaders(away), ...parseLeaders(home)];
     const notable = parseNotable(evt, homeScore, awayScore);
     const headline = parseHeadline(comp);
 
