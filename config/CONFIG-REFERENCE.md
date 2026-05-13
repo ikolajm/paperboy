@@ -24,20 +24,26 @@ Ordered as they appear in config (and as the digest pipeline processes them):
 
 ## `popular_today`
 
-Three Google News feeds, each rendered as a distinct subsection. Fetched first — these are the headlines everyone is seeing.
-
-| Key | Description |
-|-----|-------------|
-| `top_stories` | Google News editorial top stories |
-| `world` | Google News WORLD section headlines |
-| `nation` | Google News US/NATION section headlines |
-
-Each subsection has:
+Editorial feeds rendered under the Headlines tier. Fetched first — these are the headlines everyone is seeing. Add or remove subsections by editing the `feeds` array; earlier entries win on cross-feed dedup.
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `rss` | string | Google News RSS feed URL |
-| `max` | integer | Maximum stories to include |
+| `feeds[].label` | string | Display label for the subsection (e.g. "Top Stories", "World", "Nation"). Used in diagnostic output; the dashboard renders the merged + deduped list, not per-feed groups. |
+| `feeds[].rss` | string | RSS feed URL (typically Google News editorial). |
+| `feeds[].max` | integer | Maximum stories to include from this feed. |
+
+### Adding a new subsection
+
+```json
+"feeds": [
+  ...existing entries,
+  {
+    "label": "Business",
+    "rss": "https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-US&gl=US&ceid=US:en",
+    "max": 3
+  }
+]
+```
 
 ---
 

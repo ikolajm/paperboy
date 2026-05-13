@@ -80,11 +80,7 @@ function buildGroups(config: PaperboyConfig, credentials: Credentials | null): C
 
   groups.push({
     name: "Popular Today",
-    items: [
-      { label: "top_stories", url: config.popular_today.top_stories.rss },
-      { label: "world",       url: config.popular_today.world.rss },
-      { label: "nation",      url: config.popular_today.nation.rss },
-    ],
+    items: config.popular_today.feeds.map(f => ({ label: f.label, url: f.rss })),
   });
 
   groups.push({

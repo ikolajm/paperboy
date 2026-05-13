@@ -44,14 +44,15 @@ export interface PodcastShow {
 // --- Popular Today (replaces Popular Now + In the Noise) ---
 
 export interface PopularFeed {
+  /** Display label for the subsection (e.g. "Top Stories", "World", "Nation"). */
+  label: string;
   rss: string;
   max: number;
 }
 
 export interface PopularTodayConfig {
-  top_stories: PopularFeed;
-  world: PopularFeed;
-  nation: PopularFeed;
+  /** Editorial feeds for the Headlines tier. Add or remove entries to flex the sections. */
+  feeds: PopularFeed[];
 }
 
 // --- Entertainment ---

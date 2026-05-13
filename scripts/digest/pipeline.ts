@@ -114,7 +114,7 @@ export async function runPipeline(
   // Assemble sections
   const ids = new IdCounter();
 
-  const popularToday = assemblePopularToday(rssData, ids);
+  const popularToday = assemblePopularToday(rssData, config, ids);
   const local = assembleLocal(rssData, config, ids);
   const { forYou, onYourRadar } = assembleTopics(rssData, config, ids);
   const podcasts = assemblePodcasts(rssData, config, targetDate, ids);

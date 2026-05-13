@@ -40,16 +40,16 @@ function rssToLocalStory(entry: RssEntry, id: string): LocalStory {
 
 export function assemblePopularToday(
   results: Record<string, RssEntry[]>,
+  config: PaperboyConfig,
   ids: IdCounter,
 ): PopularTodaySection {
   const pool = new DedupPool();
 
-  // Merge all three feeds in priority order: top stories first, then world, then nation.
-  const allEntries = [
-    ...(results["POP_top"] ?? []),
-    ...(results["POP_world"] ?? []),
-    ...(results["POP_nation"] ?? []),
-  ];
+  // Merge feeds in config order — earlier entries win on dedup.
+  const allEntries: RssEntry[] = [];
+  for (let i = 0; i < config.popular_today.feeds.length; i++) {
+    allEntries.push(...(results[`POP_${i}`] ?? []));
+  }
 
   return allEntries
     .filter(e => !isLowQualityUrl(e.url))

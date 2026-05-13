@@ -2,18 +2,23 @@
   "version": 3,
 
   "popular_today": {
-    "top_stories": {
-      "rss": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
-      "max": 3
-    },
-    "world": {
-      "rss": "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en",
-      "max": 3
-    },
-    "nation": {
-      "rss": "https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en",
-      "max": 3
-    }
+    "feeds": [
+      {
+        "label": "Top Stories",
+        "rss": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
+        "max": 3
+      },
+      {
+        "label": "World",
+        "rss": "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en",
+        "max": 3
+      },
+      {
+        "label": "Nation",
+        "rss": "https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en",
+        "max": 3
+      }
+    ]
   },
 
   "local_news": {

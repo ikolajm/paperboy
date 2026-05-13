@@ -51,11 +51,18 @@ function loadConfig(): PaperboyConfig {
   return parsed;
 }
 
+const CONFIG_SCHEMA_VERSION = 3;
+
 function assertConfigShape(c: unknown): asserts c is PaperboyConfig {
   if (!c || typeof c !== "object") {
     throw new Error("config/config.json must be a JSON object");
   }
   const cfg = c as Record<string, unknown>;
+  if (cfg.version !== CONFIG_SCHEMA_VERSION) {
+    throw new Error(
+      `config/config.json: version mismatch — file declares ${JSON.stringify(cfg.version)}, code expects ${CONFIG_SCHEMA_VERSION}. See config/CONFIG-REFERENCE.md.`,
+    );
+  }
   const required = [
     "popular_today", "local_news", "topics",
     "scores", "podcasts", "opinions", "entertainment",
