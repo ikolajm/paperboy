@@ -41,6 +41,26 @@ export interface PipelineResult {
   warnings: string[];
 }
 
+/** Empty scaffold for the scores section when the entire scores fetch fails. */
+function emptyScoresSection(date: Date): ScoresSection {
+  const dateStr = date.toLocaleDateString("en-CA");
+  return {
+    team_sports: { recaps: [], schedule: [], standings: [] },
+    ufc: {
+      recaps: { sport: "UFC", date: dateStr, status: "fetch_error", cards: [] },
+      schedule: { sport: "UFC", date: dateStr, cards: [] },
+    },
+    f1: {
+      recaps: { sport: "F1", date: dateStr, status: "fetch_error", weekends: [] },
+      schedule: { sport: "F1", date: dateStr, weekends: [] },
+    },
+  };
+}
+
+function formatReason(reason: unknown): string {
+  return reason instanceof Error ? reason.message : String(reason);
+}
+
 export async function runPipeline(
   config: PaperboyConfig,
   credentials: Credentials | null,
@@ -51,14 +71,33 @@ export async function runPipeline(
   // Build feed batch
   const feedBatch = buildFeedBatch(config, targetDate);
 
-  // Fetch everything in parallel
-  const [rssResults, scores, tmdbResult] = await Promise.all([
+  // Fetch everything in parallel. allSettled (not all) so one branch failing
+  // — e.g. an ESPN outage, a TMDB 500 — doesn't kill the whole digest.
+  // Failed branches degrade to empty data with a warning.
+  const [rssSettled, scoresSettled, tmdbSettled] = await Promise.allSettled([
     fetchBatch(feedBatch),
     fetchAllScores(config, targetDate),
     credentials ? fetchTmdb(config, credentials) : Promise.resolve({}),
   ]);
 
-  // Extract successful RSS results, collect warnings for failures
+  const rssResults = rssSettled.status === "fulfilled" ? rssSettled.value : {};
+  if (rssSettled.status === "rejected") {
+    warnings.push(`RSS batch failed entirely: ${formatReason(rssSettled.reason)}`);
+  }
+
+  const scores = scoresSettled.status === "fulfilled"
+    ? scoresSettled.value
+    : emptyScoresSection(targetDate);
+  if (scoresSettled.status === "rejected") {
+    warnings.push(`Scores fetch failed entirely: ${formatReason(scoresSettled.reason)}`);
+  }
+
+  const tmdbResult = tmdbSettled.status === "fulfilled" ? tmdbSettled.value : {};
+  if (tmdbSettled.status === "rejected") {
+    warnings.push(`TMDB fetch failed entirely: ${formatReason(tmdbSettled.reason)}`);
+  }
+
+  // Extract successful RSS results, collect warnings for per-feed failures
   const rssData: Record<string, RssEntry[]> = {};
   for (const [label, data] of Object.entries(rssResults)) {
     if (Array.isArray(data)) {
@@ -163,7 +202,7 @@ export async function runPipeline(
   const dateStr = targetDate.toLocaleDateString("en-CA"); // YYYY-MM-DD in local timezone
   const dayOfWeek = targetDate.toLocaleDateString("en-US", {
     weekday: "long",
-    timeZone: "America/New_York",
+    timeZone: config.display_timezone ?? "America/New_York",
   });
 
   const meta: DigestMeta = {

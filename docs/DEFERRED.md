@@ -17,9 +17,16 @@ headline and source attribution for attention. The information density
 made the card layout feel repetitive and cluttered rather than informative.
 
 This is a design problem — the data and rendering code are ready, but the
-right placement and density haven't been found yet. Possible directions:
-section-level bias summaries, hover-only detail, or a dedicated bias view
-rather than per-card badges.
+right placement and density haven't been found yet.
+
+**V1.5 direction:** surface bias + factual lean on the deep-dive page rather
+than the dashboard cards. Deep dive is the right context for media-literacy
+detail — a reader is already slowing down to evaluate a single story, so
+adding outlet bias profiles inline (primary outlet plus any cited related
+articles) adds value rather than visual noise. The bias dataset is already
+maintained for this — see `frontend/src/lib/media-bias.ts` for the wired
+but currently-unused lookup functions, and `npm run audit-media-bias` for
+coverage maintenance.
 
 ---
 

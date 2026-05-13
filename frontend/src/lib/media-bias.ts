@@ -1,3 +1,17 @@
+/**
+ * Media bias dataset wrapper.
+ *
+ * Data is bias-shaped: each outlet entry has political lean + factual reporting
+ * ratings. Today's only consumer (StoryCard) uses outlet recognition for
+ * favicon lookup via `getFaviconUrl()`. The bias lookup functions
+ * (`getMediaBias`, `getMediaBiasByDomain`, `getMediaBiasByName`, `leanLabel`,
+ * `leanColor`) are wired but unused — staged for V1.5 deep-dive bias display
+ * per docs/DEFERRED.md.
+ *
+ * Dataset is maintained via `npm run audit-media-bias` at the project root,
+ * which scans past digests for outlets missing from the map.
+ */
+
 import biasData from './media-bias.json';
 
 export type Lean = 'left' | 'lean-left' | 'center' | 'lean-right' | 'right';

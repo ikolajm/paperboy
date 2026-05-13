@@ -20,6 +20,7 @@ import { XMLParser } from "fast-xml-parser";
 import { readFileSync } from "node:fs";
 import type { RssEntry, RssBatchItem, RssBatchResult } from "../shared/types/digest.js";
 import type { RelatedArticle } from "../shared/types/editorial.js";
+import { fetchText } from "./fetch-utils.js";
 
 // --- HTML entity decoding ---
 
@@ -142,27 +143,11 @@ const parser = new XMLParser({
 
 // --- Feed fetching ---
 
-async function fetchFeedXml(url: string, timeout = 15000): Promise<string> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const resp = await fetch(url, {
-      headers: {
-        "User-Agent": "Paperboy/1.0",
-        "Accept": "application/rss+xml, application/xml, text/xml",
-      },
-      signal: controller.signal,
-    });
-
-    if (!resp.ok) {
-      throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-    }
-
-    return await resp.text();
-  } finally {
-    clearTimeout(timer);
-  }
+async function fetchFeedXml(url: string, timeoutMs = 15000): Promise<string> {
+  return await fetchText(url, {
+    timeoutMs,
+    headers: { "Accept": "application/rss+xml, application/xml, text/xml" },
+  });
 }
 
 // --- Feed parsing ---

@@ -11,6 +11,7 @@ Ordered as they appear in config (and as the digest pipeline processes them):
 | Key | Purpose |
 |-----|---------|
 | `version` | Config schema version. Current: `3` |
+| `display_timezone` | Optional IANA timezone for the digest's `day_of_week` field (e.g. `"America/New_York"`). Defaults to `"America/New_York"` if absent. Sport startTime formatting is currently hardcoded to ET. |
 | `popular_today` | Top stories, world, and nation — the big picture first |
 | `local_news` | Location-specific Google News feeds |
 | `topics` | Your tracked interests — RSS feeds for story collection |

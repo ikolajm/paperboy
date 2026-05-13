@@ -286,15 +286,10 @@ function parseScheduledCard(event: Record<string, unknown>): FightCard | null {
 
 export async function parseCompletedEvents(data: unknown): Promise<FightCard[]> {
   const events = (data as Record<string, unknown[]>)?.events ?? [];
-  const cards: FightCard[] = [];
-
-  for (const event of events) {
-    const evt = event as Record<string, unknown>;
-    const card = await parseCompletedFights(evt);
-    if (card) cards.push(card);
-  }
-
-  return cards;
+  const cards = await Promise.all(
+    events.map(e => parseCompletedFights(e as Record<string, unknown>))
+  );
+  return cards.filter((c): c is FightCard => c !== null);
 }
 
 export function parseScheduledEvents(data: unknown): FightCard[] {

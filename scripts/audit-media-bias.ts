@@ -2,11 +2,12 @@
  * Audit media bias coverage against recent digests.
  *
  * Scans all digest.json files, collects outlet domains and names,
- * checks each against config/media-bias.json, and reports gaps
- * sorted by frequency.
+ * checks each against frontend/src/lib/media-bias.json (canonical
+ * location — the bias dataset is a frontend asset), and reports
+ * gaps sorted by frequency.
  *
  * Usage:
- *   npx tsx scripts/audit-media-bias.ts
+ *   npm run audit-media-bias
  */
 
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -16,7 +17,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
 const DIGEST_ROOT = path.join(REPO_ROOT, "digests");
-const BIAS_PATH = path.join(REPO_ROOT, "config", "media-bias.json");
+const BIAS_PATH = path.join(REPO_ROOT, "frontend", "src", "lib", "media-bias.json");
 
 interface BiasEntry {
   name: string;

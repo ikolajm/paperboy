@@ -41,6 +41,18 @@ Reads `context/DEEP-DIVE-PODCAST.md`. Writes to `digests/YYYY-MM-DD/deep-dives/[
 
 ---
 
+## Maintenance Scripts
+
+Diagnostic and dataset-maintenance utilities. Not part of the daily digest pipeline.
+
+| Command | Purpose |
+|---------|---------|
+| `npm run check-endpoints` | Pings every configured RSS feed, ESPN scoreboard URL, and TMDB endpoint. Reports HTTP status per source — use when daily digests start producing `fetch_error` warnings. |
+| `npm run audit-media-bias` | Scans past digests for news outlets missing from `frontend/src/lib/media-bias.json` (canonical location — bias dataset is a frontend asset), sorted by frequency. Run periodically to keep the dataset current. |
+| `npm run audit-f1` | Pulls the current F1 season from ESPN, reports drivers missing from `F1_GRID_2026` and circuits missing from `CIRCUIT_TIMEZONES` in `scripts/scores/f1.ts`. Outputs ready-to-paste stubs. Run when the stale-data warnings fire during a digest. |
+
+---
+
 ## Output Structure
 
 ```

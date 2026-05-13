@@ -17,6 +17,8 @@ export interface StandingsTeam {
   pointsFor?: number;
   pointsAgainst?: number;
   differential: string;    // "+8.2", "-1.7"
+  /** F1 only: championship points (drivers' or constructors' standing total). */
+  points?: number;
 }
 
 export interface StandingsGroup {

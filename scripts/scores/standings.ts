@@ -4,16 +4,16 @@
  */
 
 import type { SportStandings, StandingsGroup, StandingsTeam } from "../../shared/types/standings.js";
-import { fetchEspn } from "./shared.js";
+import { fetchEspn, SPORT_PATHS } from "./shared.js";
 
 const STANDINGS_BASE = "https://site.api.espn.com/apis/v2/sports";
 
-const SPORT_PATHS: Record<string, string> = {
-  "NBA": "basketball/nba",
-  "NHL": "hockey/nhl",
-  "MLB": "baseball/mlb",
-  "NFL": "football/nfl",
-};
+/**
+ * Sports for which ESPN provides usable standings via the standings endpoint.
+ * College sports return weirdly shaped or empty responses — keep them off
+ * this list even though `SPORT_PATHS` knows their paths for enrichment.
+ */
+const STANDINGS_SUPPORTED = new Set(["NBA", "NHL", "MLB", "NFL"]);
 
 function parseStat(stats: Array<Record<string, string>>, shortName: string): string {
   return stats.find(s => s.shortDisplayName === shortName)?.displayValue ?? "";
@@ -72,6 +72,7 @@ function parseStandings(data: unknown, sport: string): SportStandings {
 }
 
 export async function fetchStandings(sport: string): Promise<SportStandings | null> {
+  if (!STANDINGS_SUPPORTED.has(sport)) return null;
   const path = SPORT_PATHS[sport];
   if (!path) return null;
 
@@ -87,7 +88,7 @@ export async function fetchStandings(sport: string): Promise<SportStandings | nu
 export async function fetchAllStandings(sports: string[]): Promise<SportStandings[]> {
   const results = await Promise.all(
     sports
-      .filter(s => SPORT_PATHS[s])
+      .filter(s => STANDINGS_SUPPORTED.has(s))
       .map(s => fetchStandings(s)),
   );
   return results.filter((r): r is SportStandings => r !== null);
@@ -141,24 +142,31 @@ export async function fetchF1Standings(): Promise<SportStandings | null> {
       const teams: StandingsTeam[] = entries.map((entry, index) => {
         const stats = entry.stats as Array<Record<string, string>> | undefined ?? [];
         const rank = parseInt(parseStat(stats, "RK"), 10) || (index + 1);
-        const points = parseStat(stats, "PTS") || "0";
+        const pointsStr = parseStat(stats, "PTS") || "0";
+        const pointsNum = parseInt(pointsStr, 10) || 0;
 
         // Driver standings have athlete, constructor standings have team
         const athlete = entry.athlete as Record<string, unknown> | undefined;
         const team = entry.team as Record<string, unknown> | undefined;
         const flag = athlete?.flag as Record<string, string> | undefined;
 
+        // F1 standings don't have wins/losses — championship points is the
+        // ordering metric. `points` is the proper field going forward; `wins`
+        // + `differential` are kept populated for the current frontend
+        // renderer (which reads `wins` for the visible total). Frontend
+        // cleanup: switch to `points` and then drop the wins hack here.
         return {
           displayName: (athlete?.displayName || team?.displayName || "") as string,
           abbreviation: (athlete?.abbreviation || team?.abbreviation || "") as string,
           logo: flag?.href || "",
           seed: rank,
-          wins: parseInt(points, 10) || 0, // repurpose wins as points for F1
+          wins: pointsNum,
           losses: 0,
           gamesBehind: "-",
           streak: "",
           clinch: "",
-          differential: points,  // store points in differential for display
+          differential: pointsStr,
+          points: pointsNum,
         };
       });
 
