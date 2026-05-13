@@ -22,18 +22,7 @@ import type {
   InjuredPlayer,
   GameArticle,
 } from "../../shared/types/enrichment.js";
-import { fetchEspn } from "./shared.js";
-
-// --- Sport-to-ESPN path mapping ---
-
-const SPORT_PATHS: Record<string, string> = {
-  "NBA": "basketball/nba",
-  "NHL": "hockey/nhl",
-  "MLB": "baseball/mlb",
-  "NFL": "football/nfl",
-  "College Basketball": "basketball/mens-college-basketball",
-  "College Football": "football/college-football",
-};
+import { fetchEspn, SPORT_PATHS } from "./shared.js";
 
 const SUMMARY_BASE = "https://site.api.espn.com/apis/site/v2/sports";
 

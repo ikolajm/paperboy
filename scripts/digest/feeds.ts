@@ -31,11 +31,11 @@ export function shouldFetchPodcast(show: PodcastShow, date: Date): boolean {
 export function buildFeedBatch(config: PaperboyConfig, targetDate: Date): RssBatchItem[] {
   const feeds: RssBatchItem[] = [];
 
-  // Popular Today
-  const pop = config.popular_today;
-  feeds.push({ label: "POP_top", url: pop.top_stories.rss, max: pop.top_stories.max });
-  feeds.push({ label: "POP_world", url: pop.world.rss, max: pop.world.max });
-  feeds.push({ label: "POP_nation", url: pop.nation.rss, max: pop.nation.max });
+  // Popular Today (editorial feeds — index-based labels so subsections flex)
+  for (let i = 0; i < config.popular_today.feeds.length; i++) {
+    const f = config.popular_today.feeds[i];
+    feeds.push({ label: `POP_${i}`, url: f.rss, max: f.max });
+  }
 
   // Local News
   for (const loc of config.local_news.locations) {

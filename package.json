@@ -3,9 +3,14 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "digest": "tsx scripts/run-digest.ts",
     "check-endpoints": "tsx scripts/check-endpoints.ts config/config.json",
+    "audit-media-bias": "tsx scripts/audit-media-bias.ts",
+    "audit-f1": "tsx scripts/audit-f1.ts",
     "fetch-rss": "tsx scripts/fetch-rss.ts",
     "fetch-scores": "tsx scripts/fetch-scores.ts config/config.json",
     "fetch-tmdb": "tsx scripts/fetch-tmdb.ts config/config.json config/credentials.json",

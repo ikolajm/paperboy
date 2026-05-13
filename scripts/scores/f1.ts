@@ -22,12 +22,35 @@ import type { DriverResult, SessionResult, RaceWeekend } from "../../shared/type
 
 import type { F1TeamInfo } from "./standings.js";
 
+// --- Stale-data warnings (deduped per process) ---
+// Tracks observation-only — does not affect parsing output. Both maps below
+// (F1_GRID_2026 and CIRCUIT_TIMEZONES) are hardcoded and go stale as the
+// season evolves; these warnings surface that staleness loudly when a digest
+// hits an unknown driver or venue.
+
+const _warnedMissingDrivers = new Set<string>();
+const _warnedMissingCircuits = new Set<string>();
+
+function warnMissingDriver(name: string) {
+  if (_warnedMissingDrivers.has(name)) return;
+  _warnedMissingDrivers.add(name);
+  console.warn(`  ⚠ F1 driver missing from F1_GRID_2026: ${name} (update scripts/scores/f1.ts on driver swaps)`);
+}
+
+function warnMissingCircuit(city: string) {
+  if (_warnedMissingCircuits.has(city)) return;
+  _warnedMissingCircuits.add(city);
+  console.warn(`  ⚠ F1 circuit missing from CIRCUIT_TIMEZONES: ${city} — localDate will default to UTC`);
+}
+
 /**
  * 2026 F1 grid: driver name → team + color.
  * Sourced from ESPN core API (vehicle.manufacturer + vehicle.teamColor).
- * Refresh at season start or if mid-season driver swaps occur.
+ * Refresh at season start or if mid-season driver swaps occur — `npm run audit-f1`
+ * proposes stub entries for any drivers the live ESPN scoreboard reports that
+ * aren't here.
  */
-const F1_GRID_2026: Record<string, { team: string; color: string }> = {
+export const F1_GRID_2026: Record<string, { team: string; color: string }> = {
   "George Russell":    { team: "Mercedes",      color: "00D2BE" },
   "Kimi Antonelli":    { team: "Mercedes",      color: "00D2BE" },
   "Charles Leclerc":   { team: "Ferrari",       color: "DC0000" },
@@ -50,16 +73,13 @@ const F1_GRID_2026: Record<string, { team: string; color: string }> = {
   "Valtteri Bottas":   { team: "Cadillac",      color: "A2AAAD" },
   "Lance Stroll":      { team: "Aston Martin",  color: "006F62" },
   "Fernando Alonso":   { team: "Aston Martin",  color: "006F62" },
+  "Jak Crawford":      { team: "Aston Martin",  color: "006F62" },  // 2026 third / reserve driver
 };
 
-/** Also accept team lookup from standings fetch as runtime override */
-let _teamLookup: Map<string, F1TeamInfo> = new Map();
-
-export function setF1TeamLookup(lookup: Map<string, F1TeamInfo>) {
-  _teamLookup = lookup;
-}
-
-function parseDrivers(competitors: Array<Record<string, unknown>>): DriverResult[] {
+function parseDrivers(
+  competitors: Array<Record<string, unknown>>,
+  teamLookup: Map<string, F1TeamInfo>,
+): DriverResult[] {
   return competitors.map(c => {
     const athlete = (c.athlete || {}) as Record<string, unknown>;
     const team = (c.team || {}) as Record<string, unknown>;
@@ -70,8 +90,11 @@ function parseDrivers(competitors: Array<Record<string, unknown>>): DriverResult
 
     // Priority: scoreboard team → static grid → teams endpoint
     const gridEntry = F1_GRID_2026[driverName];
+    if (!gridEntry && driverName !== "Unknown") {
+      warnMissingDriver(driverName);
+    }
     const teamName = scoreBoardTeam || gridEntry?.team || "";
-    const teamColor = gridEntry?.color || _teamLookup.get(teamName)?.color;
+    const teamColor = gridEntry?.color || teamLookup.get(teamName)?.color;
 
     return {
       position: (c.order as number) || 0,
@@ -87,24 +110,28 @@ function parseDrivers(competitors: Array<Record<string, unknown>>): DriverResult
 
 /**
  * Circuit city → IANA timezone. Covers the 2026 F1 calendar.
- * Refresh if new circuits are added.
+ * Refresh if new circuits are added — `npm run audit-f1` lists cities from
+ * the live ESPN schedule that aren't here yet.
  */
-const CIRCUIT_TIMEZONES: Record<string, string> = {
+export const CIRCUIT_TIMEZONES: Record<string, string> = {
   'Melbourne': 'Australia/Melbourne',
   'Shanghai': 'Asia/Shanghai',
   'Suzuka': 'Asia/Tokyo',
   'Sakhir': 'Asia/Bahrain',
   'Jeddah': 'Asia/Riyadh',
   'Miami': 'America/New_York',
+  'Florida': 'America/New_York',     // ESPN sometimes returns the state instead of "Miami"
   'Imola': 'Europe/Rome',
   'Monte Carlo': 'Europe/Monaco',
   'Monaco': 'Europe/Monaco',
   'Barcelona': 'Europe/Madrid',
+  'Madrid': 'Europe/Madrid',         // Madring circuit, new 2026 venue
   'Montreal': 'America/Toronto',
   'Spielberg': 'Europe/Vienna',
   'Silverstone': 'Europe/London',
   'Spa': 'Europe/Brussels',
   'Spa-Francorchamps': 'Europe/Brussels',
+  'Stavelot': 'Europe/Brussels',     // Town adjacent to Spa-Francorchamps; ESPN sometimes returns this
   'Budapest': 'Europe/Budapest',
   'Zandvoort': 'Europe/Amsterdam',
   'Monza': 'Europe/Rome',
@@ -115,24 +142,35 @@ const CIRCUIT_TIMEZONES: Record<string, string> = {
   'São Paulo': 'America/Sao_Paulo',
   'Sao Paulo': 'America/Sao_Paulo',
   'Las Vegas': 'America/Los_Angeles',
+  'Nevada': 'America/Los_Angeles',   // ESPN sometimes returns the state instead of "Las Vegas"
   'Lusail': 'Asia/Qatar',
   'Abu Dhabi': 'Asia/Dubai',
   'Yas Island': 'Asia/Dubai',
 };
 
-let _venueTimezone: string | undefined;
+// Lowercase index for case-insensitive lookup — ESPN inconsistently casing
+// (e.g. "Abu dhabi", "Mexico city", "Sao paulo") triggered false-positive
+// staleness warnings. Built once at module load; never mutated.
+const _circuitTimezoneIndex = new Map<string, string>();
+for (const [city, tz] of Object.entries(CIRCUIT_TIMEZONES)) {
+  _circuitTimezoneIndex.set(city.toLowerCase(), tz);
+}
 
-function getLocalDate(utcDateStr: string): string {
+function getLocalDate(utcDateStr: string, timezone: string | undefined): string {
   if (!utcDateStr) return '';
   try {
     const d = new Date(utcDateStr);
-    return d.toLocaleDateString('en-CA', { timeZone: _venueTimezone ?? 'UTC' });
+    return d.toLocaleDateString('en-CA', { timeZone: timezone ?? 'UTC' });
   } catch {
     return utcDateStr.slice(0, 10);
   }
 }
 
-function parseSession(comp: Record<string, unknown>): SessionResult {
+function parseSession(
+  comp: Record<string, unknown>,
+  teamLookup: Map<string, F1TeamInfo>,
+  timezone: string | undefined,
+): SessionResult {
   const type = (comp.type as Record<string, unknown>)?.abbreviation as string || "Unknown";
   const date = (comp.date as string) || "";
   const status = ((comp.status as Record<string, unknown>)?.type as Record<string, unknown>)?.detail as string || "";
@@ -141,28 +179,34 @@ function parseSession(comp: Record<string, unknown>): SessionResult {
   return {
     type,
     date,
-    localDate: getLocalDate(date),
+    localDate: getLocalDate(date, timezone),
     status,
-    drivers: competitors ? parseDrivers(competitors) : [],
+    drivers: competitors ? parseDrivers(competitors, teamLookup) : [],
     headline: parseHeadline(comp),
   };
 }
 
-export function parseRaceWeekend(event: Record<string, unknown>): RaceWeekend {
+export function parseRaceWeekend(
+  event: Record<string, unknown>,
+  teamLookup: Map<string, F1TeamInfo>,
+): RaceWeekend {
   // Circuit info lives at event level, not competition level
   const circuit = event.circuit as Record<string, unknown> | undefined;
   const circuitAddress = circuit?.address as Record<string, string> | undefined;
 
-  // Set venue timezone before parsing sessions so localDate is correct
+  // Resolve venue timezone (case-insensitive — see _circuitTimezoneIndex)
   const city = circuitAddress?.city ?? '';
-  _venueTimezone = CIRCUIT_TIMEZONES[city];
+  const venueTimezone = city ? _circuitTimezoneIndex.get(city.toLowerCase()) : undefined;
+  if (city && !venueTimezone) {
+    warnMissingCircuit(city);
+  }
 
   const comps = event.competitions as Array<Record<string, unknown>> | undefined;
   const sessions: SessionResult[] = [];
 
   if (comps) {
     for (const comp of comps) {
-      sessions.push(parseSession(comp));
+      sessions.push(parseSession(comp, teamLookup, venueTimezone));
     }
   }
 
@@ -178,7 +222,10 @@ export function parseRaceWeekend(event: Record<string, unknown>): RaceWeekend {
 
 // --- Public API ---
 
-export function parseCompletedWeekends(data: unknown): RaceWeekend[] {
+export function parseCompletedWeekends(
+  data: unknown,
+  teamLookup: Map<string, F1TeamInfo>,
+): RaceWeekend[] {
   const events = (data as Record<string, unknown[]>)?.events ?? [];
   const weekends: RaceWeekend[] = [];
 
@@ -201,14 +248,17 @@ export function parseCompletedWeekends(data: unknown): RaceWeekend[] {
     if (raceDetail === "Canceled") continue;
 
     if (raceState === "post" || state === "post") {
-      weekends.push(parseRaceWeekend(evt));
+      weekends.push(parseRaceWeekend(evt, teamLookup));
     }
   }
 
   return weekends;
 }
 
-export function parseScheduledWeekends(data: unknown): RaceWeekend[] {
+export function parseScheduledWeekends(
+  data: unknown,
+  teamLookup: Map<string, F1TeamInfo>,
+): RaceWeekend[] {
   const events = (data as Record<string, unknown[]>)?.events ?? [];
   const weekends: RaceWeekend[] = [];
 
@@ -217,10 +267,9 @@ export function parseScheduledWeekends(data: unknown): RaceWeekend[] {
     const state = getGameState(evt);
 
     if (state === "pre") {
-      weekends.push(parseRaceWeekend(evt));
+      weekends.push(parseRaceWeekend(evt, teamLookup));
     }
   }
 
   return weekends;
 }
-

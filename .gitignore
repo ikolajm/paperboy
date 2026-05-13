@@ -3,5 +3,4 @@ node_modules/
 .next/
 
 /config/credentials.json
-/digests/2026*
-/generated
+/digests/

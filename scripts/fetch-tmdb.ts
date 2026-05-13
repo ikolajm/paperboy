@@ -14,6 +14,7 @@
 import { readFileSync } from "node:fs";
 import type { PaperboyConfig, Credentials } from "../shared/types/config.js";
 import type { WatchProvider } from "../shared/types/entertainment.js";
+import { fetchJson as fetchJsonShared } from "./fetch-utils.js";
 
 // --- Types ---
 
@@ -40,27 +41,10 @@ const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342";
 const TMDB_BACKDROP_BASE = "https://image.tmdb.org/t/p/w780";
 const TMDB_LOGO_BASE = "https://image.tmdb.org/t/p/w92";
 
-async function fetchJson(url: string, apiKey: string, timeout = 15000): Promise<unknown> {
+async function fetchJson(url: string, apiKey: string, timeoutMs = 15000): Promise<unknown> {
   const separator = url.includes("?") ? "&" : "?";
   const fullUrl = `${url}${separator}api_key=${apiKey}`;
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
-
-  try {
-    const resp = await fetch(fullUrl, {
-      headers: { "User-Agent": "Paperboy/1.0" },
-      signal: controller.signal,
-    });
-
-    if (!resp.ok) {
-      throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-    }
-
-    return await resp.json();
-  } finally {
-    clearTimeout(timer);
-  }
+  return await fetchJsonShared(fullUrl, { timeoutMs });
 }
 
 // --- Tier 1: List parsing ---
@@ -146,21 +130,26 @@ async function fetchWatchProviders(
   }
 }
 
+/**
+ * Mutates each entry in place by attaching `watch_providers`. The mutation
+ * is intentional — entries are shared by reference with the `results` map
+ * built in `fetchTmdb`, so enriching here is automatically visible to the
+ * caller's results without needing to rebuild the map.
+ */
 async function enrichWithProviders(
   entries: TmdbEntry[],
   mediaType: "movie" | "tv",
   baseUrl: string,
   apiKey: string,
 ): Promise<void> {
-  const promises = entries.map(async (entry) => {
+  await Promise.all(entries.map(async (entry) => {
     entry.watch_providers = await fetchWatchProviders(
       entry.tmdb_id,
       mediaType,
       baseUrl,
       apiKey,
     );
-  });
-  await Promise.all(promises);
+  }));
 }
 
 // --- Public API ---

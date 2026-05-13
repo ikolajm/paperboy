@@ -8,14 +8,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "declaration": false,
-    "outDir": "./dist",
-    "rootDir": ".",
-    "baseUrl": ".",
-    "paths": {
-      "@shared/*": ["./shared/*"]
-    }
+    "noEmit": true
   },
   "include": ["scripts/**/*.ts", "shared/**/*.ts"],
-  "exclude": ["node_modules", "frontend", "dist"]
+  "exclude": ["node_modules", "frontend"]
 }

@@ -17,6 +17,10 @@ export interface StandingsTeam {
   pointsFor?: number;
   pointsAgainst?: number;
   differential: string;    // "+8.2", "-1.7"
+  /** F1 only: championship points (drivers' or constructors' standing total). */
+  points?: number;
+  /** F1 only: team color hex (no leading #). Set for both driver and constructor rows. */
+  teamColor?: string;
 }
 
 export interface StandingsGroup {

@@ -76,7 +76,13 @@ export interface TmdbTvResult {
 // Genre ID → name mapping
 // ---------------------------------------------------------------------------
 
-/** Static genre lookup. Covers both movie and TV IDs. */
+/**
+ * Static genre lookup. Covers both movie and TV IDs.
+ *
+ * Maintenance: TMDB's genre list rarely changes — refresh from
+ * `/genre/movie/list` + `/genre/tv/list` if entertainment entries start
+ * surfacing without genres (silent miss: unmapped IDs are dropped).
+ */
 export const TMDB_GENRES: Record<number, string> = {
   // Movie genres
   28: "Action",

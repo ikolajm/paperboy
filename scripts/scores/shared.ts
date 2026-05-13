@@ -1,110 +1,42 @@
 /**
  * Shared utilities for per-sport score modules.
  *
- * Provides ESPN API fetching, date handling, and common types
- * that all sport modules build on.
+ * Provides ESPN API fetching, sport-path constants, date handling, and
+ * common parsing helpers. Types live in shared/types/scores.ts and are
+ * re-exported here for convenience.
  */
 
-// --- Types ---
+// --- Type re-exports ---
 
-export interface TeamInfo {
-  displayName: string;
-  abbreviation: string;
-  logo: string;
-  color?: string;           // hex without #, e.g. "c8102e"
-  alternateColor?: string;  // hex without #, e.g. "fdb927"
-  records: Record<string, string>;  // e.g. { total: "45-37", home: "23-18", road: "22-19" }
-  seed?: number;
-  gamesBehind?: string;
-  streak?: string;
-  clinch?: string;
-}
+import type { TeamInfo, GameLeader } from "../../shared/types/scores.js";
 
-export interface GameLeader {
-  category: string;     // e.g. "Points", "Goals", "Passing"
-  shortName: string;    // e.g. "Pts", "G", "PASS"
-  athlete: string;      // e.g. "Jalen Johnson"
-  athleteId?: string;   // ESPN athlete ID — construct headshot: /i/headshots/{sport}/players/full/{id}.png
-  jersey?: string;      // e.g. "1"
-  position?: string;    // e.g. "F", "G", "C"
-  displayValue: string; // e.g. "31 PTS, 6 AST"
-}
+export type {
+  TeamInfo, GameLeader, FeaturedPitcher,
+  CompletedGame, ScheduledGame,
+  SportRecaps, SportSchedule,
+} from "../../shared/types/scores.js";
 
-export interface FeaturedPitcher {
-  role: "win" | "loss" | "save";
-  name: string;
-  athleteId?: string;
-  jersey?: string;
-  record?: string;
-  era?: string;
-  stats?: Record<string, string>;  // all available stats: W, L, SV, ERA, H, R, AVG, E
-}
+// --- Sport → ESPN path ---
 
-export interface CompletedGame {
-  id: string;
-  home: TeamInfo;
-  away: TeamInfo;
-  homeScore: number;
-  awayScore: number;
-  status: string;          // "Final", "Final/OT", "Final/SO", etc.
-  headline: string;        // recap text from ESPN
-  notes: string[];         // context like "NBA Play-In - East", "Round 1 - Game 3"
-  venue: string;
-  broadcasts: string[];
-  leaders: GameLeader[];
-  linescores: { home: number[]; away: number[] };
-  hitsErrors?: { home: { hits: number; errors: number }; away: { hits: number; errors: number } };
-  pitchers?: FeaturedPitcher[];
-}
-
-export interface ScheduledGame {
-  id: string;
-  home: TeamInfo;
-  away: TeamInfo;
-  startTime: string;       // formatted ET time
-  startTimeUTC: string;    // ISO string
-  broadcasts: string[];
-  notes: string[];
-  venue: string;
-  enrichment?: import("../../shared/types/enrichment.js").GameEnrichment;
-}
-
-export interface SportRecaps {
-  sport: string;
-  date: string;
-  status: "games_played" | "no_games" | "playoffs" | "fetch_error";
-  seasonType: number;
-  games: CompletedGame[];
-  error?: string;
-}
-
-export interface SportSchedule {
-  sport: string;
-  date: string;
-  games: ScheduledGame[];
-  error?: string;
-}
+/**
+ * Maps team-sport config names to their ESPN URL path segment.
+ * Used by the enrichment summary endpoint and the standings endpoint.
+ */
+export const SPORT_PATHS: Record<string, string> = {
+  "NBA": "basketball/nba",
+  "NHL": "hockey/nhl",
+  "MLB": "baseball/mlb",
+  "NFL": "football/nfl",
+  "College Basketball": "basketball/mens-college-basketball",
+  "College Football": "football/college-football",
+};
 
 // --- ESPN API fetch ---
 
-export async function fetchEspn(url: string, timeout = 15000): Promise<unknown> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeout);
+import { fetchJson } from "../fetch-utils.js";
 
-  try {
-    const resp = await fetch(url, {
-      headers: { "User-Agent": "Paperboy/1.0" },
-      signal: controller.signal,
-    });
-
-    if (!resp.ok) {
-      throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
-    }
-
-    return await resp.json();
-  } finally {
-    clearTimeout(timer);
-  }
+export async function fetchEspn(url: string, timeoutMs = 15000): Promise<unknown> {
+  return await fetchJson(url, { timeoutMs });
 }
 
 // --- Common parsing helpers ---
@@ -133,7 +65,13 @@ export function parseTeamInfo(competitor: Record<string, unknown>): TeamInfo {
   return info;
 }
 
-/** Categories to exclude — ESPN internal ratings, not real stats */
+/**
+ * Categories to exclude — ESPN internal ratings, not real stats.
+ *
+ * Maintenance: ESPN's rating taxonomy rarely churns, but if a meaningless
+ * "rating"-shaped category starts appearing in leader output, add its
+ * shortDisplayName or displayName (lowercased) here.
+ */
 const EXCLUDED_LEADER_CATEGORIES = new Set([
   "rating", "rat", "mlb", "mlb rating",
 ]);
@@ -214,6 +152,12 @@ export function parseBroadcasts(comp: Record<string, unknown>): string[] {
   return names;
 }
 
+/**
+ * Format a UTC date string as a display time. Currently hardcoded to ET —
+ * threading `config.display_timezone` through every sport parser is a
+ * larger refactor and was deferred. If you change timezone, also update
+ * the trailing " ET" suffix.
+ */
 export function parseStartTime(dateStr: string): { formatted: string; utc: string } {
   if (!dateStr) return { formatted: "", utc: "" };
 

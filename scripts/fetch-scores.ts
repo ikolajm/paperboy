@@ -36,7 +36,7 @@ import * as collegeFball from "./scores/college-football.js";
 
 // Event-based sport modules
 import { parseCompletedEvents, parseScheduledEvents } from "./scores/ufc.js";
-import { parseCompletedWeekends, parseScheduledWeekends, parseRaceWeekend, setF1TeamLookup } from "./scores/f1.js";
+import { parseCompletedWeekends, parseScheduledWeekends } from "./scores/f1.js";
 
 // --- Team sport module registry ---
 
@@ -63,7 +63,7 @@ async function fetchTeamSport(
   targetDate: Date,
 ): Promise<{ recaps: SportRecaps; schedule: SportSchedule }> {
   const mod = TEAM_SPORT_MODULES[sportName];
-  const url = config.url!;
+  const url = config.url;
   const yesterdayStr = getYesterdayDateStr(targetDate);
   const yesterdayDisplay = formatDateDisplay(targetDate, -1);
   const todayDisplay = formatDateDisplay(targetDate);
@@ -119,7 +119,7 @@ async function fetchUfc(
   config: ScoreConfig,
   targetDate: Date,
 ): Promise<{ recaps: UfcRecaps; schedule: UfcSchedule }> {
-  const url = config.url!;
+  const url = config.url;
   const todayDisplay = formatDateDisplay(targetDate);
 
   let recaps: UfcRecaps = {
@@ -170,12 +170,11 @@ async function fetchF1(
   config: ScoreConfig,
   targetDate: Date,
 ): Promise<{ recaps: F1Recaps; schedule: F1Schedule }> {
-  const url = config.url!;
+  const url = config.url;
   const todayDisplay = formatDateDisplay(targetDate);
 
   // Fetch team lookup first (1 call) so driver results get team + color
   const teamLookup = await fetchF1Teams();
-  setF1TeamLookup(teamLookup);
 
   let recaps: F1Recaps = {
     sport: "F1", date: todayDisplay, status: "no_race", weekends: [],
@@ -188,7 +187,7 @@ async function fetchF1(
     try {
       const dateRange = getDateRangeStr(targetDate, 14, 0);
       const data = await fetchEspn(`${url}?dates=${dateRange}`);
-      const weekends = parseCompletedWeekends(data);
+      const weekends = parseCompletedWeekends(data, teamLookup);
       recaps = {
         sport: "F1", date: todayDisplay,
         status: weekends.length > 0 ? "race_completed" : "no_race",
@@ -206,7 +205,7 @@ async function fetchF1(
     try {
       const dateRange = getDateRangeStr(targetDate, 0, 21);
       const data = await fetchEspn(`${url}?dates=${dateRange}`);
-      const weekends = parseScheduledWeekends(data);
+      const weekends = parseScheduledWeekends(data, teamLookup);
       schedule = { sport: "F1", date: todayDisplay, weekends };
     } catch (err) {
       schedule = {

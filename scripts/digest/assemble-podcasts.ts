@@ -5,7 +5,6 @@
 
 import type { PaperboyConfig } from "../../shared/types/config.js";
 import type { RssEntry, PodcastEntry } from "../../shared/types/digest.js";
-import { shouldFetchPodcast } from "./feeds.js";
 import { isStale } from "./filter.js";
 import { IdCounter } from "./ids.js";
 
@@ -34,8 +33,8 @@ export function assemblePodcasts(
   const podcasts: PodcastEntry[] = [];
 
   for (const [name, show] of Object.entries(config.podcasts.shows)) {
-    if (!shouldFetchPodcast(show, targetDate)) continue;
-
+    // Schedule filtering already happens in feeds.ts/buildFeedBatch — shows
+    // off-schedule simply have no entries in `results`.
     const key = `POD_${name}`;
     const entries = results[key] ?? [];
     const latest = entries[0];

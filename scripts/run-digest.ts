@@ -8,21 +8,113 @@
  */
 
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { PaperboyConfig, Credentials } from "../shared/types/config.js";
 import { runPipeline } from "./digest/pipeline.js";
+
+// --- Paths ---
+// Resolve from this script's location so `npm run digest` works from any cwd,
+// matching the pattern in audit-media-bias.ts / audit-f1.ts.
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(__dirname, "..");
+const CONFIG_PATH = join(REPO_ROOT, "config", "config.json");
+const CREDENTIALS_PATH = join(REPO_ROOT, "config", "credentials.json");
+const DIGESTS_ROOT = join(REPO_ROOT, "digests");
 
 // --- Config ---
 
 function loadConfig(): PaperboyConfig {
-  return JSON.parse(readFileSync("config/config.json", "utf-8"));
+  let raw: string;
+  try {
+    raw = readFileSync(CONFIG_PATH, "utf-8");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+      throw new Error(
+        "config/config.json not found. Paperboy requires this file — see config/CONFIG-REFERENCE.md.",
+      );
+    }
+    throw err;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    throw new Error(
+      `config/config.json is malformed JSON: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
+  assertConfigShape(parsed);
+  return parsed;
+}
+
+const CONFIG_SCHEMA_VERSION = 3;
+
+function assertConfigShape(c: unknown): asserts c is PaperboyConfig {
+  if (!c || typeof c !== "object") {
+    throw new Error("config/config.json must be a JSON object");
+  }
+  const cfg = c as Record<string, unknown>;
+  if (cfg.version !== CONFIG_SCHEMA_VERSION) {
+    throw new Error(
+      `config/config.json: version mismatch — file declares ${JSON.stringify(cfg.version)}, code expects ${CONFIG_SCHEMA_VERSION}. See config/CONFIG-REFERENCE.md.`,
+    );
+  }
+  const required = [
+    "popular_today", "local_news", "topics",
+    "scores", "podcasts", "opinions", "entertainment",
+  ];
+  for (const key of required) {
+    if (!(key in cfg)) {
+      throw new Error(
+        `config/config.json: missing required field '${key}' — see config/CONFIG-REFERENCE.md`,
+      );
+    }
+  }
+  const ent = cfg.entertainment as Record<string, unknown> | undefined;
+  if (!ent?.tmdb || typeof ent.tmdb !== "object") {
+    throw new Error("config/config.json: 'entertainment.tmdb' is required");
+  }
 }
 
 function loadCredentials(): Credentials | null {
+  let raw: string;
   try {
-    return JSON.parse(readFileSync("config/credentials.json", "utf-8"));
-  } catch {
-    return null;
+    raw = readFileSync(CREDENTIALS_PATH, "utf-8");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw err;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    throw new Error(
+      `config/credentials.json is malformed JSON: ${err instanceof Error ? err.message : String(err)}`,
+    );
+  }
+
+  assertCredentialsShape(parsed);
+  return parsed;
+}
+
+function assertCredentialsShape(c: unknown): asserts c is Credentials {
+  if (!c || typeof c !== "object") {
+    throw new Error("config/credentials.json must be a JSON object");
+  }
+  const cred = c as Record<string, unknown>;
+  const tmdb = cred.tmdb as Record<string, unknown> | undefined;
+  if (!tmdb || typeof tmdb !== "object") {
+    throw new Error(
+      "config/credentials.json: 'tmdb' is required — see config/credentials.example.json",
+    );
+  }
+  if (typeof tmdb.api_key !== "string" || !tmdb.api_key) {
+    throw new Error("config/credentials.json: 'tmdb.api_key' is required (string)");
   }
 }
 
@@ -50,7 +142,7 @@ async function main() {
   }
 
   // Write output
-  const outDir = join("digests", dateStr);
+  const outDir = join(DIGESTS_ROOT, dateStr);
   mkdirSync(outDir, { recursive: true });
   mkdirSync(join(outDir, "deep-dives"), { recursive: true });
 

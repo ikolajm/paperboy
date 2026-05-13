@@ -4,16 +4,37 @@
  */
 
 import type { SportStandings, StandingsGroup, StandingsTeam } from "../../shared/types/standings.js";
-import { fetchEspn } from "./shared.js";
+import { fetchEspn, SPORT_PATHS } from "./shared.js";
+import { F1_GRID_2026 } from "./f1.js";
+
+/**
+ * Display overrides for F1 team colors. Applied after F1_GRID_2026 lookup
+ * to handle cases where the brand color is visually problematic at our
+ * display sizes (e.g. Williams' actual brand color is pure white, harsh
+ * in both themes).
+ */
+const F1_TEAM_COLOR_OVERRIDES: Record<string, string> = {
+  Williams: "64C4FF", // Brand FFFFFF too light at display sizes
+};
+
+/** Reverse-lookup of team → color, derived from F1_GRID_2026 + overrides. */
+function buildF1TeamColors(): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const { team, color } of Object.values(F1_GRID_2026)) {
+    if (!team) continue;
+    map.set(team, F1_TEAM_COLOR_OVERRIDES[team] ?? color);
+  }
+  return map;
+}
 
 const STANDINGS_BASE = "https://site.api.espn.com/apis/v2/sports";
 
-const SPORT_PATHS: Record<string, string> = {
-  "NBA": "basketball/nba",
-  "NHL": "hockey/nhl",
-  "MLB": "baseball/mlb",
-  "NFL": "football/nfl",
-};
+/**
+ * Sports for which ESPN provides usable standings via the standings endpoint.
+ * College sports return weirdly shaped or empty responses — keep them off
+ * this list even though `SPORT_PATHS` knows their paths for enrichment.
+ */
+const STANDINGS_SUPPORTED = new Set(["NBA", "NHL", "MLB", "NFL"]);
 
 function parseStat(stats: Array<Record<string, string>>, shortName: string): string {
   return stats.find(s => s.shortDisplayName === shortName)?.displayValue ?? "";
@@ -72,6 +93,7 @@ function parseStandings(data: unknown, sport: string): SportStandings {
 }
 
 export async function fetchStandings(sport: string): Promise<SportStandings | null> {
+  if (!STANDINGS_SUPPORTED.has(sport)) return null;
   const path = SPORT_PATHS[sport];
   if (!path) return null;
 
@@ -87,7 +109,7 @@ export async function fetchStandings(sport: string): Promise<SportStandings | nu
 export async function fetchAllStandings(sports: string[]): Promise<SportStandings[]> {
   const results = await Promise.all(
     sports
-      .filter(s => SPORT_PATHS[s])
+      .filter(s => STANDINGS_SUPPORTED.has(s))
       .map(s => fetchStandings(s)),
   );
   return results.filter((r): r is SportStandings => r !== null);
@@ -130,6 +152,7 @@ export async function fetchF1Standings(): Promise<SportStandings | null> {
     const children = data.children as Array<Record<string, unknown>> | undefined;
     if (!children) return null;
 
+    const teamColors = buildF1TeamColors();
     const groups: StandingsGroup[] = [];
 
     for (const child of children) {
@@ -141,24 +164,35 @@ export async function fetchF1Standings(): Promise<SportStandings | null> {
       const teams: StandingsTeam[] = entries.map((entry, index) => {
         const stats = entry.stats as Array<Record<string, string>> | undefined ?? [];
         const rank = parseInt(parseStat(stats, "RK"), 10) || (index + 1);
-        const points = parseStat(stats, "PTS") || "0";
+        const pointsStr = parseStat(stats, "PTS") || "0";
+        const pointsNum = parseInt(pointsStr, 10) || 0;
 
-        // Driver standings have athlete, constructor standings have team
+        // Driver standings have `athlete`, constructor standings have `team`.
         const athlete = entry.athlete as Record<string, unknown> | undefined;
         const team = entry.team as Record<string, unknown> | undefined;
         const flag = athlete?.flag as Record<string, string> | undefined;
 
+        // Resolve team color via teamColors map (canonical brand colors from
+        // F1_GRID_2026 with display overrides applied). Both driver rows and
+        // constructor rows go through the same map.
+        const driverName = (athlete?.displayName || "") as string;
+        const teamName = (team?.displayName || "") as string;
+        const lookupTeam = athlete ? (F1_GRID_2026[driverName]?.team ?? "") : teamName;
+        const teamColor = teamColors.get(lookupTeam);
+
         return {
-          displayName: (athlete?.displayName || team?.displayName || "") as string,
+          displayName: driverName || teamName,
           abbreviation: (athlete?.abbreviation || team?.abbreviation || "") as string,
           logo: flag?.href || "",
           seed: rank,
-          wins: parseInt(points, 10) || 0, // repurpose wins as points for F1
+          wins: 0,
           losses: 0,
           gamesBehind: "-",
           streak: "",
           clinch: "",
-          differential: points,  // store points in differential for display
+          differential: "",
+          points: pointsNum,
+          teamColor,
         };
       });
 

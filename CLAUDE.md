@@ -1,13 +1,15 @@
 # Paperboy — CLAUDE.md
 
 ## What This Is
-A script-driven daily news digest with a React dashboard (in development).
+A script-driven daily news digest with a React dashboard.
 The digest pipeline runs as a single TypeScript command, fetching RSS feeds,
 sports scores, and entertainment data in parallel, then writing structured JSON.
 
 All configuration lives in `config/config.json` (v3).
-`config/credentials.json` (gitignored) holds TMDB API credentials.
-See `config/CONFIG-REFERENCE.md` for field-by-field documentation.
+`config/credentials.json` (gitignored) holds TMDB API credentials —
+see `config/credentials.example.json` for the template.
+See `config/CONFIG-REFERENCE.md` for field-by-field documentation,
+and `docs/DEFERRED.md` for features intentionally left out of V1.
 
 ---
 
@@ -37,12 +39,17 @@ Reads `context/DEEP-DIVE-NEWS.md`. Writes to `digests/YYYY-MM-DD/deep-dives/[ID]
 
 Reads `context/DEEP-DIVE-PODCAST.md`. Writes to `digests/YYYY-MM-DD/deep-dives/[ID].md`.
 
-### 4. Flash Check (on demand, agent-driven)
-> "Quick check my feeds"
-> "Live NBA scores"
-> "What's going on with [topic]"
+---
 
-Reads `context/FLASH-CHECK.md`. No files written — output is inline.
+## Maintenance Scripts
+
+Diagnostic and dataset-maintenance utilities. Not part of the daily digest pipeline.
+
+| Command | Purpose |
+|---------|---------|
+| `npm run check-endpoints` | Pings every configured RSS feed, ESPN scoreboard URL, and TMDB endpoint. Reports HTTP status per source — use when daily digests start producing `fetch_error` warnings. |
+| `npm run audit-media-bias` | Scans past digests for news outlets missing from `frontend/src/lib/media-bias.json` (canonical location — bias dataset is a frontend asset), sorted by frequency. Run periodically to keep the dataset current. |
+| `npm run audit-f1` | Pulls the current F1 season from ESPN, reports drivers missing from `F1_GRID_2026` and circuits missing from `CIRCUIT_TIMEZONES` in `scripts/scores/f1.ts`. Outputs ready-to-paste stubs. Run when the stale-data warnings fire during a digest. |
 
 ---
 
@@ -80,7 +87,6 @@ frontend/               Next.js 16 + React 19 dashboard
     news/               News tab: NewsFeed, StoryCard, sections
     media/              Media tab: MediaFeed, PodcastSection, PosterGallery
     scores/             Scores tab: ScoreboardPanel, GameCard, ScheduledGameCard
-    live/               Live tab: LiveFeed (placeholder)
     shared/             Shared: TeamHalf, color utilities
   src/lib/              Shared hooks + utilities (format, useMediaQuery, digest)
 context/                Agent-driven on-demand stages
@@ -147,7 +153,7 @@ They exist in the data for deep dive wiring.
 
 ## Dashboard Sections (Scores tab)
 
-Recaps + Schedule sub-tabs with per-sport chip filters. UFC/F1 deferred.
+Recaps + Schedule sub-tabs with per-sport chip filters.
 
 | Sub-tab | Content | Data |
 |---------|---------|------|
@@ -163,13 +169,6 @@ injuries, article, venue image, standings injection. ~35 games enriched in ~3.5s
 
 Team colors use `ensureContrast()` — compares against surface luminance, swaps to
 alternateColor when primary has insufficient contrast.
-
----
-
-## Dashboard Sections (Live tab)
-
-Placeholder. Will poll ESPN scoreboard for today's games on 30-60s interval.
-Hybrid: live scores + static context from digest enrichment.
 
 ---
 

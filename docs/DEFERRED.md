@@ -4,23 +4,6 @@ Features that were intentionally left out of V1, and the reasoning behind each.
 
 ---
 
-## Live Sports Polling
-
-The daily digest makes ~80-145 API calls once per day against ESPN's unofficial,
-unauthenticated scoreboard API. That's a reasonable use of a public endpoint.
-
-Live polling would mean 6+ calls per minute, sustained for hours, across
-multiple sports. That crosses into building a product on top of unpermissioned
-infrastructure. It's ethically questionable, risks IP blocks, and sets a
-bad precedent for how the project relates to its data sources.
-
-If revisited, the options are:
-- A manual "check now" button (single fetch, user-initiated)
-- An official data source
-- Accepting the tab stays empty
-
----
-
 ## Media Bias Badges
 
 The data pipeline is fully built: ~43 outlets mapped with political lean and
@@ -34,9 +17,16 @@ headline and source attribution for attention. The information density
 made the card layout feel repetitive and cluttered rather than informative.
 
 This is a design problem — the data and rendering code are ready, but the
-right placement and density haven't been found yet. Possible directions:
-section-level bias summaries, hover-only detail, or a dedicated bias view
-rather than per-card badges.
+right placement and density haven't been found yet.
+
+**V1.5 direction:** surface bias + factual lean on the deep-dive page rather
+than the dashboard cards. Deep dive is the right context for media-literacy
+detail — a reader is already slowing down to evaluate a single story, so
+adding outlet bias profiles inline (primary outlet plus any cited related
+articles) adds value rather than visual noise. The bias dataset is already
+maintained for this — see `frontend/src/lib/media-bias.ts` for the wired
+but currently-unused lookup functions, and `npm run audit-media-bias` for
+coverage maintenance.
 
 ---
 
@@ -65,5 +55,3 @@ currently set to `false` everywhere.
 **Why deferred:** Low priority for V1. The data extraction is straightforward
 but the UI needs design work — line movement, provider attribution, and
 display density all need thought before it's worth building.
-
-See `docs/FEATURE-live-scores-and-odds.md` for the full design doc.

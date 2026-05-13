@@ -20,10 +20,8 @@ export interface TopicConfig {
 // --- Scores (ESPN scoreboard endpoints + display toggles) ---
 
 export interface ScoreConfig {
-  /** ESPN scoreboard API URL (single sport) */
-  url?: string;
-  /** ESPN scoreboard API URLs keyed by sub-sport (e.g. College Sports) */
-  urls?: Record<string, string>;
+  /** ESPN scoreboard API URL */
+  url: string;
   /** Show yesterday's results */
   recaps: boolean;
   /** Show today's upcoming games */
@@ -46,14 +44,15 @@ export interface PodcastShow {
 // --- Popular Today (replaces Popular Now + In the Noise) ---
 
 export interface PopularFeed {
+  /** Display label for the subsection (e.g. "Top Stories", "World", "Nation"). */
+  label: string;
   rss: string;
   max: number;
 }
 
 export interface PopularTodayConfig {
-  top_stories: PopularFeed;
-  world: PopularFeed;
-  nation: PopularFeed;
+  /** Editorial feeds for the Headlines tier. Add or remove entries to flex the sections. */
+  feeds: PopularFeed[];
 }
 
 // --- Entertainment ---
@@ -71,6 +70,15 @@ export interface LocalNewsLocation {
 
 export interface PaperboyConfig {
   version: number;
+
+  /**
+   * IANA timezone used for the digest's `day_of_week` field.
+   * Defaults to "America/New_York" if absent.
+   * NOTE: sport-specific `startTime` formatting in scripts/scores/shared.ts
+   * is currently hardcoded to ET — threading this through every sport
+   * parser is a future refactor.
+   */
+  display_timezone?: string;
 
   topics: Record<string, TopicConfig>;
 
@@ -113,7 +121,6 @@ export interface PaperboyConfig {
 
 export interface TmdbCredentials {
   api_key: string;
-  read_access_token: string;
 }
 
 export interface Credentials {
