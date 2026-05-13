@@ -16,6 +16,7 @@ import {
   TabsContent,
 } from '@/components/atoms/Tabs';
 import { ensureContrast } from '../shared/color';
+import { useTheme } from '@/components/providers/ThemeProvider';
 import { getStatGroup } from '../shared/statLabels';
 
 // --- Helpers ---
@@ -226,10 +227,12 @@ export function BoxScoreTable({
   awayTeam?: TeamContext;
   homeTeam?: TeamContext;
 }) {
+  const { resolved: theme } = useTheme();
+
   if (playerStats.length === 0) return null;
 
-  const awayColor = ensureContrast(awayTeam?.color, awayTeam?.alternateColor) ?? '778880';
-  const homeColor = ensureContrast(homeTeam?.color, homeTeam?.alternateColor) ?? '778880';
+  const awayColor = ensureContrast(awayTeam?.color, awayTeam?.alternateColor, theme) ?? '778880';
+  const homeColor = ensureContrast(homeTeam?.color, homeTeam?.alternateColor, theme) ?? '778880';
 
   const awayLabel = playerStats[0]?.abbreviation || playerStats[0]?.team || 'Away';
   const homeLabel = playerStats[1]?.abbreviation || playerStats[1]?.team || 'Home';

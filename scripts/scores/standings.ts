@@ -5,6 +5,27 @@
 
 import type { SportStandings, StandingsGroup, StandingsTeam } from "../../shared/types/standings.js";
 import { fetchEspn, SPORT_PATHS } from "./shared.js";
+import { F1_GRID_2026 } from "./f1.js";
+
+/**
+ * Display overrides for F1 team colors. Applied after F1_GRID_2026 lookup
+ * to handle cases where the brand color is visually problematic at our
+ * display sizes (e.g. Williams' actual brand color is pure white, harsh
+ * in both themes).
+ */
+const F1_TEAM_COLOR_OVERRIDES: Record<string, string> = {
+  Williams: "64C4FF", // Brand FFFFFF too light at display sizes
+};
+
+/** Reverse-lookup of team → color, derived from F1_GRID_2026 + overrides. */
+function buildF1TeamColors(): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const { team, color } of Object.values(F1_GRID_2026)) {
+    if (!team) continue;
+    map.set(team, F1_TEAM_COLOR_OVERRIDES[team] ?? color);
+  }
+  return map;
+}
 
 const STANDINGS_BASE = "https://site.api.espn.com/apis/v2/sports";
 
@@ -131,6 +152,7 @@ export async function fetchF1Standings(): Promise<SportStandings | null> {
     const children = data.children as Array<Record<string, unknown>> | undefined;
     if (!children) return null;
 
+    const teamColors = buildF1TeamColors();
     const groups: StandingsGroup[] = [];
 
     for (const child of children) {
@@ -145,28 +167,32 @@ export async function fetchF1Standings(): Promise<SportStandings | null> {
         const pointsStr = parseStat(stats, "PTS") || "0";
         const pointsNum = parseInt(pointsStr, 10) || 0;
 
-        // Driver standings have athlete, constructor standings have team
+        // Driver standings have `athlete`, constructor standings have `team`.
         const athlete = entry.athlete as Record<string, unknown> | undefined;
         const team = entry.team as Record<string, unknown> | undefined;
         const flag = athlete?.flag as Record<string, string> | undefined;
 
-        // F1 standings don't have wins/losses — championship points is the
-        // ordering metric. `points` is the proper field going forward; `wins`
-        // + `differential` are kept populated for the current frontend
-        // renderer (which reads `wins` for the visible total). Frontend
-        // cleanup: switch to `points` and then drop the wins hack here.
+        // Resolve team color via teamColors map (canonical brand colors from
+        // F1_GRID_2026 with display overrides applied). Both driver rows and
+        // constructor rows go through the same map.
+        const driverName = (athlete?.displayName || "") as string;
+        const teamName = (team?.displayName || "") as string;
+        const lookupTeam = athlete ? (F1_GRID_2026[driverName]?.team ?? "") : teamName;
+        const teamColor = teamColors.get(lookupTeam);
+
         return {
-          displayName: (athlete?.displayName || team?.displayName || "") as string,
+          displayName: driverName || teamName,
           abbreviation: (athlete?.abbreviation || team?.abbreviation || "") as string,
           logo: flag?.href || "",
           seed: rank,
-          wins: pointsNum,
+          wins: 0,
           losses: 0,
           gamesBehind: "-",
           streak: "",
           clinch: "",
-          differential: pointsStr,
+          differential: "",
           points: pointsNum,
+          teamColor,
         };
       });
 

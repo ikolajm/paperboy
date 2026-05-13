@@ -134,44 +134,9 @@ function GroupTable({
   );
 }
 
-// --- F1 constructor colors (matches pipeline static grid) ---
-
-const F1_CONSTRUCTOR_COLORS: Record<string, string> = {
-  'Mercedes': '00D2BE',
-  'Ferrari': 'DC0000',
-  'McLaren': 'FF8700',
-  'Red Bull': '00327D',
-  'Haas': '5A5A5A',
-  'Racing Bulls': '6692FF',
-  'Audi': 'FF2D00',
-  'Alpine': 'FFF500',
-  'Williams': '64C4FF', // FFFFFF too light for dark theme, use brand blue
-  'Aston Martin': '006F62',
-  'Cadillac': 'A2AAAD',
-};
-
-// Driver→constructor for standings color lookup
-const F1_DRIVER_TEAMS: Record<string, string> = {
-  'George Russell': 'Mercedes', 'Kimi Antonelli': 'Mercedes',
-  'Charles Leclerc': 'Ferrari', 'Lewis Hamilton': 'Ferrari',
-  'Lando Norris': 'McLaren', 'Oscar Piastri': 'McLaren',
-  'Max Verstappen': 'Red Bull', 'Isack Hadjar': 'Red Bull',
-  'Oliver Bearman': 'Haas', 'Esteban Ocon': 'Haas',
-  'Arvid Lindblad': 'Racing Bulls', 'Liam Lawson': 'Racing Bulls',
-  'Gabriel Bortoleto': 'Audi', 'Nico Hülkenberg': 'Audi',
-  'Pierre Gasly': 'Alpine', 'Franco Colapinto': 'Alpine',
-  'Alexander Albon': 'Williams', 'Carlos Sainz': 'Williams',
-  'Sergio Pérez': 'Cadillac', 'Valtteri Bottas': 'Cadillac',
-  'Lance Stroll': 'Aston Martin', 'Fernando Alonso': 'Aston Martin',
-};
-
-function getF1Color(name: string, isDriver: boolean): string | undefined {
-  if (isDriver) {
-    const team = F1_DRIVER_TEAMS[name];
-    return team ? F1_CONSTRUCTOR_COLORS[team] : undefined;
-  }
-  return F1_CONSTRUCTOR_COLORS[name];
-}
+// F1 team colors are populated by the backend via `team.teamColor`
+// (sourced from F1_GRID_2026 in scripts/scores/f1.ts; display overrides
+// for visual problems like pure-white brand colors are applied there).
 
 // --- F1 standings table (rank + color bar + name + points) ---
 
@@ -198,7 +163,7 @@ function F1GroupTable({
           </TableHeader>
           <TableBody>
             {teams.map((team) => {
-              const color = getF1Color(team.displayName, isDrivers);
+              const color = team.teamColor;
               return (
                 <TableRow key={team.abbreviation || team.displayName}>
                   <TableCell className="text-center text-body-sm text-on-surface-variant tabular-nums">
@@ -227,7 +192,7 @@ function F1GroupTable({
                     </div>
                   </TableCell>
                   <TableCell className="text-center text-body-sm tabular-nums font-medium">
-                    {team.differential}
+                    {team.points ?? 0}
                   </TableCell>
                 </TableRow>
               );

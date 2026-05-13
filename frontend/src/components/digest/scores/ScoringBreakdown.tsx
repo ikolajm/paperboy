@@ -3,6 +3,7 @@
 import type { TeamStatsBlock } from '@/types';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ensureContrast } from '../shared/color';
+import { useTheme } from '@/components/providers/ThemeProvider';
 
 // --- Helpers ---
 
@@ -231,8 +232,9 @@ export function ScoringBreakdown({
   awayAbbr: string;
   homeAbbr: string;
 }) {
-  const safeAway = ensureContrast(awayColor) ?? '778880';
-  const safeHome = ensureContrast(homeColor) ?? '778880';
+  const { resolved: theme } = useTheme();
+  const safeAway = ensureContrast(awayColor, undefined, theme) ?? '778880';
+  const safeHome = ensureContrast(homeColor, undefined, theme) ?? '778880';
 
   return (
     <div className="flex flex-col gap-section-compact">

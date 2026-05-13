@@ -9,6 +9,7 @@ import { ExpandToggle } from '../shared/ExpandToggle';
 import { FlagBackdrop } from '../shared/PlayerCard';
 import { ensureContrast } from '../shared/color';
 import { getCircuitFlagUrl } from './f1-flags';
+import { useTheme } from '@/components/providers/ThemeProvider';
 
 // --- Session type labels ---
 
@@ -23,6 +24,8 @@ const SESSION_LABELS: Record<string, string> = {
 // --- Session results table ---
 
 function SessionTable({ session, showTeam = true }: { session: F1Session; showTeam?: boolean }) {
+  const { resolved: theme } = useTheme();
+
   if (session.drivers.length === 0) return null;
 
   const visible = session.drivers.slice(0, 10);
@@ -30,7 +33,7 @@ function SessionTable({ session, showTeam = true }: { session: F1Session; showTe
   return (
     <div className="flex flex-col">
       {visible.map((driver, i) => {
-        const safeColor = ensureContrast(driver.teamColor);
+        const safeColor = ensureContrast(driver.teamColor, undefined, theme);
         const isPodium = session.type === 'Race' && driver.position <= 3;
         const isLast = i === visible.length - 1;
 

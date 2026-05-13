@@ -2,8 +2,11 @@
  * Team color utilities shared across scores components.
  */
 
-/** Our dark surface color luminance (~0.102 for #181b1a) */
-const SURFACE_LUMINANCE = 0.102;
+/** Surface luminance per theme — dark = #181b1a (~0.102), light = #f1f3f2 (~0.95). */
+const SURFACE_LUMINANCE = {
+  dark: 0.102,
+  light: 0.950,
+} as const;
 
 /** Minimum contrast distance between team color and surface for readability */
 const MIN_CONTRAST = 0.15;
@@ -16,20 +19,29 @@ export function hexLuminance(hex: string): number {
 }
 
 /**
- * Returns a team color hex that has sufficient contrast against our dark surface.
- * Compares both primary and alternate color against the surface luminance,
- * picks the one with better contrast. Falls back to primary if both are poor.
+ * Returns a team color hex that has sufficient contrast against the current
+ * theme's surface. Compares both primary and alternate color against surface
+ * luminance, picks the one with better contrast. Falls back to primary if
+ * both are poor.
+ *
+ * Pass `theme` from `useTheme().resolved` so the comparison uses the
+ * correct surface luminance for light vs dark mode.
  */
-export function ensureContrast(color?: string, altColor?: string): string | undefined {
+export function ensureContrast(
+  color?: string,
+  altColor?: string,
+  theme: 'light' | 'dark' = 'dark',
+): string | undefined {
   if (!color) return undefined;
 
-  const primaryContrast = Math.abs(hexLuminance(color) - SURFACE_LUMINANCE);
+  const surface = SURFACE_LUMINANCE[theme];
+  const primaryContrast = Math.abs(hexLuminance(color) - surface);
 
   if (primaryContrast >= MIN_CONTRAST) return color;
 
   // Primary has poor contrast — try alternate
   if (altColor) {
-    const altContrast = Math.abs(hexLuminance(altColor) - SURFACE_LUMINANCE);
+    const altContrast = Math.abs(hexLuminance(altColor) - surface);
     if (altContrast > primaryContrast) return altColor;
   }
 

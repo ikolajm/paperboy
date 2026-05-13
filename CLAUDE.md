@@ -87,7 +87,6 @@ frontend/               Next.js 16 + React 19 dashboard
     news/               News tab: NewsFeed, StoryCard, sections
     media/              Media tab: MediaFeed, PodcastSection, PosterGallery
     scores/             Scores tab: ScoreboardPanel, GameCard, ScheduledGameCard
-    live/               Live tab: LiveFeed (placeholder)
     shared/             Shared: TeamHalf, color utilities
   src/lib/              Shared hooks + utilities (format, useMediaQuery, digest)
 context/                Agent-driven on-demand stages
