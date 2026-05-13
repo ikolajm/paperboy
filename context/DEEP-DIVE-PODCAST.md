@@ -1,130 +1,114 @@
 # Deep Dive: Podcast
 
 ## Purpose
-Fetch a full organised transcript for a podcast episode identified by POD-ID.
-Write a structured deep-dive file the user can read instead of listening,
-with timestamps to jump to specific moments if they prefer.
 
-This stage runs independently — never part of the daily chain.
+Fetch a full structured transcript or listening guide for a podcast episode, then write a markdown file the user can read instead of listening (or read alongside, with timestamps to jump to specific moments). This stage runs on demand — never part of the daily digest pipeline.
 
----
+## Entry trigger
 
-## Entry Trigger
 User says something like:
 - "Go deeper on POD-02"
 - "Transcript for POD-01"
-- "Get me the transcript for yesterday's POD-03"
+- "Listening guide for POD-03"
 - "What did [show] talk about in POD-01"
 
 ---
 
-## Step 1 — Resolve the Episode
+## Step 1 — Resolve the episode
 
-Parse the POD-ID and date from the user's message.
-Default to today's date if no date specified.
+### Parse the ID and date
 
-Read `digests/YYYY-MM-DD/digest-index.md` and find the POD-* row.
+Extract the POD-ID. If the user references a date, resolve it to `YYYY-MM-DD`; default to today.
 
-Extract:
-- Episode title (Title column)
-- Show name (Source/Show column)
-- Episode URL (URL column — the show's own page)
-- YouTube URL (YouTube column — use directly if not `—`)
-- Transcript page URL (Transcript column — use directly if not `—`; this
-  is the `transcript_hint` stored by FETCH-PODCASTS from config.json)
+### Load the digest
 
-If the ID is not found → tell the user and suggest checking the date.
+Read `digests/YYYY-MM-DD/digest.json` in full. Locate the episode in `sections.podcasts[]` where `id === <POD-ID>`.
 
-Check if `digests/YYYY-MM-DD/deep-dives/[ID].md` already exists.
-If yes → tell the user and ask if they want a refresh.
+The `PodcastEntry` shape:
 
----
+```
+{
+  id, show, title, duration, date, snippet,
+  episode_url,       // show's own episode page (may be null)
+  image_url,         // optional
+  audio_url,         // optional
+  youtube_url,       // optional — present if `youtube_channel` is set in config for this show
+  transcript_url,    // optional — present if `transcript_page` is set in config for this show
+  deep_dive_eligible: boolean
+}
+```
 
-## Step 2 — Locate the Transcript
+### Fail-soft cases
 
-Work through the transcript source priority from
-`podcasts.settings.deep_dive.transcript_sources` in `config/config.json`.
-Default order: native → youtube_captions → show_notes.
-
-### Source A: Native transcript
-If the Transcript column from the index is not `—`, fetch that URL directly
-— do not search. This is a pre-resolved transcript page from config.json.
-
-If the Transcript column is `—`, search: `[show name] [episode title] transcript`
-and also try the episode URL directly — many shows publish transcripts
-on the same page as the episode.
-
-If a native transcript is found: use it. It is the highest quality source.
-Skip sources B and C.
-
-### Source B: YouTube captions
-If the YouTube column from the index is not `—`, fetch that URL directly
-— do not search for a YouTube link. YouTube auto-captions are available
-on most podcast episodes uploaded to YouTube.
-
-Fetch approach:
-1. Fetch the YouTube page at the stored URL
-2. Look for caption/transcript data in the page
-3. Alternatively search: `[show name] [episode title] youtube transcript`
-   and look for third-party transcript services (e.g. Podscribe, Castmagic,
-   Tactiq) that may have already processed it
-
-YouTube captions will be a continuous text stream without speaker labels.
-Do your best to infer speaker changes from context and question/answer patterns.
-
-### Source C: Show notes
-Fetch the episode URL and extract the show notes body.
-This is not a transcript — it is a summary written by the show.
-Note clearly in the output that this is show notes, not a transcript.
-
-### Nothing found
-If all sources fail, write the deep dive using the episode description
-from the RSS entry and note that no transcript was available.
+- **ID not found** → "I couldn't find [POD-ID] in `digests/[date]/digest.json`. Check the date — IDs are date-scoped."
+- **`deep_dive_eligible: false`** → "This episode isn't flagged as deep-dive-eligible."
+- **`digests/YYYY-MM-DD/deep-dives/[POD-ID].md` already exists** → tell the user and ask whether they want a refresh.
 
 ---
 
-## Step 3 — Process the Transcript
+## Step 2 — Locate the transcript
 
-Once raw transcript content is obtained:
+Try sources in this priority order. Stop at the first one that yields a usable transcript:
+
+### Source A — Native transcript
+
+If `transcript_url` is set in the episode, fetch that URL directly. This is a pre-resolved transcript page derived from `podcasts.shows[].transcript_page` in `config/config.json`. It is the highest-quality source — use it and skip B and C.
+
+If `transcript_url` is absent, try fetching `episode_url` directly — many shows publish a transcript on the same page as the episode. A targeted search (`[show name] [episode title] transcript`) is also fair game.
+
+### Source B — YouTube captions
+
+If `youtube_url` is set in the episode, fetch the YouTube page and look for caption/transcript data. As a fallback, search for third-party transcript services (Podscribe, Castmagic, Tactiq) that may have already processed it: `[show name] [episode title] youtube transcript`.
+
+YouTube auto-captions are a continuous stream without speaker labels — infer speaker changes from context and question/answer patterns.
+
+### Source C — Show notes / fallback summary
+
+If both A and B fail, fetch `episode_url` and extract the show-notes body. This is **not** a transcript — it's a summary written by the show. Mark it clearly as such in the output.
+
+If all three fail, write the deep dive from the `snippet` in the digest entry and explicitly note that no transcript was available.
+
+---
+
+## Step 3 — Process the content
+
+Once raw transcript content is in hand:
 
 ### Clean
-- Remove timestamps formatting artifacts if present
-- Remove filler words if they clutter reading (um, uh, you know)
-  but preserve them in direct quotes where they add character
-- Fix obvious transcription errors where the meaning is clear
+
+- Remove transcription formatting artifacts (stray HTML, timestamp lines that don't add value)
+- Trim filler words (um, uh, you know) where they clutter reading, **but preserve them inside direct quotes** when they add character
+- Fix obvious transcription errors only where the corrected meaning is unambiguous
 
 ### Segment
-Divide the transcript into logical segments by topic.
-Each segment gets a header describing what's being discussed.
-Aim for 5–10 segments per hour of content.
+
+Divide the transcript into logical segments by topic. Each segment gets a header describing the discussion. Aim for 5–10 segments per hour of content.
 
 ### Speaker labels
-If `speaker_labels: true` in config:
-- Label each speaker as "[Host]:" or "[Guest]:" at minimum
-- Use names once they're established in the conversation
-- If multiple guests, label by name once identified
+
+Label speakers as `[Host]:`, `[Guest]:`, or by name once names are established in the conversation. For multi-guest episodes, distinguish guests by name.
 
 ### Timestamps
-If `include_timestamps: true` in config and timestamps are available
-in the source:
-- Preserve them inline: `[42:18]`
-- Collect the most significant ones into a "Jump To" table at the top
+
+If timestamps are available in the source, preserve them inline in the format `[42:18]`. Collect the most significant ones into a "Jump To" table at the top of the output.
+
+If no timestamps are available, omit the Jump To table entirely.
 
 ---
 
-## Step 4 — Write the Deep Dive File
+## Step 4 — Write the deep-dive file
 
-Write to: `digests/YYYY-MM-DD/deep-dives/[POD-ID].md`
+Write to `digests/YYYY-MM-DD/deep-dives/[POD-ID].md`:
 
 ```markdown
 # [Episode Title]
 
-**Show:** [Show Name]
+**Show:** [Show name from `show` field]
 **ID:** [POD-ID]
-**Published:** [Date]
-**Duration:** [e.g. 1h 42m]
-**Episode page:** [URL]
-**YouTube:** [URL if available, else omit]
+**Published:** [`date` field]
+**Duration:** [`duration` field — e.g. "1h 42m"]
+**Episode page:** [`episode_url` if present, else omit]
+**YouTube:** [`youtube_url` if present, else omit]
 **Transcript source:** [native / youtube_captions / show_notes / none]
 
 ---
@@ -137,18 +121,15 @@ _Timestamps worth knowing about_
 | 00:00 | Introduction / context |
 | 14:32 | [Significant topic] |
 | 58:10 | [Another topic] |
-| 1:22:40 | [Closing topic] |
 
-[Omit this table if no timestamps available]
+[Omit this section entirely if no timestamps were available]
 
 ---
 
 ## What They Actually Argued
 _The substance, not just the topics_
 
-[3–5 paragraphs on the positions taken, what was debated, what conclusions
-were reached. This is not a topic list — it's an account of the intellectual
-content. What did each person actually claim?]
+[3–5 paragraphs on the positions taken, what was debated, what conclusions were reached. This is not a topic list — it's an account of the intellectual content. What did each person actually claim?]
 
 ---
 
@@ -156,6 +137,7 @@ content. What did each person actually claim?]
 _Moments worth reading closely_
 
 ### [Exchange topic]
+
 [Relevant transcript excerpt, speaker-labeled, with timestamp if available]
 
 [Repeat for 3–5 notable exchanges]
@@ -171,21 +153,14 @@ _Moments worth reading closely_
 
 ### [Segment title] [14:32]
 [text continues]
-
-...
-
----
-_[← Back to digest](../digest.md)_
 ```
 
 ---
 
-## Step 5 — Confirm to User
+## Step 5 — Confirm to user
 
-Tell the user:
-- File written to `deep-dives/[ID].md`
-- Which transcript source was used
-- If the source was show notes rather than a real transcript, be clear
-  about that — don't present a summary as a transcript
-- Surface 1–2 of the most interesting exchanges directly in chat so
-  the user gets immediate value without opening the file
+After writing:
+- Confirm the file path
+- State which transcript source was used
+- If the source was show notes rather than a real transcript, say so clearly — don't present a summary as a transcript
+- Surface 1–2 of the most interesting exchanges directly in chat so the user gets immediate value without opening the file

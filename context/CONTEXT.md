@@ -1,27 +1,16 @@
 # Context Index
 
-The prompt chain that powers the daily digest.
-Read stages in order during a daily run.
+On-demand agent stages. Each stage is triggered by a user request in chat — none of these run as part of the automated daily digest pipeline (`npm run digest`).
 
-## Daily Run Chain
-
-| File | What it does |
-|------|-------------|
-| `BOOTSTRAP.md` | Date, mode detection, config load, registry init |
-| `FETCH-NEWS.md` | Tier 1 web search for all news topics |
-| `FILTER.md` | Dedup, staleness, quality floor |
-| `POPULAR.md` | Popular Now + In the Noise (RSS-first) |
-| `FETCH-ENTERTAINMENT.md` | Entertainment sweep + Sports Last Night scores |
-| `FETCH-PODCASTS.md` | RSS episode fetch for followed shows |
-| `WRITE.md` | Render digest.md + digest-index.md |
-
-## On-Demand Stages
+## Active stages
 
 | File | Trigger |
 |------|---------|
-| `DEEP-DIVE-NEWS.md` | "Go deeper on [NEWS-ID]" |
-| `DEEP-DIVE-PODCAST.md` | "Transcript for [POD-ID]" |
-| `FLASH-CHECK.md` | "Quick check my feeds", "Live [sport] scores", "Quick look at [topic]" |
+| `DEEP-DIVE-NEWS.md` | "Go deeper on [ID]" / "Tell me more about [ID]" — for any non-podcast ID (SPRT, TECH, POL, SCI, HLTH, ENT, POP, OPN) |
+| `DEEP-DIVE-PODCAST.md` | "Transcript for POD-XX" / "Go deeper on POD-XX" |
 
-_For architectural decisions and rationale, see `context/DECISIONS.md`._
+Both stages read `digests/YYYY-MM-DD/digest.json` to locate the item by `id`, fetch additional content (article body + cross-references for news; transcript for podcasts), and write a markdown deep-dive file to `digests/YYYY-MM-DD/deep-dives/[ID].md`.
 
+## Archived stages
+
+The pre-pivot agent chain (BOOTSTRAP, FETCH-*, FILTER, POPULAR, WRITE, FLASH-CHECK) was replaced by the script-driven pipeline. See `docs/legacy-chain/` for the historical specs.

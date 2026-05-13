@@ -113,7 +113,6 @@ export interface PaperboyConfig {
 
 export interface TmdbCredentials {
   api_key: string;
-  read_access_token: string;
 }
 
 export interface Credentials {

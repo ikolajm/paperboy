@@ -4,23 +4,6 @@ Features that were intentionally left out of V1, and the reasoning behind each.
 
 ---
 
-## Live Sports Polling
-
-The daily digest makes ~80-145 API calls once per day against ESPN's unofficial,
-unauthenticated scoreboard API. That's a reasonable use of a public endpoint.
-
-Live polling would mean 6+ calls per minute, sustained for hours, across
-multiple sports. That crosses into building a product on top of unpermissioned
-infrastructure. It's ethically questionable, risks IP blocks, and sets a
-bad precedent for how the project relates to its data sources.
-
-If revisited, the options are:
-- A manual "check now" button (single fetch, user-initiated)
-- An official data source
-- Accepting the tab stays empty
-
----
-
 ## Media Bias Badges
 
 The data pipeline is fully built: ~43 outlets mapped with political lean and
@@ -65,5 +48,3 @@ currently set to `false` everywhere.
 **Why deferred:** Low priority for V1. The data extraction is straightforward
 but the UI needs design work — line movement, provider attribution, and
 display density all need thought before it's worth building.
-
-See `docs/FEATURE-live-scores-and-odds.md` for the full design doc.

@@ -238,8 +238,9 @@ Opinion and editorial RSS feeds. Sporadic schedules — all feeds are fetched on
 
 | Outlet | RSS |
 |--------|-----|
-| New York Times Opinion | `https://www.nytimes.com/svc/collections/v1/publish/https://www.nytimes.com/section/opinion/rss.xml` |
 | The Guardian Comment | `https://www.theguardian.com/uk/commentisfree/rss` |
+| The Hill Opinion | `https://thehill.com/opinion/feed/` |
+| Washington Post Opinions | `https://feeds.washingtonpost.com/rss/opinions` |
 
 ---
 
@@ -250,20 +251,27 @@ Opinion and editorial RSS feeds. Sporadic schedules — all feeds are fetched on
 | Field | Type | Description |
 |-------|------|-------------|
 | `base_url` | string | TMDB API base URL |
-| `endpoints` | object | TMDB API paths keyed by data type |
+| `endpoints` | object | TMDB API paths keyed by data type (see endpoints table below) |
+| `movie_endpoints` | string[] | Which `endpoints` keys feed the **Movies** gallery (e.g. `["trending_movies", "popular_movies", "now_playing"]`) |
+| `streaming_endpoints` | string[] | Which `endpoints` keys feed the **Streaming** gallery (e.g. `["trending_tv", "popular_tv", "discover_streaming"]`) |
+| `upcoming_endpoints` | string[] | Which `endpoints` keys feed the **Coming Soon** gallery (e.g. `["upcoming", "on_the_air"]`) |
 | `max_movies` | integer | Cap on movie entries |
 | `max_streaming` | integer | Cap on streaming/TV entries |
+| `max_upcoming` | integer | Cap on upcoming entries |
+| `upcoming_cutoff_days` | integer | Maximum days in the future for an upcoming entry to be included |
+| `enrich_watch_providers` | boolean | When `true`, fetch watch-provider logos for each entry (extra API calls per item) |
 
-TMDB API requires credentials stored in `config/credentials.json` (gitignored):
+TMDB API requires credentials stored in `config/credentials.json` (gitignored). See `config/credentials.example.json` for the template:
 
 ```json
 {
   "tmdb": {
-    "api_key": "your_key_here",
-    "read_access_token": "your_token_here"
+    "api_key": "your_v3_key_here"
   }
 }
 ```
+
+Only the v3 `api_key` is used. (TMDB also issues a v4 read access token, but the pipeline doesn't consume it.)
 
 ### TMDB endpoints
 
@@ -271,6 +279,9 @@ TMDB API requires credentials stored in `config/credentials.json` (gitignored):
 |-----|---------|
 | `now_playing` | Movies currently in theatres |
 | `upcoming` | Movies releasing soon |
-| `trending_movies` | Trending movies this week |
-| `trending_tv` | Trending TV shows this week |
+| `trending_movies` | Trending movies (daily window) |
+| `popular_movies` | Popular movies (rolling popularity score) |
+| `trending_tv` | Trending TV shows (daily window) |
+| `popular_tv` | Popular TV shows (rolling popularity score) |
 | `on_the_air` | TV shows currently airing new episodes |
+| `discover_streaming` | TV discovery filtered by configured watch providers (Netflix, Hulu, Max, Disney+, Apple TV+, Paramount+) |

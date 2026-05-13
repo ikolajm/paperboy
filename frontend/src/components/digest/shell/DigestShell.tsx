@@ -10,6 +10,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from '@/components/atoms/Sheet';
 import { Newspaper, Clapperboard, Trophy } from 'lucide-react';
 import { DigestSidebar, DigestSidebarContent } from './DigestSidebar';
@@ -81,6 +82,7 @@ export function DigestShell({
           <SheetHeader className='flex flex-row items-center gap-component px-group'>
             <Logo size={28} className="text-on-surface" />
             <SheetTitle>Paperboy</SheetTitle>
+            <SheetDescription className="sr-only">Navigate between digest dates and sections</SheetDescription>
           </SheetHeader>
           <Separator />
           <DigestSidebarContent
