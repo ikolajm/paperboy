@@ -7,12 +7,15 @@
  * module is the glue the API route calls.
  */
 
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import type { Digest, RelatedArticle } from "@/types";
-import { getDigest, DIGEST_ROOT } from "@/lib/digest";
+import { getDigest } from "@/lib/digest";
 import { fetchArticle, type FetchedArticle } from "@/lib/deep-dive/fetch-article";
-import { getSynthesisProvider } from "@/lib/deep-dive/synthesize";
+import {
+  DeepDiveError,
+  MIN_SNIPPET_CHARS,
+  synthesizeAndWrite,
+  type GenerateResult,
+} from "@/lib/deep-dive/shared";
 import {
   buildNewsPrompt,
   type ArticleContent,
@@ -21,18 +24,6 @@ import {
 
 /** Cap related-article fetches to bound latency + cost per generation. */
 const MAX_RELATED = 5;
-/** With no fetched body, a snippet shorter than this can't anchor an honest synthesis. */
-const MIN_SNIPPET_CHARS = 40;
-
-export class DeepDiveError extends Error {
-  constructor(
-    message: string,
-    readonly code: "not-found" | "ineligible" | "no-content" | "synthesis-failed"
-  ) {
-    super(message);
-    this.name = "DeepDiveError";
-  }
-}
 
 interface ResolvedStory {
   id: string;
@@ -134,26 +125,6 @@ function logFetchOutcomes(id: string, results: FetchedArticle[]): void {
   console.info(`[deep-dive] ${id}: ${ok}/${results.length} sources fetched${tail}`);
 }
 
-async function writeDeepDiveFile(date: string, id: string, content: string): Promise<string> {
-  const dir = path.join(DIGEST_ROOT, date, "deep-dives");
-  await mkdir(dir, { recursive: true });
-  const filePath = path.join(dir, `${id}.md`);
-  await writeFile(filePath, content, "utf-8");
-  return filePath;
-}
-
-export interface GenerateResult {
-  id: string;
-  date: string;
-  /** Absolute path to the written markdown file. */
-  filePath: string;
-  content: string;
-  provider: string;
-  /** Article bodies that fetched successfully / total attempted (main + related). */
-  sourcesFetched: number;
-  sourcesAttempted: number;
-}
-
 /**
  * Generate (or regenerate) a news deep-dive markdown file for one story.
  *
@@ -203,26 +174,8 @@ export async function generateNewsDeepDive(
     articles,
   };
 
-  const provider = getSynthesisProvider();
-  let content: string;
-  try {
-    content = await provider.synthesize(buildNewsPrompt(input));
-  } catch (err) {
-    throw new DeepDiveError(
-      `Synthesis failed: ${err instanceof Error ? err.message : String(err)}`,
-      "synthesis-failed"
-    );
-  }
-
-  const filePath = await writeDeepDiveFile(date, id, content);
-
-  return {
-    id,
-    date,
-    filePath,
-    content,
-    provider: provider.name,
-    sourcesFetched: fetchedCount,
-    sourcesAttempted: articles.length,
-  };
+  return synthesizeAndWrite(date, id, buildNewsPrompt(input), {
+    fetched: fetchedCount,
+    attempted: articles.length,
+  });
 }

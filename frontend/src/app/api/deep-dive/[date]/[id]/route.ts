@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getDeepDive } from '@/lib/digest';
-import { generateNewsDeepDive, DeepDiveError } from '@/lib/deep-dive/generate';
+import { generateNewsDeepDive } from '@/lib/deep-dive/generate';
+import { generatePodcastDeepDive } from '@/lib/deep-dive/generate-podcast';
+import { generateEntDeepDive } from '@/lib/deep-dive/generate-ent';
+import { DeepDiveError } from '@/lib/deep-dive/shared';
 
 // jsdom (article extraction) needs the Node runtime, not edge.
 export const runtime = 'nodejs';
@@ -33,8 +36,16 @@ export async function POST(
 ) {
   const { date, id } = await params;
 
+  // Each ID prefix has its own gather path: POD-* → transcript/show-notes,
+  // ENT-* → TMDB/OMDb title detail, everything else → article fetch (news).
+  const generate = id.startsWith('POD-')
+    ? generatePodcastDeepDive
+    : id.startsWith('ENT-')
+      ? generateEntDeepDive
+      : generateNewsDeepDive;
+
   try {
-    const result = await generateNewsDeepDive(date, id);
+    const result = await generate(date, id);
     return NextResponse.json({
       id: result.id,
       content: result.content,

@@ -8,10 +8,8 @@
  * providers side-by-side is an adapter change, not a rewrite.
  */
 
-import { readFileSync } from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 import { GoogleGenAI } from "@google/genai";
+import { loadCredentials } from "@/lib/deep-dive/credentials";
 
 /** Synthesis-over-provided-text tier: cheap, fast, large context. */
 const DEFAULT_MODEL = "gemini-2.5-flash";
@@ -69,17 +67,7 @@ class GeminiProvider implements SynthesisProvider {
 /** Read the Gemini key from GEMINI_API_KEY, else config/credentials.json. */
 function loadGeminiKey(): string | null {
   if (process.env.GEMINI_API_KEY) return process.env.GEMINI_API_KEY;
-  try {
-    const here = path.dirname(fileURLToPath(import.meta.url));
-    // frontend/src/lib/deep-dive → repo root is four up.
-    const repoRoot = path.resolve(here, "../../../..");
-    const creds = JSON.parse(
-      readFileSync(path.join(repoRoot, "config/credentials.json"), "utf8")
-    );
-    return creds?.gemini?.api_key ?? null;
-  } catch {
-    return null;
-  }
+  return loadCredentials().gemini?.api_key ?? null;
 }
 
 /**

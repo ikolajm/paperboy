@@ -184,6 +184,47 @@ function wordCount(text: string): number {
   return trimmed ? trimmed.split(/\s+/).length : 0;
 }
 
+/** Successful extraction — text may still be empty (caller applies its own floor). */
+export interface Extracted {
+  ok: true;
+  title: string | null;
+  text: string;
+  wordCount: number;
+}
+
+/**
+ * Fetch a single (already-resolved) URL and run Readability over it.
+ *
+ * Deliberately does NOT gate on length — the caller decides the threshold, because a
+ * news article and a podcast show-notes page want different floors. Fails soft:
+ * returns `{ ok: false, reason }` on HTTP/network/parse failure, never throws.
+ *
+ * Shared by `fetchArticle` (article path, after Google News resolution) and the
+ * podcast transcript path (fetch-transcript.ts).
+ */
+export async function fetchAndExtract(
+  url: string
+): Promise<Extracted | { ok: false; reason: "http-error" | "fetch-error" }> {
+  let html: string;
+  try {
+    const res = await timedFetch(url);
+    if (!res.ok) return { ok: false, reason: "http-error" };
+    html = await res.text();
+  } catch {
+    return { ok: false, reason: "fetch-error" };
+  }
+
+  try {
+    const doc = new JSDOM(html, { url, virtualConsole: silentConsole }).window.document;
+    const article = new Readability(doc).parse();
+    const title = article?.title?.trim() || null;
+    const text = article?.textContent?.trim() || "";
+    return { ok: true, title, text, wordCount: wordCount(text) };
+  } catch {
+    return { ok: false, reason: "fetch-error" };
+  }
+}
+
 /**
  * Fetch and extract clean article text for a single digest URL.
  *
@@ -196,29 +237,11 @@ export async function fetchArticle(sourceUrl: string | null): Promise<FetchedArt
   const resolved = await resolveUrl(sourceUrl);
   if (!resolved) return fail(sourceUrl, null, "resolve-failed");
 
-  let html: string;
-  try {
-    const res = await timedFetch(resolved);
-    if (!res.ok) return fail(sourceUrl, resolved, "http-error");
-    html = await res.text();
-  } catch {
-    return fail(sourceUrl, resolved, "fetch-error");
+  const extracted = await fetchAndExtract(resolved);
+  if (!extracted.ok) return fail(sourceUrl, resolved, extracted.reason);
+  if (extracted.wordCount < MIN_WORDS) {
+    return fail(sourceUrl, resolved, "too-short", extracted.title);
   }
 
-  let title: string | null = null;
-  let text: string | null = null;
-  try {
-    const doc = new JSDOM(html, { url: resolved, virtualConsole: silentConsole }).window.document;
-    const article = new Readability(doc).parse();
-    title = article?.title?.trim() || null;
-    text = article?.textContent?.trim() || null;
-  } catch {
-    return fail(sourceUrl, resolved, "fetch-error");
-  }
-
-  if (!text || wordCount(text) < MIN_WORDS) {
-    return fail(sourceUrl, resolved, "too-short", title);
-  }
-
-  return { ok: true, sourceUrl, resolvedUrl: resolved, title, text };
+  return { ok: true, sourceUrl, resolvedUrl: resolved, title: extracted.title, text: extracted.text };
 }

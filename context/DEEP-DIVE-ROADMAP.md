@@ -94,14 +94,59 @@ The core. Everything downstream reuses this path.
   (`gemini.api_key`) or `GEMINI_API_KEY` env. Everything compiles + builds clean;
   gather→prompt verified offline against a real story. Wire the digest card's
   "Deep dive" button to `/deep-dive/[date]/[id]` if not already linked.
-- **ENT handling** — still open. The V1 news path covers POP / topics (SPRT/TECH/POL/
-  SCI/HLTH) / OPN. ENT (entertainment) has a distinct shape (movies/streaming) and is
-  not resolved by `resolveStory` — decide its gather strategy in a follow-up.
+- **ENT handling** — still open, but the gather strategy is now clear (scoped
+  2026-06-14). ENT entries carry no `url`/`related_articles` — instead a **`tmdb_id`**,
+  and the pipeline already holds a TMDB key. So the ENT gather is **not scraping — it's a
+  structured API call**, cleaner than news: `GET /movie/{id}` or `/tv/{id}` with
+  `append_to_response=credits,reviews,videos,keywords,recommendations,release_dates,external_ids`.
+  Yields cast/crew, TMDB user reviews (sparse/variable — fail-soft), trailer keys,
+  certification, "if you liked this", IMDb id. **Real critic scores** (RT/Metacritic)
+  need a cheap **OMDb** add (free key, keyed by the IMDb id from `external_ids`) — TMDB
+  alone gives only its own `vote_average`. The synthesize+write tail is fully reusable;
+  only a `fetch-tmdb.ts` gather + an ENT prompt are net-new. Its own phase when picked up.
 
-### Phase 2 — Podcast base deep dive
-- Transcript acquisition chain (native → YouTube → show notes → snippet).
-- Podcast synthesis prompt (recap + key exchanges; transcript shape from spec).
-- Same route + frontend pattern as Phase 1.
+### Phase 2 — Podcast base deep dive ✅ (built + verified 2026-06-14)
+Hybrid, text-source-only: transcript when a show publishes one, an honest "listening
+guide" otherwise. Reuses the whole spine — the only net-new piece is acquisition.
+- ✅ **Acquisition** — `fetch-transcript.ts`: try `transcript_url` → `episode_url`,
+  Readability-extract, classify by length: ≥1500 words → `native` (real transcript),
+  ≥50 → `show_notes`, else `none` (snippet fallback). Reuses the extracted
+  `fetchAndExtract` helper (shared with the article path).
+- ✅ **Adaptive prompt** — `podcast-prompt.ts` branches on source: `native` → the spec's
+  transcript shape (What They Argued / Key Exchanges / Segment Walkthrough); `show_notes`/
+  `none` → a labeled listening guide with NO fabricated transcript or quotes.
+- ✅ **Orchestration + wiring** — `generate-podcast.ts` (resolve `POD-*` from
+  `sections.podcasts` → acquire → synthesize → write), route dispatches `POD-*` to it,
+  PodcastRow gets the "Deep dive" affordance. Shared glue (`DeepDiveError`,
+  `writeDeepDiveFile`, `GenerateResult`, `MIN_SNIPPET_CHARS`) factored into `shared.ts`.
+- ✅ **Verified** — `guide` mode live against the 2026-06-14 NPR/BBC episodes; `native`
+  branch proven against a real Lex transcript page (28,814 words → classifies `native`).
+  tsc + `next build` clean.
+
+**Phase-2 spike findings (2026-06-14) — what reshaped the scope:**
+- **On-page transcripts are rare.** NPR *Up First* episode page extracts ~159 words,
+  BBC *Global News* ~211 — both show notes, both below the article floor. Transcript
+  availability is highly show-dependent (Lex Fridman / NYT *The Daily* publish them;
+  most daily-news shows don't).
+- **`youtube_url` is a *channel* URL** (`@BBCNews`), not an episode URL — from config's
+  `youtube_channel`. So the spec's "YouTube captions" source (Source B) is structurally
+  impossible with current digest data. **Cut from V1.**
+- **`transcript_url`/`transcript_page` are index/column pages**, not episode-specific.
+  Lex's index *does* list 114 per-episode transcript pages, but the digest must resolve
+  to one for `native` to fire — that wiring is the pipeline's job, not the deep-dive
+  module's. The module is proven on both branches.
+- **Every episode has an `audio_url`** (direct MP3) — the untapped path to a real
+  transcript. **Deferred to Phase 2.5** (audio → Gemini native audio ingestion).
+- **Future knob (not a V1 fix):** Lex-style transcripts carry `(HH:MM:SS)` timestamps +
+  speaker labels; the prompt currently omits the "Jump To" table to avoid fabricating
+  timestamps on shows that lack them. If transcript-publishing shows become common,
+  detect the timestamp pattern and conditionally re-enable Jump To.
+
+### Phase 2.5 — Podcast audio transcription (deferred)
+The path to the spec's actual promise for the ~all shows that don't publish transcripts:
+`audio_url` → Gemini native audio ingestion (transcribe + synthesize). Same provider,
+no new vendor. Cost/latency (~30 MB download + minutes of generation per dive) is the
+reason it's a separate unit. Sits *above* the hybrid guide as the preferred tier.
 
 ### Phase 3 — Fact-check (the Glass-Box bridge)
 A **separate** request, not folded into the base dive.
