@@ -1,9 +1,7 @@
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { getDeepDive, getDeepDiveIds } from '@/lib/digest';
+import { getDeepDive } from '@/lib/digest';
 import { ArrowLeft } from 'lucide-react';
+import { DeepDiveView } from './DeepDiveView';
 
 export default async function DeepDivePage({
   params,
@@ -12,10 +10,6 @@ export default async function DeepDivePage({
 }) {
   const { date, id } = await params;
   const deepDive = await getDeepDive(date, id);
-
-  if (!deepDive) {
-    notFound();
-  }
 
   return (
     <div className="min-h-dvh bg-surface-0">
@@ -34,9 +28,7 @@ export default async function DeepDivePage({
         </div>
       </header>
       <main className="mx-auto max-w-3xl px-6 py-8">
-        <article className="prose-digest">
-          <Markdown remarkPlugins={[remarkGfm]}>{deepDive.content}</Markdown>
-        </article>
+        <DeepDiveView date={date} id={id} initialContent={deepDive?.content ?? null} />
       </main>
     </div>
   );
