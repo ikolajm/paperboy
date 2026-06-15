@@ -2,7 +2,8 @@ import type { Podcast } from '@/types';
 import { Card, CardContent } from '@/components/atoms/Card';
 import { buttonVariants } from '@/components/atoms/Button';
 import { cn } from '@/components/atoms/cn';
-import { Clock, ExternalLink, Play, Mic, Podcast as PodcastIcon, Telescope } from 'lucide-react';
+import { Clock, ExternalLink, Play, Mic, Podcast as PodcastIcon } from 'lucide-react';
+import { DeepDiveLink } from '@/components/digest/shared/DeepDiveLink';
 import { formatTimeAgo } from '@/lib/format';
 
 function PodcastRow({ entry, date, availableDeepDives }: { entry: Podcast; date?: string; availableDeepDives?: string[] }) {
@@ -91,18 +92,12 @@ function PodcastRow({ entry, date, availableDeepDives }: { entry: Podcast; date?
                 Transcript
               </a>
             )}
-            {/* Deep dive: full-page synthesized recap/listening guide, generated on
-                demand. Styled link (not Button asChild) to match StoryCard — Button's
-                asChild path feeds Radix Slot multiple children and throws. */}
-            {entry.deep_dive_eligible && date && (
-              <a
-                href={`/deep-dive/${date}/${entry.id}`}
-                className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-primary')}
-              >
-                <Telescope className="size-icon-1 shrink-0" />
-                {availableDeepDives?.includes(entry.id) ? 'Read deep dive' : 'Deep dive'}
-              </a>
-            )}
+            <DeepDiveLink
+              eligible={entry.deep_dive_eligible}
+              date={date}
+              id={entry.id}
+              available={availableDeepDives}
+            />
           </div>
         </div>
       </CardContent>

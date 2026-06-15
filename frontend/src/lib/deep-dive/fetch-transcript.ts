@@ -6,11 +6,11 @@
  * thousands of words; episode pages usually yield only a few hundred words of show
  * notes. The synthesis prompt adapts to which we got.
  *
- * Scoped by the 2026-06-14 Phase-2 spike (see context/DEEP-DIVE-ROADMAP.md): the two
- * other sources in the manual spec are deferred for V1 because the digest data can't
- * feed them — `youtube_url` is a *channel* URL (no episode captions to fetch) and
- * audio→speech-to-text over `audio_url` is Phase 2.5. So V1 = on-page text only,
- * failing soft to a show-notes "listening guide" when no transcript is published.
+ * Scoped by the digest data available: two other transcript sources are deferred for
+ * V1 because the digest can't feed them — `youtube_url` is a *channel* URL (no episode
+ * captions to fetch) and audio→speech-to-text over `audio_url` is a deferred tier (see
+ * docs/DEFERRED.md "Podcast Audio Transcription"). So V1 = on-page text only, failing
+ * soft to a show-notes "listening guide" when no transcript is published.
  */
 
 import { fetchAndExtract } from "@/lib/deep-dive/fetch-article";

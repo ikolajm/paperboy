@@ -5,7 +5,7 @@
  * `reason` instead of a thrown error, so synthesis can fall back to the digest's
  * snippet/headline and lean on the sources that did land.
  *
- * Shape forced by the 2026-06-14 URL-fetch spike (see context/DEEP-DIVE-ROADMAP.md):
+ * Shape forced by how Google News + publisher walls actually behave:
  *   - Google News `CBMi…` URLs (100% of related_articles, ~58% of story URLs) do NOT
  *     redirect server-side. They resolve via a `batchexecute` call (resolveUrl below).
  *   - ~30% of resolved/direct URLs hard-wall (NYT 403, Reuters 401, ESPN 202 JS

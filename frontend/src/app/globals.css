@@ -39,20 +39,28 @@ body {
   background: var(--on-surface);
 }
 
-/* Deep dive markdown prose */
+/* Deep dive markdown prose.
+   Headings use the app's heading font (Space Grotesk) and sizes mapped onto the
+   type-scale tokens (24/18/16px = display-sm/title-md/title-sm) rather than
+   one-off rem values. Body stays in the mono body font. The column is capped at
+   a ~68ch reading measure so the long-form surface doesn't run the full 3xl
+   width its container allows. */
 .prose-digest {
   color: var(--on-surface);
   line-height: 1.7;
+  max-width: 68ch;
 }
 .prose-digest h1 {
-  font-size: 1.75rem;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: 0.75rem;
   color: var(--on-surface);
 }
 .prose-digest h2 {
-  font-size: 1.25rem;
+  font-family: var(--font-heading);
+  font-size: 1.125rem;
   font-weight: 600;
   line-height: 1.3;
   margin-top: 2rem;
@@ -60,7 +68,8 @@ body {
   color: var(--on-surface);
 }
 .prose-digest h3 {
-  font-size: 1.1rem;
+  font-family: var(--font-heading);
+  font-size: 1rem;
   font-weight: 600;
   line-height: 1.4;
   margin-top: 1.5rem;
@@ -113,7 +122,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   margin: 1rem 0;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
 }
 .prose-digest th,
 .prose-digest td {

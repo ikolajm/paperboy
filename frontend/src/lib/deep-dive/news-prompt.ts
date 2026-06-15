@@ -1,11 +1,11 @@
 /**
  * News deep-dive prompt builder.
  *
- * Translates the manual-agent output contract in context/DEEP-DIVE-NEWS.md into a
- * single synthesis prompt. The V1 productionized path differs from the manual spec
- * in one way: there is NO fresh web search. "Other Coverage" is built only from the
- * story's already-fetched `related_articles` (the locked deterministic-fetch
- * decision). Cross-source claim-checking (grounded vs. inferred) is Phase 3.
+ * Builds the single synthesis prompt; the output contract (the markdown structure)
+ * is defined inline in `buildNewsPrompt` below. One deliberate constraint: there is
+ * NO fresh web search — "Other Coverage" is built only from the story's
+ * already-fetched `related_articles` (the deterministic-fetch decision). Cross-source
+ * claim-checking (grounded vs. inferred) is the deferred fact-check mode (docs/DEFERRED.md).
  */
 
 /** One gathered source — main article or a related-coverage article. */
@@ -77,8 +77,8 @@ ${sourceBlocks}
 ## Rules
 - Ground every factual claim in the fetched source bodies above. ${bodyGuidance}
 - Preserve direct quotes, named sources, and specific figures exactly as they appear.
-- Do NOT invent facts, quotes, or details. If a source body is marked UNAVAILABLE, do not guess its contents.
-- The Context section is the one place for your own background knowledge (who the people are, prior events, why this matters). Keep it to 2–3 short paragraphs and keep it clearly background, not new reporting.
+- Do NOT invent facts, quotes, or details about this story. If a source body is marked UNAVAILABLE, do not guess its contents. The Summary, Key Points, and Full Story stay grounded in the fetched sources above.
+- The Context section is where your own background knowledge belongs — who the people are, the prior events this story assumes, the bigger picture a reader needs. Use it fully and specifically: this is what the reader can't get from the article alone. Keep it clearly background (not new reporting on this story), but don't be timid — 2–4 substantive paragraphs that genuinely illuminate beat a cautious gesture.
 - ${otherCoverageRule}
 - Write in plain, neutral prose. No editorializing.
 

@@ -3,7 +3,7 @@
  *
  * NOT used at runtime. Documents what's available beyond what we extract.
  *
- * Used by: Scores section (team sports, UFC, F1).
+ * Used by: Scores section (team sports).
  * The scores pipeline already extracts most useful fields — see
  * scripts/scores/ for per-sport parsing modules.
  *
@@ -28,20 +28,7 @@
 // - Attendance figures    → crowd size
 // - Series record         → playoff context ("Series tied 1-1")
 //   (partially in `notes` but not structured)
-
-// UFC/MMA
 //
-// - Fighter headshot URLs → available in competitor data
-// - Tale of the tape      → height, weight, reach per fighter
-// - Detailed fight stats  → significant strikes, takedowns, control time
-// - Judge scorecards      → round-by-round scores for decisions
-// - Undercard details     → preliminary/early preliminary card separation
-
-// F1
-//
-// - Lap times             → per-driver lap data for completed sessions
-// - Tire strategy         → compound choices per stint
-// - Gap to leader         → time delta for standings
-// - Fastest lap           → flagged in race results
-// - Grid vs finish        → positions gained/lost
-// - Constructor standings → team championship points
+// Individual-athlete sports (UFC, F1) were removed from scope — ESPN's
+// scoreboard doesn't package them cleanly (no historical date queries,
+// roster staleness). See README "Known limitations".

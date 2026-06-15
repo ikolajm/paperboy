@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { FileText, RefreshCw, AlertCircle } from 'lucide-react';
@@ -13,7 +13,7 @@ type Status = 'idle' | 'generating' | 'error';
 /**
  * Interactive deep-dive surface: renders existing content, or an explicit
  * generate/regenerate flow. Generation is never auto-fired on navigate — it costs a
- * model call, so it's always behind a button (per DEEP-DIVE-ROADMAP generation flow).
+ * model call, so it's always behind an explicit button.
  */
 export function DeepDiveView({
   date,
@@ -27,16 +27,30 @@ export function DeepDiveView({
   const [content, setContent] = useState<string | null>(initialContent);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
+  // Ref-based in-flight latch — blocks a rapid double-click in the window before
+  // React re-renders the trigger away. A `status` check can't: it reads the stale
+  // closure value from the render that mounted the button.
+  const inFlight = useRef(false);
 
   async function generate() {
-    if (status === 'generating') return; // guard against double-fire while in flight
+    if (inFlight.current) return;
+    inFlight.current = true;
     setStatus('generating');
     setError(null);
     try {
       const res = await fetch(`/api/deep-dive/${date}/${id}`, { method: 'POST' });
-      const data = await res.json();
+      // The route returns JSON, but a gateway failure (502/504) can return an HTML
+      // body — parse defensively so the user sees a real message, not "Unexpected token <".
+      const data = (await res.json().catch(() => null)) as
+        | { content?: string; error?: string }
+        | null;
       if (!res.ok) {
-        setError(data.error ?? 'Generation failed.');
+        setError(data?.error ?? `Generation failed (${res.status}).`);
+        setStatus('error');
+        return;
+      }
+      if (!data?.content) {
+        setError('Generation returned no content. Try again.');
         setStatus('error');
         return;
       }
@@ -45,6 +59,8 @@ export function DeepDiveView({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error.');
       setStatus('error');
+    } finally {
+      inFlight.current = false;
     }
   }
 

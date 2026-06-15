@@ -15,7 +15,7 @@ import { runPipeline } from "./digest/pipeline.js";
 
 // --- Paths ---
 // Resolve from this script's location so `npm run digest` works from any cwd,
-// matching the pattern in audit-media-bias.ts / audit-f1.ts.
+// matching the pattern in audit-media-bias.ts.
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(__dirname, "..");
@@ -151,11 +151,9 @@ async function main() {
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
   const teamScores = digest.sections.scores.team_sports.recaps.filter(r => r.games.length > 0).length;
-  const ufcCards = digest.sections.scores.ufc.recaps.cards.length;
-  const f1Weekends = digest.sections.scores.f1.recaps.weekends.length;
 
   console.log(`\nDigest ready — ${outPath}`);
-  console.log(`${digest.meta.story_count} stories · ${teamScores} team sports · ${ufcCards} UFC cards · ${f1Weekends} F1 weekends · ${digest.sections.podcasts.length} podcasts · ${elapsed}s`);
+  console.log(`${digest.meta.story_count} stories · ${teamScores} team sports · ${digest.sections.podcasts.length} podcasts · ${elapsed}s`);
 }
 
 main().catch(err => {

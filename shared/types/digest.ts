@@ -12,8 +12,6 @@ export * from "./editorial.js";
 export * from "./scores.js";
 export * from "./enrichment.js";
 export * from "./standings.js";
-export * from "./ufc.js";
-export * from "./f1.js";
 export * from "./entertainment.js";
 export * from "./podcasts.js";
 export * from "./rss.js";
@@ -29,8 +27,6 @@ export interface DeepDiveRef {
 // --- Top-level digest ---
 
 import type { SportRecaps, SportSchedule } from "./scores.js";
-import type { UfcRecaps, UfcSchedule } from "./ufc.js";
-import type { F1Recaps, F1Schedule } from "./f1.js";
 import type { SportStandings } from "./standings.js";
 import type { PopularTodaySection, LocalSection, TopicSection } from "./editorial.js";
 import type { EntertainmentSection } from "./entertainment.js";
@@ -51,16 +47,6 @@ export interface ScoresSection {
     recaps: SportRecaps[];
     schedule: SportSchedule[];
     standings: SportStandings[];
-  };
-  /** UFC/MMA fight cards */
-  ufc: {
-    recaps: UfcRecaps;
-    schedule: UfcSchedule;
-  };
-  /** F1 race weekends */
-  f1: {
-    recaps: F1Recaps;
-    schedule: F1Schedule;
   };
 }
 

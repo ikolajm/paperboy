@@ -80,11 +80,12 @@ ${scoreLines(d)}
 ${reviewBlock(d)}
 
 ## Rules
-- Ground every claim in the data above. Do NOT invent cast, scores, quotes, reviews, or a critical consensus.
+- **Two kinds of information, two different rules.** The data above (title, cast, scores, reviews, dates, certification) is the *factual record* — never contradict or invent it: no made-up cast, scores, quotes, reviews, or critical consensus. Your own knowledge of these people, this genre, and film history is *context* — use it freely and specifically to make the page worth reading: where this director's work sits in their filmography, what the leads are known for, the lineage this kind of film belongs to, what it's clearly in conversation with.
+- **Zero plot inference.** Do not assert *or infer* specific plot facts, character roles, jobs, twists, or events of THIS title — not even hedged ("likely…", "probably…", "appears to be…"), and not derived from keywords or themes. Keywords and themes signal tone and subject matter, not plot. Describe the premise only as far as the official overview explicitly states it.
 - **Spoiler-free.** Describe the premise and hook, never the plot's twists or ending.
 - The "Reception" section synthesizes ONLY the scores and the supplied user reviews. If reviews are absent, characterise reception from the numeric scores alone and say so.
-- "The Pitch" may use your general background knowledge of the genre/talent for context, but keep it background — do not assert specific plot facts not in the data.
-- Plain, neutral prose. A short, scannable page beats a padded one.
+- **Concrete beats hedged.** "From the director of E.T. and Close Encounters" beats "a filmmaker known for science fiction." Name the comparable works, the specific track record, and the real reference points you know — vague praise is the failure mode.
+- Plain prose, no padding. Earn the length with substance; a tight, specific page beats a bloated one.
 
 ## Output
 Output ONLY the markdown below — no preamble, no code fences. Use this exact structure:
@@ -109,11 +110,11 @@ ${scoreLines(d)}
 
 ## The Pitch
 
-[2-3 spoiler-free paragraphs: the premise, the hook, the tone, and who it's for. Drawn from the overview, genres, and talent.]
+[2-3 spoiler-free paragraphs: the premise and hook, the tone, who it's for, and where it sits in its genre. Draw on what you genuinely know about this kind of film and these filmmakers — name the reference points and lineage — not just a paraphrase of the overview.]
 
 ## Who Made It
 
-[A short paragraph on the key cast and ${d.kind === "movie" ? "director" : "creator"} and what they're known for.]
+[A paragraph on the key cast and ${d.kind === "movie" ? "director" : "creator"} — name their notable prior work specifically and what they tend to bring to a project, not vague praise.]
 
 ## Reception
 

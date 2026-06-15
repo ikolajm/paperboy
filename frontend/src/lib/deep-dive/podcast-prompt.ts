@@ -1,11 +1,10 @@
 /**
  * Podcast deep-dive prompt builder.
  *
- * Translates the manual-agent contract in context/DEEP-DIVE-PODCAST.md into a single
- * synthesis prompt, and adapts the output shape to what acquisition actually got
- * (fetch-transcript.ts):
+ * Builds the single synthesis prompt and adapts the output shape to what acquisition
+ * actually got (fetch-transcript.ts):
  *
- *   - `native`     → a real transcript was published. Output the spec's
+ *   - `native`     → a real transcript was published. Output the full
  *                    transcript shape (What They Argued / Key Exchanges / Walkthrough).
  *   - `show_notes` / `none` → no transcript. Output an honest "listening guide" built
  *                    from show notes + snippet, with NO fabricated transcript or quotes.
@@ -120,10 +119,10 @@ Digest snippet: ${input.snippet || "(none)"}
 ${sourceBlock}
 
 ## Rules
-- Do NOT invent quotes, exchanges, timestamps, or claims about what was specifically said. No transcript exists.
+- Do NOT invent quotes, exchanges, timestamps, or claims about what was specifically said in this episode. No transcript exists — you don't know what was actually said, so never imply you do.
 - "What This Episode Covers" describes the likely subject matter from the title/snippet/show-notes — frame it as what the episode is about, not as verbatim content.
-- "Background" is for your own context knowledge (who the people are, the situation, why it matters) — keep it clearly background.
-- Be honest and useful. If material is thin, a shorter guide is correct.
+- "Why It Matters" should draw fully and specifically on what you know about the topic, the people, and the situation — this is the part that makes the guide worth reading. Concrete, specific background (the history, the stakes, who's involved and why) beats cautious generality.
+- Be honest and useful. If material is thin, a shorter guide is correct — don't pad.
 - Write in plain prose. No editorializing.
 
 ## Output

@@ -211,20 +211,6 @@ export function getYesterdayDateStr(targetDate: Date): string {
   return yesterday.toLocaleDateString("en-CA").replace(/-/g, "");
 }
 
-/**
- * Get a date range string for ESPN API queries.
- * Some sports (UFC, F1) need range queries — single date returns empty.
- * Format: YYYYMMDD-YYYYMMDD
- */
-export function getDateRangeStr(targetDate: Date, daysBefore: number, daysAfter: number): string {
-  const start = new Date(targetDate);
-  start.setDate(start.getDate() - daysBefore);
-  const end = new Date(targetDate);
-  end.setDate(end.getDate() + daysAfter);
-  const fmt = (d: Date) => d.toLocaleDateString("en-CA").replace(/-/g, "");
-  return `${fmt(start)}-${fmt(end)}`;
-}
-
 export function formatDateDisplay(targetDate: Date, offsetDays = 0): string {
   const d = new Date(targetDate);
   d.setDate(d.getDate() + offsetDays);

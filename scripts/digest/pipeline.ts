@@ -42,18 +42,9 @@ export interface PipelineResult {
 }
 
 /** Empty scaffold for the scores section when the entire scores fetch fails. */
-function emptyScoresSection(date: Date): ScoresSection {
-  const dateStr = date.toLocaleDateString("en-CA");
+function emptyScoresSection(): ScoresSection {
   return {
     team_sports: { recaps: [], schedule: [], standings: [] },
-    ufc: {
-      recaps: { sport: "UFC", date: dateStr, status: "fetch_error", cards: [] },
-      schedule: { sport: "UFC", date: dateStr, cards: [] },
-    },
-    f1: {
-      recaps: { sport: "F1", date: dateStr, status: "fetch_error", weekends: [] },
-      schedule: { sport: "F1", date: dateStr, weekends: [] },
-    },
   };
 }
 
@@ -87,7 +78,7 @@ export async function runPipeline(
 
   const scores = scoresSettled.status === "fulfilled"
     ? scoresSettled.value
-    : emptyScoresSection(targetDate);
+    : emptyScoresSection();
   if (scoresSettled.status === "rejected") {
     warnings.push(`Scores fetch failed entirely: ${formatReason(scoresSettled.reason)}`);
   }

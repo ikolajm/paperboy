@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import type { RelatedArticle } from '@/types';
-import { Button, buttonVariants } from '@/components/atoms/Button';
+import { Button } from '@/components/atoms/Button';
 import { Card, CardContent } from '@/components/atoms/Card';
-import { cn } from '@/components/atoms/cn';
-import { ChevronDown, ChevronUp, Newspaper, Telescope, UserRound } from 'lucide-react';
+import { ChevronDown, ChevronUp, Newspaper, UserRound } from 'lucide-react';
+import { DeepDiveLink } from '@/components/digest/shared/DeepDiveLink';
 import { getFaviconUrl } from '@/lib/media-bias';
 import { formatTimeAgo } from '@/lib/format';
 
@@ -63,8 +63,6 @@ export function StoryCard({
   const [expanded, setExpanded] = useState(false);
   const hasRelated = relatedArticles && relatedArticles.length > 0;
   const timeAgo = storyDate ? formatTimeAgo(storyDate) : '';
-  const showDeepDive = deepDiveEligible && !!date;
-  const hasDeepDive = !!availableDeepDives?.includes(id);
 
   // Attribution logic: prefer a real author over source.
   // author === source (e.g. "ESPN") or staff bylines are not real authors.
@@ -171,18 +169,13 @@ export function StoryCard({
               </div>
             )}
 
-            {/* Deep dive: full-page synthesized recap, generated on demand.
-                Styled link (not Button asChild) to match GameDetailLink — Button's
-                asChild path feeds Radix Slot multiple children and throws. */}
-            {showDeepDive && (
-              <a
-                href={`/deep-dive/${date}/${id}`}
-                className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-primary self-start')}
-              >
-                <Telescope className="size-icon-1 shrink-0" />
-                {hasDeepDive ? 'Read deep dive' : 'Deep dive'}
-              </a>
-            )}
+            <DeepDiveLink
+              eligible={deepDiveEligible}
+              date={date}
+              id={id}
+              available={availableDeepDives}
+              className="self-start"
+            />
 
           </div>
         </div>

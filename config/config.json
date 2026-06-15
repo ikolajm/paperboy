@@ -172,20 +172,6 @@
       "odds": false
     },
 
-    "UFC": {
-      "url": "https://site.api.espn.com/apis/site/v2/sports/mma/ufc/scoreboard",
-      "recaps": true,
-      "schedule": true,
-      "odds": false
-    },
-
-    "F1": {
-      "url": "https://site.api.espn.com/apis/site/v2/sports/racing/f1/scoreboard",
-      "recaps": true,
-      "schedule": true,
-      "odds": false
-    },
-
     "College Basketball": {
       "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard",
       "recaps": true,

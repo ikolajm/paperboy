@@ -69,29 +69,7 @@ export function headshotUrl(sport: string, athleteId: string): string {
   return `https://a.espncdn.com/i/headshots/${sport.toLowerCase()}/players/full/${athleteId}.png`;
 }
 
-// --- Flag backdrop for card headers (F1 circuits, UFC venues) ---
-
-export function FlagBackdrop({
-  flagUrl,
-  children,
-  className = '',
-}: {
-  flagUrl: string | null;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`relative flex flex-col gap-component-compact px-content py-component overflow-hidden ${className}`}
-      style={flagUrl ? { backgroundImage: `url(${flagUrl})`, backgroundSize: '115%', backgroundPosition: 'center' } : undefined}
-    >
-      {flagUrl && <div className="absolute inset-0 bg-surface-1/90 pointer-events-none" />}
-      {children}
-    </div>
-  );
-}
-
-// --- Stat comparison row (team stats, fight stats) ---
+// --- Stat comparison row (team stats) ---
 
 export function ComparisonRow({
   label,

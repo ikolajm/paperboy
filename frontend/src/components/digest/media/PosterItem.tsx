@@ -15,9 +15,8 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/atoms/Dialog';
-import { buttonVariants } from '@/components/atoms/Button';
-import { cn } from '@/components/atoms/cn';
-import { Film, X, Telescope } from 'lucide-react';
+import { Film, X } from 'lucide-react';
+import { DeepDiveLink } from '@/components/digest/shared/DeepDiveLink';
 import { useMediaQuery } from '@/lib/useMediaQuery';
 import type { WatchProvider } from '@/types';
 
@@ -156,17 +155,13 @@ function DetailContent({
         </div>
       )}
 
-      {/* Deep dive: full-page TMDB+OMDb "should I watch this" synthesis, generated on
-          demand. Styled link (not Button asChild) to match StoryCard/PodcastRow. */}
-      {deepDiveEligible && date && (
-        <a
-          href={`/deep-dive/${date}/${id}`}
-          className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }), 'text-primary self-start')}
-        >
-          <Telescope className="size-icon-1 shrink-0" />
-          {availableDeepDives?.includes(id) ? 'Read deep dive' : 'Deep dive'}
-        </a>
-      )}
+      <DeepDiveLink
+        eligible={deepDiveEligible}
+        date={date}
+        id={id}
+        available={availableDeepDives}
+        className="self-start"
+      />
     </div>
   );
 }

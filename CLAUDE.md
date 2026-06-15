@@ -6,8 +6,8 @@ The digest pipeline runs as a single TypeScript command, fetching RSS feeds,
 sports scores, and entertainment data in parallel, then writing structured JSON.
 
 All configuration lives in `config/config.json` (v3).
-`config/credentials.json` (gitignored) holds TMDB API credentials —
-see `config/credentials.example.json` for the template.
+`config/credentials.json` (gitignored) holds API credentials (TMDB, Gemini, OMDb) —
+see `config/credentials.example.json` for the template and what each key unlocks.
 See `config/CONFIG-REFERENCE.md` for field-by-field documentation,
 and `docs/DEFERRED.md` for features intentionally left out of V1.
 
@@ -27,17 +27,19 @@ To prettify a digest for inspection:
 jq . digests/YYYY-MM-DD/digest.json > expanded.json
 ```
 
-### 2. News Deep Dive (on demand, agent-driven)
-> "Go deeper on SPRT-01"
-> "Deep dive on TECH-03"
+### 2. Deep Dives (on demand, in the dashboard)
+Every news story, podcast, and entertainment title carries a **Deep dive** button
+linking to `/deep-dive/[date]/[id]`. The page generates on demand:
+`POST /api/deep-dive/[date]/[id]` → fetch sources → one Gemini synthesis call →
+writes `digests/YYYY-MM-DD/deep-dives/[ID].md` → renders it.
 
-Reads `context/DEEP-DIVE-NEWS.md`. Writes to `digests/YYYY-MM-DD/deep-dives/[ID].md`.
+- **News** (POP/POL/TECH/SCI/HLTH/OPN) — fetches the article + related coverage, synthesizes a recap.
+- **Podcast** (POD) — published transcript when available, else an honest listening guide (no fabricated quotes).
+- **Entertainment** (ENT) — TMDB + OMDb spoiler-free "should I watch this?" decision aid.
 
-### 3. Podcast Deep Dive (on demand, agent-driven)
-> "Transcript for POD-01"
-> "Go deeper on POD-02"
-
-Reads `context/DEEP-DIVE-PODCAST.md`. Writes to `digests/YYYY-MM-DD/deep-dives/[ID].md`.
+Generation code lives in `frontend/src/lib/deep-dive/` (fetch, synthesize, and the
+per-type prompt builders, which hold the output contract). Needs the Gemini key (see
+credentials).
 
 ---
 
@@ -49,7 +51,6 @@ Diagnostic and dataset-maintenance utilities. Not part of the daily digest pipel
 |---------|---------|
 | `npm run check-endpoints` | Pings every configured RSS feed, ESPN scoreboard URL, and TMDB endpoint. Reports HTTP status per source — use when daily digests start producing `fetch_error` warnings. |
 | `npm run audit-media-bias` | Scans past digests for news outlets missing from `frontend/src/lib/media-bias.json` (canonical location — bias dataset is a frontend asset), sorted by frequency. Run periodically to keep the dataset current. |
-| `npm run audit-f1` | Pulls the current F1 season from ESPN, reports drivers missing from `F1_GRID_2026` and circuits missing from `CIRCUIT_TIMEZONES` in `scripts/scores/f1.ts`. Outputs ready-to-paste stubs. Run when the stale-data warnings fire during a digest. |
 
 ---
 
@@ -60,7 +61,7 @@ digests/
 └── YYYY-MM-DD/
     ├── digest.json             ← Primary output (dashboard consumes this)
     └── deep-dives/
-        ├── SPRT-01.md          ← News deep dive, written on demand
+        ├── POP-01.md           ← News deep dive, written on demand
         └── POD-02.md           ← Podcast deep dive, written on demand
 ```
 
@@ -89,8 +90,8 @@ frontend/               Next.js 16 + React 19 dashboard
     scores/             Scores tab: ScoreboardPanel, GameCard, ScheduledGameCard
     shared/             Shared: TeamHalf, color utilities
   src/lib/              Shared hooks + utilities (format, useMediaQuery, digest)
-context/                Agent-driven on-demand stages
-docs/                   Feature docs, legacy chain archive
+  src/lib/deep-dive/    On-demand deep-dive generation (fetch, synthesize, per-type prompts)
+docs/                   Feature + reference docs (DEFERRED.md, etc.)
 ```
 
 ---
@@ -174,7 +175,8 @@ alternateColor when primary has insufficient contrast.
 
 ## Key Principles
 - **Script-first pipeline.** The daily digest runs as `npx tsx scripts/run-digest.ts`.
-  No agent involvement. Agent is reserved for on-demand deep dives and flash checks.
+  Deep dives are a separate on-demand path: a single Gemini synthesis call triggered
+  from the dashboard (not part of the daily pipeline, not an agent loop).
 - **JSON-first output.** `digest.json` is the primary artifact. The dashboard consumes it.
 - **One config file.** `config/config.json` holds topics, scores endpoints, podcast shows,
   popular feeds, local news, entertainment, and opinions. Edit it directly.
