@@ -3,6 +3,7 @@ import { Card, CardContent } from '@/components/atoms/Card';
 import { buttonVariants } from '@/components/atoms/Button';
 import { cn } from '@/components/atoms/cn';
 import { Clock, ExternalLink, Play, Mic, Podcast as PodcastIcon } from 'lucide-react';
+import { DeepDiveLink } from '@/components/digest/shared/DeepDiveLink';
 import { formatTimeAgo } from '@/lib/format';
 
 function PodcastRow({ entry, date, availableDeepDives }: { entry: Podcast; date?: string; availableDeepDives?: string[] }) {
@@ -91,6 +92,12 @@ function PodcastRow({ entry, date, availableDeepDives }: { entry: Podcast; date?
                 Transcript
               </a>
             )}
+            <DeepDiveLink
+              eligible={entry.deep_dive_eligible}
+              date={date}
+              id={entry.id}
+              available={availableDeepDives}
+            />
           </div>
         </div>
       </CardContent>

@@ -16,6 +16,7 @@ import {
   DialogDescription,
 } from '@/components/atoms/Dialog';
 import { Film, X } from 'lucide-react';
+import { DeepDiveLink } from '@/components/digest/shared/DeepDiveLink';
 import { useMediaQuery } from '@/lib/useMediaQuery';
 import type { WatchProvider } from '@/types';
 
@@ -154,6 +155,13 @@ function DetailContent({
         </div>
       )}
 
+      <DeepDiveLink
+        eligible={deepDiveEligible}
+        date={date}
+        id={id}
+        available={availableDeepDives}
+        className="self-start"
+      />
     </div>
   );
 }

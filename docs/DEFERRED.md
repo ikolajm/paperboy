@@ -30,22 +30,6 @@ coverage maintenance.
 
 ---
 
-## Deep Dive Buttons
-
-The full deep dive infrastructure is built: API route, page route, markdown
-rendering, slide-over sheet component. You can navigate to
-`/deep-dive/[date]/[id]` directly and it works.
-
-**Why deferred:** The interaction model isn't settled. Questions that remain:
-- Should it open as a drawer (stays in context) or a full page?
-- How does generation work — confirmation step, loading state, refresh?
-- News deep dives with related articles could be fully scripted, but podcast
-  and entertainment deep dives need different fetching strategies.
-
-The buttons were commented out rather than shipped with an incomplete flow.
-
----
-
 ## Betting Odds
 
 ESPN's scoreboard response already includes odds data for scheduled games
@@ -55,3 +39,46 @@ currently set to `false` everywhere.
 **Why deferred:** Low priority for V1. The data extraction is straightforward
 but the UI needs design work — line movement, provider attribution, and
 display density all need thought before it's worth building.
+
+**Watch-worthy heuristic (when built):** odds also enable a "this game is worth
+watching" flag. A hand-tuned rule from the earlier design — a game is competitive
+if **any** apply:
+- Spread ≤ 5 pts (NBA / college basketball), ≤ 1.5 (NHL / MLB), ≤ 7 pts (college football)
+- National broadcast (ESPN, TNT, ABC, NBC, CBS, FS1, TBS — not a regional RSN)
+- Underdog moneyline ≤ +150 (implies a ≤ 60/40 win split)
+
+---
+
+## Podcast Audio Transcription
+
+Podcast deep dives currently use a hybrid: a real transcript when a show
+publishes one, otherwise an honest "listening guide" from show notes (no
+fabricated quotes). The missing tier is transcribing the audio itself for the
+shows that don't publish a transcript — `audio_url` (a direct MP3, present on
+every episode) → Gemini native audio ingestion (transcribe + synthesize). Same
+provider, no new vendor; it would sit *above* the guide fallback as the preferred
+source.
+
+**Why deferred:** cost and latency — a ~30 MB download plus minutes of generation
+per dive make it its own unit, not part of the base flow.
+
+**Why the current model is hybrid (the constraint that shaped it):** on-page
+transcripts are rare (NPR *Up First* extracts ~159 words, BBC ~211 — show notes,
+not transcripts), and `youtube_url` in the digest is a *channel* URL (`@BBCNews`),
+not an episode one — so YouTube captions are structurally unavailable. Audio is
+the only reliable path to a real transcript for most shows.
+
+---
+
+## Deep-Dive Fact-Check
+
+A separate, heavier deep-dive mode that cross-references a story's claims against
+other sources and marks each as **grounded** (supported by a fetched source) vs.
+**inferred** (the model's own connective tissue). This is the provenance
+primitive behind a larger research tool (the hub's Glass-Box Synthesis project,
+`backlog/glass-box-synthesis/`) — Paperboy is where it would first be built and
+proven on real news.
+
+**Why deferred:** it's a distinct request, not part of the base synthesis, and
+it's gated on first proving the grounding mechanism is honest (the grounding
+"napkin test" in the Glass-Box backlog) before any build.

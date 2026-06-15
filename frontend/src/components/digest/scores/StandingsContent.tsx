@@ -134,76 +134,6 @@ function GroupTable({
   );
 }
 
-// F1 team colors are populated by the backend via `team.teamColor`
-// (sourced from F1_GRID_2026 in scripts/scores/f1.ts; display overrides
-// for visual problems like pure-white brand colors are applied there).
-
-// --- F1 standings table (rank + color bar + name + points) ---
-
-function F1GroupTable({
-  groupName,
-  teams,
-}: {
-  groupName: string;
-  teams: StandingsTeam[];
-}) {
-  const isDrivers = groupName.toLowerCase().includes('driver');
-
-  return (
-    <div className="flex flex-col gap-component">
-      <h4 className="text-body-sm text-on-surface font-medium">{groupName}</h4>
-      <div className="overflow-x-auto scrollbar-none rounded-card border border-outline-subtle">
-        <Table size="sm">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="min-w-[40px] text-center">#</TableHead>
-              <TableHead className="min-w-[180px]">{isDrivers ? 'Driver' : 'Constructor'}</TableHead>
-              <TableHead className="text-center">PTS</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {teams.map((team) => {
-              const color = team.teamColor;
-              return (
-                <TableRow key={team.abbreviation || team.displayName}>
-                  <TableCell className="text-center text-body-sm text-on-surface-variant tabular-nums">
-                    {team.seed}
-                  </TableCell>
-                  <TableCell className="min-w-[180px]">
-                    <div className="flex items-center gap-component">
-                      {color && (
-                        <div
-                          className="w-[3px] h-[20px] rounded-full shrink-0"
-                          style={{ backgroundColor: `#${color}` }}
-                        />
-                      )}
-                      {isDrivers && team.logo && (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={team.logo}
-                          alt={team.abbreviation}
-                          loading="lazy"
-                          className="size-icon-1 object-contain shrink-0"
-                        />
-                      )}
-                      <span className="text-body-sm text-on-surface font-medium">
-                        {team.displayName}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center text-body-sm tabular-nums font-medium">
-                    {team.points ?? 0}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  );
-}
-
 // --- Main export ---
 
 export function StandingsContent({
@@ -255,24 +185,16 @@ export function StandingsContent({
         {visibleStandings.map((sportStandings) => (
           <div key={sportStandings.sport} className="flex flex-col gap-group">
             <h3 className="text-title-md text-on-surface">
-              {sportStandings.sport === 'F1' ? 'Formula 1' : sportStandings.sport}
+              {sportStandings.sport}
             </h3>
             <div className="flex flex-col gap-section-compact">
               {sportStandings.groups.map((group) => (
-                sportStandings.sport === 'F1' ? (
-                  <F1GroupTable
-                    key={group.name}
-                    groupName={group.name}
-                    teams={group.teams}
-                  />
-                ) : (
-                  <GroupTable
-                    key={group.name}
-                    groupName={group.name}
-                    teams={group.teams}
-                    sport={sportStandings.sport}
-                  />
-                )
+                <GroupTable
+                  key={group.name}
+                  groupName={group.name}
+                  teams={group.teams}
+                  sport={sportStandings.sport}
+                />
               ))}
             </div>
           </div>

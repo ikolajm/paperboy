@@ -1,10 +1,10 @@
 /**
  * Fetch sports scores and schedules from ESPN scoreboard API.
  *
- * Handles three distinct sport types:
- * - Team sports (NBA, NHL, MLB, NFL, College) → CompletedGame / ScheduledGame
- * - UFC/MMA → FightCard with individual bouts
- * - F1 → RaceWeekend with sessions and driver positions
+ * Handles team sports (NBA, NHL, MLB, NFL, College) → CompletedGame / ScheduledGame.
+ * Individual-athlete sports (UFC, F1) are intentionally out of scope — ESPN's
+ * scoreboard doesn't package them cleanly (no historical date queries, roster
+ * staleness); see README "Known limitations".
  *
  * Usage:
  *   npx tsx scripts/fetch-scores.ts config/config.json [YYYY-MM-DD]
@@ -17,14 +17,12 @@ import { readFileSync } from "node:fs";
 import type { PaperboyConfig, ScoreConfig } from "../shared/types/config.js";
 import type {
   SportRecaps, SportSchedule,
-  UfcRecaps, UfcSchedule,
-  F1Recaps, F1Schedule,
   ScoresSection,
 } from "../shared/types/digest.js";
 import {
-  fetchEspn, getTodayDateStr, getYesterdayDateStr, getDateRangeStr, formatDateDisplay,
+  fetchEspn, getTodayDateStr, getYesterdayDateStr, formatDateDisplay,
 } from "./scores/shared.js";
-import { fetchAllStandings, fetchF1Teams, fetchF1Standings } from "./scores/standings.js";
+import { fetchAllStandings } from "./scores/standings.js";
 
 // Team sport modules
 import * as nba from "./scores/nba.js";
@@ -33,10 +31,6 @@ import * as mlb from "./scores/mlb.js";
 import * as nfl from "./scores/nfl.js";
 import * as collegeBball from "./scores/college-basketball.js";
 import * as collegeFball from "./scores/college-football.js";
-
-// Event-based sport modules
-import { parseCompletedEvents, parseScheduledEvents } from "./scores/ufc.js";
-import { parseCompletedWeekends, parseScheduledWeekends } from "./scores/f1.js";
 
 // --- Team sport module registry ---
 
@@ -113,152 +107,28 @@ async function fetchTeamSport(
   return { recaps, schedule };
 }
 
-// --- Fetch UFC ---
-
-async function fetchUfc(
-  config: ScoreConfig,
-  targetDate: Date,
-): Promise<{ recaps: UfcRecaps; schedule: UfcSchedule }> {
-  const url = config.url;
-  const todayDisplay = formatDateDisplay(targetDate);
-
-  let recaps: UfcRecaps = {
-    sport: "UFC", date: todayDisplay, status: "no_events", cards: [],
-  };
-  let schedule: UfcSchedule = {
-    sport: "UFC", date: todayDisplay, cards: [],
-  };
-
-  if (config.recaps) {
-    try {
-      const dateRange = getDateRangeStr(targetDate, 1, 0);
-      const data = await fetchEspn(`${url}?dates=${dateRange}`);
-      const cards = await parseCompletedEvents(data);
-      recaps = {
-        sport: "UFC", date: todayDisplay,
-        status: cards.length > 0 ? "events_completed" : "no_events",
-        cards,
-      };
-    } catch (err) {
-      recaps = {
-        sport: "UFC", date: todayDisplay, status: "fetch_error", cards: [],
-        error: err instanceof Error ? err.message : String(err),
-      };
-    }
-  }
-
-  if (config.schedule) {
-    try {
-      const dateRange = getDateRangeStr(targetDate, 0, 14);
-      const data = await fetchEspn(`${url}?dates=${dateRange}`);
-      const cards = parseScheduledEvents(data);
-      schedule = { sport: "UFC", date: todayDisplay, cards };
-    } catch (err) {
-      schedule = {
-        sport: "UFC", date: todayDisplay, cards: [],
-        error: err instanceof Error ? err.message : String(err),
-      };
-    }
-  }
-
-  return { recaps, schedule };
-}
-
-// --- Fetch F1 ---
-
-async function fetchF1(
-  config: ScoreConfig,
-  targetDate: Date,
-): Promise<{ recaps: F1Recaps; schedule: F1Schedule }> {
-  const url = config.url;
-  const todayDisplay = formatDateDisplay(targetDate);
-
-  // Fetch team lookup first (1 call) so driver results get team + color
-  const teamLookup = await fetchF1Teams();
-
-  let recaps: F1Recaps = {
-    sport: "F1", date: todayDisplay, status: "no_race", weekends: [],
-  };
-  let schedule: F1Schedule = {
-    sport: "F1", date: todayDisplay, weekends: [],
-  };
-
-  if (config.recaps) {
-    try {
-      const dateRange = getDateRangeStr(targetDate, 14, 0);
-      const data = await fetchEspn(`${url}?dates=${dateRange}`);
-      const weekends = parseCompletedWeekends(data, teamLookup);
-      recaps = {
-        sport: "F1", date: todayDisplay,
-        status: weekends.length > 0 ? "race_completed" : "no_race",
-        weekends,
-      };
-    } catch (err) {
-      recaps = {
-        sport: "F1", date: todayDisplay, status: "fetch_error", weekends: [],
-        error: err instanceof Error ? err.message : String(err),
-      };
-    }
-  }
-
-  if (config.schedule) {
-    try {
-      const dateRange = getDateRangeStr(targetDate, 0, 21);
-      const data = await fetchEspn(`${url}?dates=${dateRange}`);
-      const weekends = parseScheduledWeekends(data, teamLookup);
-      schedule = { sport: "F1", date: todayDisplay, weekends };
-    } catch (err) {
-      schedule = {
-        sport: "F1", date: todayDisplay, weekends: [],
-        error: err instanceof Error ? err.message : String(err),
-      };
-    }
-  }
-
-  return { recaps, schedule };
-}
-
 // --- Public API ---
 
 export async function fetchAllScores(config: PaperboyConfig, targetDate?: Date): Promise<ScoresSection> {
   const date = targetDate ?? new Date();
 
-  // Separate sport types
-  const teamSports: [string, ScoreConfig][] = [];
-  let ufcConfig: ScoreConfig | null = null;
-  let f1Config: ScoreConfig | null = null;
+  // Only team sports are fetched; any individual-athlete config entries (UFC/F1)
+  // are ignored — they aren't cleanly packaged by ESPN's scoreboard API.
+  const teamSports: [string, ScoreConfig][] = Object.entries(config.scores).filter(
+    ([name]) => name in TEAM_SPORT_MODULES,
+  );
 
-  for (const [name, scoreConfig] of Object.entries(config.scores)) {
-    if (name === "UFC") ufcConfig = scoreConfig;
-    else if (name === "F1") f1Config = scoreConfig;
-    else teamSports.push([name, scoreConfig]);
-  }
-
-  // Fetch all in parallel
   const sportNames = teamSports.map(([name]) => name);
-  const [teamResults, ufcResult, f1Result, teamStandings, f1Standings] = await Promise.all([
+  const [teamResults, teamStandings] = await Promise.all([
     Promise.all(teamSports.map(([name, cfg]) => fetchTeamSport(name, cfg, date))),
-    ufcConfig ? fetchUfc(ufcConfig, date) : null,
-    f1Config ? fetchF1(f1Config, date) : null,
     fetchAllStandings(sportNames),
-    f1Config ? fetchF1Standings() : null,
   ]);
-
-  const standings = [...teamStandings, ...(f1Standings ? [f1Standings] : [])];
 
   return {
     team_sports: {
       recaps: teamResults.map(r => r.recaps),
       schedule: teamResults.map(r => r.schedule).filter(s => s.games.length > 0),
-      standings,
-    },
-    ufc: ufcResult ?? {
-      recaps: { sport: "UFC", date: formatDateDisplay(date), status: "no_events", cards: [] },
-      schedule: { sport: "UFC", date: formatDateDisplay(date), cards: [] },
-    },
-    f1: f1Result ?? {
-      recaps: { sport: "F1", date: formatDateDisplay(date), status: "no_race", weekends: [] },
-      schedule: { sport: "F1", date: formatDateDisplay(date), weekends: [] },
+      standings: teamStandings,
     },
   };
 }

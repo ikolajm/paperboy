@@ -6,7 +6,8 @@ import type { Digest, Game, ScheduledGame } from "@/types";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../../..");
 
-const DIGEST_ROOT = process.env.DIGEST_PATH
+/** Root of the digest store. Sole owner of this path — importers must not recompute it. */
+export const DIGEST_ROOT = process.env.DIGEST_PATH
   ? path.resolve(process.env.DIGEST_PATH)
   : path.join(REPO_ROOT, "digests");
 

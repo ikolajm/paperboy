@@ -5,6 +5,7 @@ import type { RelatedArticle } from '@/types';
 import { Button } from '@/components/atoms/Button';
 import { Card, CardContent } from '@/components/atoms/Card';
 import { ChevronDown, ChevronUp, Newspaper, UserRound } from 'lucide-react';
+import { DeepDiveLink } from '@/components/digest/shared/DeepDiveLink';
 import { getFaviconUrl } from '@/lib/media-bias';
 import { formatTimeAgo } from '@/lib/format';
 
@@ -149,25 +150,34 @@ export function StoryCard({
             </p>
           )}
 
-          {/* Related articles: toggle + expandable list */}
-          {hasRelated && (
-            <div className="flex flex-col gap-component">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setExpanded(!expanded)}
-                trailingIcon={expanded ? <ChevronUp /> : <ChevronDown />}
-                className="self-start text-on-surface-variant"
-              >
-                Related articles
-              </Button>
-              {expanded && (
-                <RelatedList articles={relatedArticles} />
-              )}
-            </div>
-          )}
+          <div className="flex gap-component">
+            {/* Related articles: toggle + expandable list */}
+            {hasRelated && (
+              <div className="flex flex-col gap-component">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setExpanded(!expanded)}
+                  trailingIcon={expanded ? <ChevronUp /> : <ChevronDown />}
+                  className="self-start text-on-surface-variant"
+                >
+                  Related articles
+                </Button>
+                {expanded && (
+                  <RelatedList articles={relatedArticles} />
+                )}
+              </div>
+            )}
 
+            <DeepDiveLink
+              eligible={deepDiveEligible}
+              date={date}
+              id={id}
+              available={availableDeepDives}
+              className="self-start"
+            />
 
+          </div>
         </div>
       </CardContent>
     </Card>
