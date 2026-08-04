@@ -44,7 +44,22 @@ nvm use
 npm install && npm --prefix frontend install
 ```
 
-### 3. Credentials (all optional)
+### 3. Config (required)
+
+`config/config.json` is where every feed, topic, show, and score endpoint lives.
+It is **gitignored** — it holds your news diet, not Paperboy's — so start from the
+tracked template:
+
+```bash
+cp config/config.example.json config/config.json
+```
+
+Then edit it. The example runs as-is; every section is illustrative, not required.
+[`CONFIG-REFERENCE.md`](config/CONFIG-REFERENCE.md) is the full field reference.
+Local news starts empty — Google News encodes a location in an opaque feed token,
+so you copy the URL from the topic page rather than building one.
+
+### 4. Credentials (all optional)
 
 The pipeline runs with **no credentials at all** — sections that need a key are
 simply skipped with a logged warning. Add the keys for the features you want:
@@ -62,7 +77,7 @@ cp config/credentials.example.json config/credentials.json   # gitignored
 `credentials.example.json` documents where to get each key. The Gemini key can
 also be supplied via the `GEMINI_API_KEY` environment variable.
 
-### 4. First run
+### 5. First run
 
 ```bash
 npm run digest    # ~2–3s, or ~30s with TMDB enrichment

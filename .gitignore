@@ -4,3 +4,6 @@ node_modules/
 
 /config/credentials.json
 /digests/
+
+# Your config — copy config/config.example.json and edit.
+/config/config.json

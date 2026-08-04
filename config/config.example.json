@@ -1,0 +1,134 @@
+{
+  "version": 3,
+
+  "_comment": "Copy this to config/config.json and make it yours. Every section below is an example, not a requirement — see CONFIG-REFERENCE.md for the full field reference. config.json is gitignored; this file is the tracked template.",
+
+  "popular_today": {
+    "feeds": [
+      {
+        "label": "Top Stories",
+        "rss": "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en",
+        "max": 3
+      },
+      {
+        "label": "World",
+        "rss": "https://news.google.com/rss/headlines/section/topic/WORLD?hl=en-US&gl=US&ceid=US:en",
+        "max": 3
+      },
+      {
+        "label": "Nation",
+        "rss": "https://news.google.com/rss/headlines/section/topic/NATION?hl=en-US&gl=US&ceid=US:en",
+        "max": 3
+      }
+    ]
+  },
+
+  "local_news": {
+    "_comment": "Your towns. To get an RSS URL: open news.google.com, search your location, pick the place from the results, then copy the feed URL from that topic page. The opaque token in the path encodes the location — there is no way to hand-build it. Leave locations empty to skip the section entirely.",
+    "max_stories_per_location": 4,
+    "locations": []
+  },
+
+  "topics": {
+    "_comment": "Any number of named topics. 'category' groups them in the dashboard (POL, TECH, SCI, HLTH, SPRT). 'mode' is 'active' (always fetched) or 'passive' (fetched, shown lower). 'rss' takes one or more feed URLs — Google News search feeds, Google News topic feeds, or any publisher's own RSS.",
+
+    "US Politics": {
+      "category": "POL",
+      "mode": "active",
+      "rss": [
+        "https://news.google.com/rss/search?q=US+Politics&hl=en-US&gl=US&ceid=US%3Aen"
+      ]
+    },
+
+    "AI": {
+      "category": "TECH",
+      "mode": "active",
+      "rss": [
+        "https://news.google.com/rss/search?q=artificial+intelligence&hl=en-US&gl=US&ceid=US%3Aen"
+      ]
+    },
+
+    "Science": {
+      "category": "SCI",
+      "mode": "passive",
+      "rss": [
+        "https://news.google.com/rss/search?q=science&hl=en-US&gl=US&ceid=US%3Aen"
+      ]
+    },
+
+    "NBA": {
+      "category": "SPRT",
+      "mode": "passive",
+      "rss": [
+        "https://www.espn.com/espn/rss/nba/news"
+      ]
+    }
+  },
+
+  "scores": {
+    "_comment": "ESPN scoreboard endpoints. Delete the leagues you do not follow. 'recaps' pulls post-game writeups, 'schedule' shows upcoming games, 'odds' is deferred (see docs/DEFERRED.md).",
+
+    "NBA": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
+      "recaps": true,
+      "schedule": true,
+      "odds": false
+    },
+
+    "NFL": {
+      "url": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard",
+      "recaps": true,
+      "schedule": true,
+      "odds": false
+    }
+  },
+
+  "podcasts": {
+    "_comment": "'release_schedule' tells the pipeline when to expect a new episode — daily, weekdays, weekly_monday, mon_wed_fri, mon_thu. 'youtube_channel' and 'transcript_page' are optional and only feed deep dives.",
+    "shows": {
+      "Up First from NPR": {
+        "rss": "https://feeds.npr.org/510318/podcast.xml",
+        "release_schedule": "daily"
+      },
+      "The Daily": {
+        "rss": "https://feeds.simplecast.com/Sl5CSM3S",
+        "release_schedule": "weekdays",
+        "youtube_channel": "https://www.youtube.com/@thedailynytimes",
+        "transcript_page": "https://www.nytimes.com/column/the-daily"
+      }
+    }
+  },
+
+  "opinions": {
+    "_comment": "Opinion/editorial RSS feeds. Sporadic schedule — fetch all on every run, no schedule filtering. Pick your own; these are examples.",
+    "feeds": [
+      "https://www.theguardian.com/uk/commentisfree/rss"
+    ],
+    "max_stories": 5
+  },
+
+  "entertainment": {
+    "_comment": "Requires a TMDB key in credentials.json. The endpoint list rarely needs editing — the counts and cutoff are the tuning knobs.",
+    "tmdb": {
+      "base_url": "https://api.themoviedb.org/3",
+      "endpoints": {
+        "trending_movies": "/trending/movie/day?language=en-US",
+        "popular_movies": "/movie/popular?language=en-US&region=US",
+        "now_playing": "/movie/now_playing?language=en-US&region=US",
+        "upcoming": "/movie/upcoming?language=en-US&region=US",
+        "trending_tv": "/trending/tv/day?language=en-US",
+        "popular_tv": "/tv/popular?language=en-US",
+        "discover_streaming": "/discover/tv?language=en-US&watch_region=US&with_watch_providers=8|337|350|1899|386|9&sort_by=popularity.desc",
+        "on_the_air": "/tv/on_the_air?language=en-US"
+      },
+      "movie_endpoints": ["trending_movies", "popular_movies", "now_playing"],
+      "streaming_endpoints": ["trending_tv", "popular_tv", "discover_streaming"],
+      "upcoming_endpoints": ["upcoming", "on_the_air"],
+      "max_movies": 15,
+      "max_streaming": 15,
+      "max_upcoming": 10,
+      "upcoming_cutoff_days": 90,
+      "enrich_watch_providers": true
+    }
+  }
+}
